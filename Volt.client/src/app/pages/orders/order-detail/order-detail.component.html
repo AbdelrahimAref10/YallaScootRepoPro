@@ -1,0 +1,1089 @@
+<!-- Loading -->
+<div *ngIf="isLoading" class="od od--loading">
+  <div class="od__spinner" aria-hidden="true"></div>
+  <p>{{ 'orders.loadingOrder' | t }}</p>
+</div>
+
+<div class="od" *ngIf="order && !isLoading">
+  <!-- Hero -->
+  <header class="od__hero">
+    <div class="od__hero-main">
+      <button
+        type="button"
+        class="od__back"
+        (click)="onBack()"
+        [attr.title]="'orders.backToOrders' | t"
+        [attr.aria-label]="'orders.backToOrders' | t"
+      >
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+
+      <div class="od__hero-copy">
+        <p class="od__eyebrow">{{ 'orders.detail' | t }}</p>
+        <div class="od__title-row">
+          <h1 class="od__code">{{ order.orderCode }}</h1>
+          <span class="od__status" [ngClass]="getStateClass(displayState)">
+            <span class="od__status-dot" aria-hidden="true"></span>
+            {{ getStateLabel(displayState) }}
+          </span>
+          <span *ngIf="order.isUrgent" class="od__chip od__chip--danger">{{ 'orders.urgent' | t }}</span>
+        </div>
+        <p class="od__subtitle">
+          {{ order.customerName }}
+          <span aria-hidden="true">·</span>
+          {{ order.cityName }}
+          <span *ngIf="order.destinationZoneName" aria-hidden="true">·</span>
+          <span *ngIf="order.destinationZoneName">{{ order.destinationZoneName }}</span>
+          <span aria-hidden="true">·</span>
+          {{ 'orders.createdOn' | t }} {{ order.createdDate | date:'MMM d, y · h:mm a' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="od__hero-actions">
+      <button *ngIf="canEdit()" type="button" class="od__btn od__btn--ghost" (click)="onEdit()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        <span>{{ 'common.edit' | t }}</span>
+      </button>
+      <button type="button" class="od__btn od__btn--ghost" (click)="onGoSettlements()">
+        <span>{{ 'orders.openSettlements' | t }}</span>
+      </button>
+      <button
+        *ngIf="canSendToMerchants()"
+        type="button"
+        class="od__btn od__btn--primary"
+        (click)="onOpenSendToMerchants()"
+        [disabled]="isActionLoading('sendMerchants')"
+      >
+        {{ isActionLoading('sendMerchants') ? ('orders.processing' | t) : ('orders.sendToMerchants' | t) }}
+      </button>
+      <button
+        *ngIf="canConfirm()"
+        type="button"
+        class="od__btn od__btn--primary"
+        (click)="onConfirmOrder()"
+        [disabled]="isActionLoading('confirm')"
+      >
+        {{ isActionLoading('confirm') ? ('orders.confirming' | t) : ('orders.confirmOrder' | t) }}
+      </button>
+      <button
+        *ngIf="canMarkHandover()"
+        type="button"
+        class="od__btn od__btn--ghost"
+        (click)="onOpenHandover()"
+        [disabled]="isActionLoading('handover')"
+      >
+        {{ isActionLoading('handover') ? ('orders.processing' | t) : ('orders.markHandover' | t) }}
+      </button>
+      <button
+        *ngIf="canCancel()"
+        type="button"
+        class="od__btn od__btn--danger"
+        (click)="onCancelOrder()"
+        [disabled]="isActionLoading('cancel')"
+      >
+        {{ isActionLoading('cancel') ? ('orders.cancelling' | t) : ('orders.cancelOrder' | t) }}
+      </button>
+    </div>
+  </header>
+
+  <!-- KPI strip -->
+  <section class="od__kpis" aria-label="Order highlights">
+    <article class="od__kpi od__kpi--accent">
+      <span class="od__kpi-label">{{ 'orders.orderTotal' | t }}</span>
+      <strong class="od__kpi-value">{{ order.orderTotal | number:'1.2-2' }} <small>{{ 'common.currency' | t }}</small></strong>
+    </article>
+    <article class="od__kpi">
+      <span class="od__kpi-label">{{ 'orders.reservationFrom' | t }}</span>
+      <strong class="od__kpi-value od__kpi-value--sm">{{ order.reservationDateFrom | date:'MMM d' }} → {{ order.reservationDateTo | date:'MMM d, y' }}</strong>
+      <span class="od__kpi-hint" *ngIf="reservationDays">{{ 'orders.daysCount' | t:{ n: reservationDays } }}</span>
+    </article>
+    <article class="od__kpi">
+      <span class="od__kpi-label">{{ 'orders.colSubcategory' | t }}</span>
+      <strong class="od__kpi-value od__kpi-value--sm">{{ order.subCategoryName }}</strong>
+      <span class="od__kpi-hint">{{ order.vehiclesCount }} {{ 'orders.vehiclesCount' | t }}</span>
+    </article>
+    <article class="od__kpi">
+      <span class="od__kpi-label">{{ 'orders.paymentMethod' | t }}</span>
+      <strong class="od__kpi-value od__kpi-value--sm">{{ getPaymentMethodLabel(order.paymentMethod) }}</strong>
+    </article>
+  </section>
+
+  <!-- Pipeline -->
+  <nav class="od__pipeline" *ngIf="showPipeline" [attr.aria-label]="'orders.pipelineAria' | t">
+    <ng-container *ngFor="let step of pipelineSteps; let i = index; let last = last">
+      <div
+        class="od__pipe-step"
+        [class.od__pipe-step--done]="getStepStatus(step.state) === 'done'"
+        [class.od__pipe-step--active]="getStepStatus(step.state) === 'active'"
+      >
+        <span class="od__pipe-dot">
+          <svg *ngIf="getStepStatus(step.state) === 'done'" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span *ngIf="getStepStatus(step.state) !== 'done'">{{ i + 1 }}</span>
+        </span>
+        <span class="od__pipe-label">{{ step.key | t }}</span>
+      </div>
+      <span
+        *ngIf="!last"
+        class="od__pipe-line"
+        [class.od__pipe-line--done]="getStepStatus(step.state) === 'done'"
+      ></span>
+    </ng-container>
+  </nav>
+
+  <!-- Alerts -->
+  <div *ngIf="successMessage" class="od__alert od__alert--ok" role="status">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M5 13l4 4L19 7"/>
+    </svg>
+    <span>{{ successMessage }}</span>
+  </div>
+  <div *ngIf="errorMessage" class="od__alert od__alert--err" role="alert">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Rejected receipt banner -->
+  <section class="od__card od__card--warn" *ngIf="isRejectedReceipt">
+    <header class="od__card-head">
+      <div>
+        <p class="od__card-kicker">{{ 'common.rejectedReceipt' | t }}</p>
+        <h2 class="od__card-title">{{ getFaultPartyLabel(order.receiptFaultParty) }}</h2>
+      </div>
+    </header>
+    <p class="od__card-text" *ngIf="order.receiptRejectNote">{{ order.receiptRejectNote }}</p>
+  </section>
+
+  <p *ngIf="order.orderState === OrderState.MerchantPending" class="od__banner">
+    {{ hasDeclinedVehicles ? ('orders.declinedVehiclesBanner' | t) : ('orders.waitingMerchants' | t) }}
+  </p>
+  <p *ngIf="order.orderState === OrderState.Confirmed" class="od__banner">
+    {{ 'orders.assignPerVehicleHint' | t }}
+  </p>
+  <p *ngIf="order.orderState === OrderState.DeliveryAssigned" class="od__banner">
+    {{ 'orders.pickupHint' | t }}
+  </p>
+  <p *ngIf="order.orderState === OrderState.CustomerReceived" class="od__banner">
+    {{ 'orders.returnHint' | t }}
+  </p>
+
+  <div class="od__main">
+      <!-- Trip snapshot -->
+      <section class="od__facts">
+        <article class="od__fact">
+          <span>{{ 'orders.customer' | t }}</span>
+          <strong>{{ order.customerName }}</strong>
+          <small>{{ order.customerMobileNumber || '—' }}</small>
+        </article>
+        <article class="od__fact">
+          <span>{{ 'orders.destinationZone' | t }}</span>
+          <strong>{{ order.destinationZoneName || order.cityName }}</strong>
+          <small>{{ order.cityName }}</small>
+        </article>
+        <article class="od__fact">
+          <span>{{ 'orders.hotelName' | t }}</span>
+          <strong>{{ order.hotelName }}</strong>
+          <small>{{ order.hotelAddress }}</small>
+        </article>
+        <article class="od__fact" *ngIf="order.hotelPhone">
+          <span>{{ 'common.phone' | t }}</span>
+          <strong>{{ order.hotelPhone }}</strong>
+        </article>
+      </section>
+
+      <!-- Vehicles grouped by merchant -->
+      <section class="od__card" *ngIf="order.orderVehicles?.length">
+        <header class="od__card-head">
+          <div>
+            <p class="od__card-kicker">{{ 'orders.assignedVehicles' | t }}</p>
+            <h2 class="od__card-title">{{ 'orders.nVehicles' | t:{ n: order.orderVehicles.length } }}</h2>
+            <p class="od__kpi-hint" *ngIf="order.orderState === OrderState.Confirmed || order.orderState === OrderState.DeliveryAssigned">
+              {{ 'orders.assignedCourierCount' | t:{ assigned: assignedVehicleCount(), total: assignableVehicles.length } }}
+            </p>
+          </div>
+        </header>
+
+        <div class="od__fleet">
+          <section class="od__merchant-block" *ngFor="let group of vehiclesByMerchant">
+            <header class="od__merchant-head">
+              <div class="od__merchant-copy">
+                <p class="od__merchant-kicker">{{ 'orders.vehicleMerchant' | t }}</p>
+                <h3 class="od__merchant-name">{{ group.merchantName }}</h3>
+                <div class="od__merchant-meta">
+                  <span
+                    class="od__chip"
+                    [class.od__chip--ok]="group.cashOnReceive"
+                    [class.od__chip--muted]="!group.cashOnReceive"
+                  >
+                    {{ group.cashOnReceive ? ('orders.cashOnReceiveYes' | t) : ('orders.cashOnReceiveNo' | t) }}
+                  </span>
+                  <span class="od__merchant-zone" *ngIf="group.zoneName">
+                    {{ 'orders.merchantZone' | t }}: {{ group.zoneName }}
+                  </span>
+                </div>
+              </div>
+              <span class="od__merchant-count">{{ 'orders.nVehicles' | t:{ n: group.vehicles.length } }}</span>
+            </header>
+
+            <div class="od__tickets">
+              <article
+                class="od__ticket"
+                [class.od__ticket--assigned]="!!deliveryFor(vehicle.vehicleId)"
+                [class.od__ticket--declined]="vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Declined || vehicle.deliveryFailed"
+                *ngFor="let vehicle of group.vehicles"
+              >
+                <div class="od__ticket-grid">
+                  <div class="od__invoice-main">
+                    <div class="od__invoice-thumb">
+                      <img *ngIf="vehicle.imageUrl" [src]="vehicle.imageUrl" [alt]="vehicle.vehicleName" />
+                      <div *ngIf="!vehicle.imageUrl" class="od__invoice-fallback" aria-hidden="true">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                      </div>
+                    </div>
+
+                    <div class="od__invoice-info">
+                      <div class="od__invoice-title-row">
+                        <strong class="od__invoice-name">{{ vehicle.vehicleName }}</strong>
+                        <span class="od__vehicle-badge" [ngClass]="getVehicleStatusBadgeClass(vehicle.status)">
+                          {{ getVehicleStatusLabel(vehicle.status) }}
+                        </span>
+                      </div>
+                      <span class="od__invoice-code">#{{ vehicle.vehicleCode }}</span>
+                      <app-vehicle-specs
+                        [compact]="true"
+                        [showPrice]="false"
+                        [color]="vehicle.color"
+                        [type]="vehicle.type"
+                        [model]="vehicle.model"
+                        [speedKmh]="vehicle.speedKmh"
+                        [engineCapacityCc]="vehicle.engineCapacityCc"
+                      ></app-vehicle-specs>
+                    </div>
+
+                    <div class="od__invoice-rate">
+                      <strong>{{ vehicle.price | number:'1.2-2' }}</strong>
+                      <span>{{ 'common.currency' | t }} / {{ 'vehicles.perDay' | t }}</span>
+                      <span class="od__invoice-delivery">
+                        {{ 'orders.deliveryFees' | t }}:
+                        <b>{{ vehicle.deliveryFee | number:'1.2-2' }} {{ 'common.currency' | t }}</b>
+                      </span>
+                      <span
+                        class="od__chip"
+                        [class.od__chip--ok]="vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Confirmed"
+                        [class.od__chip--danger]="vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Declined"
+                        [class.od__chip--warn]="vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Pending"
+                      >
+                        {{ merchantVehicleResponseLabel(vehicle.merchantResponseStatus) }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    class="od__courier"
+                    [class.od__courier--on]="!!deliveryFor(vehicle.vehicleId)"
+                    [class.od__courier--off]="!deliveryFor(vehicle.vehicleId)"
+                  >
+                    <div class="od__courier-copy" *ngIf="deliveryFor(vehicle.vehicleId) as courier; else noCourier">
+                      <p class="od__courier-kicker">{{ 'orders.assignedCourier' | t }}</p>
+                      <strong>{{ courier.deliveryName }}</strong>
+                      <span
+                        class="od__chip"
+                        [class.od__chip--ok]="courier.deliveryReceivedFromMerchant"
+                        [class.od__chip--warn]="!courier.deliveryReceivedFromMerchant"
+                      >
+                        {{ (courier.deliveryReceivedFromMerchant ? 'orders.handoverDone' : 'orders.handoverPending') | t }}
+                      </span>
+                    </div>
+                    <ng-template #noCourier>
+                      <div class="od__courier-copy">
+                        <p class="od__courier-kicker">{{ 'orders.courier' | t }}</p>
+                        <strong>{{ 'orders.unassignedCourier' | t }}</strong>
+                      </div>
+                    </ng-template>
+                    <button
+                      *ngIf="canAssignVehicle(vehicle)"
+                      type="button"
+                      class="od__btn od__btn--primary od__btn--sm"
+                      (click)="onOpenAssignDelivery(vehicle)"
+                      [disabled]="isActionLoading('assignDelivery')"
+                    >
+                      {{ deliveryFor(vehicle.vehicleId) ? ('orders.changeDelivery' | t) : ('orders.assignDelivery' | t) }}
+                    </button>
+                  </div>
+
+                  <div
+                    class="od__vehicle-actions"
+                    *ngIf="nextVehicleAction(vehicle) || canFailVehicle(vehicle) || canReplaceVehicle() || canRemoveVehicle(vehicle)"
+                  >
+                    <button
+                      *ngIf="nextVehicleAction(vehicle) as step"
+                      type="button"
+                      class="od__btn od__btn--primary od__btn--sm od__vehicle-action"
+                      (click)="openLifecycleModal(vehicle, step)"
+                    >
+                      {{ lifecycleActionLabel(step) }}
+                    </button>
+                    <button
+                      *ngIf="canFailVehicle(vehicle)"
+                      type="button"
+                      class="od__btn od__btn--danger od__btn--sm od__vehicle-action"
+                      (click)="openVehicleNotReceived(vehicle)"
+                    >
+                      {{ 'orders.cancelVehicle' | t }}
+                    </button>
+                    <button
+                      *ngIf="canReplaceVehicle()"
+                      type="button"
+                      class="od__btn od__btn--ghost od__btn--sm od__vehicle-action"
+                      (click)="onOpenReplaceVehicle(vehicle.vehicleId)"
+                    >
+                      {{ 'orders.replaceVehicle' | t }}
+                    </button>
+                    <button
+                      *ngIf="canRemoveVehicle(vehicle)"
+                      type="button"
+                      class="od__btn od__btn--danger od__btn--sm od__vehicle-action"
+                      (click)="onOpenRemoveVehicle(vehicle.vehicleId)"
+                    >
+                      {{ 'orders.removeVehicle' | t }}
+                    </button>
+                  </div>
+                </div>
+
+                <ol class="od__cycle" *ngIf="order.orderState >= OrderState.DeliveryAssigned">
+                  <li
+                    *ngFor="let step of lifecycleSteps"
+                    class="od__cycle-step"
+                    [class.od__cycle-step--done]="isCycleStepDone(vehicle, step.id)"
+                  >
+                    <span class="od__cycle-dot" aria-hidden="true"></span>
+                    <span>{{ step.labelKey | t }}</span>
+                    <a
+                      *ngIf="cycleProofUrl(vehicle, step.id)"
+                      class="od__cycle-proof"
+                      [href]="cycleProofUrl(vehicle, step.id)"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      <img [src]="cycleProofUrl(vehicle, step.id)" alt="" />
+                    </a>
+                  </li>
+                </ol>
+
+                <p class="od__vehicle-fail" *ngIf="vehicle.deliveryFailed">
+                  {{ 'orders.vehicleCancelled' | t }}
+                </p>
+              </article>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- Merchant invitations -->
+      <section class="od__card" *ngIf="order.merchantOrders?.length">
+        <header class="od__card-head">
+          <div>
+            <p class="od__card-kicker">{{ 'orders.merchantsPanel' | t }}</p>
+            <h2 class="od__card-title">{{ order.merchantOrders.length }} {{ 'orders.merchantInvites' | t }}</h2>
+            <p class="od__kpi-hint" *ngIf="order.orderState === OrderState.MerchantPending">
+              {{ 'orders.merchantResponsesHint' | t }}
+            </p>
+          </div>
+        </header>
+        <div class="od__list">
+          <div class="od__row" *ngFor="let mo of order.merchantOrders">
+            <div>
+              <strong>{{ mo.merchantName }}</strong>
+              <span class="od__kpi-hint" *ngIf="mo.rejectReason">{{ mo.rejectReason }}</span>
+              <span class="od__kpi-hint" *ngIf="mo.declinedVehicleCodes?.length">
+                {{ 'orders.declinedVehicleCodes' | t:{ codes: mo.declinedVehicleCodes.join(', ') } }}
+              </span>
+            </div>
+            <div class="od__row-actions">
+              <span
+                class="od__chip"
+                [class.od__chip--ok]="mo.responseStatus === MerchantOrderResponseStatus.Accepted"
+                [class.od__chip--danger]="mo.responseStatus === MerchantOrderResponseStatus.Rejected"
+                [class.od__chip--warn]="mo.responseStatus === MerchantOrderResponseStatus.PartiallyAccepted"
+                [class.od__chip--soft]="mo.responseStatus === MerchantOrderResponseStatus.Pending"
+              >
+                {{ getMerchantStatusLabel(mo.responseStatus) }}
+              </span>
+              <button
+                *ngIf="mo.responseStatus === MerchantOrderResponseStatus.Rejected && order.orderState === OrderState.MerchantPending"
+                type="button"
+                class="od__btn od__btn--ghost od__btn--sm"
+                (click)="onOpenReassign(mo.merchantId)"
+              >
+                {{ 'orders.reassignMerchant' | t }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Merchant payment details -->
+      <section class="od__card" *ngIf="order.merchantOrderPaymentDetails?.length">
+        <header class="od__card-head">
+          <div>
+            <p class="od__card-kicker">{{ 'orders.paymentDetailsMerchant' | t }}</p>
+            <h2 class="od__card-title">{{ 'orders.merchantPayouts' | t }}</h2>
+          </div>
+        </header>
+        <div class="od__table-wrap">
+          <table class="od__table">
+            <thead>
+              <tr>
+                <th>{{ 'orders.partyMerchant' | t }}</th>
+                <th>{{ 'orders.vehicleCode' | t }}</th>
+                <th>{{ 'orders.vehicleRental' | t }}</th>
+                <th>{{ 'orders.netAmount' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of order.merchantOrderPaymentDetails">
+                <td>{{ row.merchantName }}</td>
+                <td>{{ row.vehicleCode }}</td>
+                <td>{{ row.vehicleRental | number:'1.2-2' }}</td>
+                <td><strong>{{ row.netAmount | number:'1.2-2' }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Merchant payment details -->
+      <section class="od__card" *ngIf="order.deliveryOrderPaymentDetails?.length">
+        <header class="od__card-head">
+          <div>
+            <p class="od__card-kicker">{{ 'orders.paymentDetailsDelivery' | t }}</p>
+            <h2 class="od__card-title">{{ 'orders.deliveryPayouts' | t }}</h2>
+          </div>
+        </header>
+        <div class="od__table-wrap">
+          <table class="od__table">
+            <thead>
+              <tr>
+                <th>{{ 'orders.partyDelivery' | t }}</th>
+                <th>{{ 'orders.vehicleCode' | t }}</th>
+                <th>{{ 'orders.deliveryFeeShare' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of order.deliveryOrderPaymentDetails">
+                <td>{{ row.deliveryName }}</td>
+                <td>{{ row.vehicleCode }}</td>
+                <td><strong>{{ row.deliveryFeeShare | number:'1.2-2' }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Journal -->
+      <section class="od__card" *ngIf="order.orderJournals?.length">
+        <header class="od__card-head">
+          <div>
+            <p class="od__card-kicker">{{ 'orders.journalPanel' | t }}</p>
+            <h2 class="od__card-title">{{ 'orders.journalEntries' | t }}</h2>
+          </div>
+        </header>
+        <div class="od__table-wrap">
+          <table class="od__table">
+            <thead>
+              <tr>
+                <th>{{ 'orders.journalKindCol' | t }}</th>
+                <th>{{ 'orders.vehicleCode' | t }}</th>
+                <th>{{ 'orders.journalDirection' | t }}</th>
+                <th>{{ 'common.amount' | t }}</th>
+                <th>{{ 'orders.journalParty' | t }}</th>
+                <th>{{ 'orders.journalCreatedBy' | t }}</th>
+                <th>{{ 'common.date' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let j of order.orderJournals">
+                <td>{{ getJournalKindLabel(j.entryKind) }}</td>
+                <td>{{ j.vehicleCode || '—' }}</td>
+                <td>{{ getJournalDirectionLabel(j.direction) }}</td>
+                <td><strong>{{ j.amount | number:'1.2-2' }}</strong></td>
+                <td>{{ getPartyTypeLabel(j.partyType) }} #{{ j.partyId }}</td>
+                <td>{{ j.createdBy || '—' }}</td>
+                <td>{{ j.createdDate | date:'MMM d, y · HH:mm' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Financial + Payments -->
+      <div class="od__grid-2">
+        <section class="od__card" *ngIf="order.orderTotals">
+          <header class="od__card-head">
+            <div>
+              <p class="od__card-kicker">{{ 'orders.financialDetails' | t }}</p>
+              <h2 class="od__card-title">{{ 'orders.liveQuote' | t }}</h2>
+            </div>
+          </header>
+          <div class="od__receipt">
+            <div class="od__receipt-row">
+              <span>{{ 'orders.subTotal' | t }}</span>
+              <strong>{{ order.orderTotals.subTotal | number:'1.2-2' }}</strong>
+            </div>
+            <div class="od__receipt-row">
+              <span>{{ 'orders.serviceFees' | t }}</span>
+              <strong>{{ order.orderTotals.serviceFees | number:'1.2-2' }}</strong>
+            </div>
+            <div class="od__receipt-row">
+              <span>{{ 'orders.deliveryFees' | t }}</span>
+              <strong>{{ order.orderTotals.deliveryFees | number:'1.2-2' }}</strong>
+            </div>
+            <div class="od__receipt-row" *ngIf="order.orderTotals.urgentFees > 0">
+              <span>{{ 'orders.urgentFees' | t }}</span>
+              <strong>{{ order.orderTotals.urgentFees | number:'1.2-2' }}</strong>
+            </div>
+            <div class="od__receipt-row" *ngIf="order.orderTotals.tieredDiscount">
+              <span>{{ 'orders.tieredDiscount' | t }}</span>
+              <strong>−{{ order.orderTotals.tieredDiscount | number:'1.2-2' }}</strong>
+            </div>
+            <div class="od__receipt-row" *ngIf="order.previousDebt > 0">
+              <span>{{ 'orders.previousDebt' | t }}</span>
+              <strong>{{ order.previousDebt | number:'1.2-2' }}</strong>
+            </div>
+            <div class="od__receipt-total">
+              <span>{{ 'orders.totalAfterFees' | t }}</span>
+              <strong>{{ order.orderTotals.totalAfterAllFees | number:'1.2-2' }} <small>{{ 'common.currency' | t }}</small></strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="od__card" *ngIf="order.orderPayments?.length">
+          <header class="od__card-head">
+            <div>
+              <p class="od__card-kicker">{{ 'orders.paymentDetails' | t }}</p>
+              <h2 class="od__card-title">{{ 'orders.paymentInfo' | t }}</h2>
+            </div>
+          </header>
+          <div class="od__payments">
+            <article class="od__payment" *ngFor="let payment of order.orderPayments">
+              <div class="od__payment-top">
+                <strong>{{ payment.total | number:'1.2-2' }} {{ 'common.currency' | t }}</strong>
+                <span class="od__pay" [ngClass]="getPaymentStateClass(payment.state)">
+                  {{ getPaymentStateLabel(payment.state) }}
+                </span>
+              </div>
+              <p class="od__payment-meta">{{ getPaymentMethodLabel(payment.paymentMethod) }}</p>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <!-- Cancellation / rejection -->
+      <section class="od__card od__card--warn" *ngIf="order.orderCancellationFee">
+        <header class="od__card-head">
+          <div>
+            <p class="od__card-kicker">{{ 'orders.orderCancellation' | t }}</p>
+            <h2 class="od__card-title">
+              {{ order.orderCancellationFee.amount > 0 ? ('orders.cancellationFee' | t) : ('orders.rejectedByAdmin' | t) }}
+            </h2>
+          </div>
+          <span
+            class="od__chip"
+            [class.od__chip--warn]="order.orderCancellationFee.state === 0 && order.orderCancellationFee.amount > 0"
+            [class.od__chip--ok]="order.orderCancellationFee.state !== 0 || order.orderCancellationFee.amount === 0"
+          >
+            {{ order.orderCancellationFee.amount > 0
+              ? (order.orderCancellationFee.state === 0 ? ('common.pending' | t) : ('common.paid' | t))
+              : ('orders.noFee' | t) }}
+          </span>
+        </header>
+        <div class="od__fee-row" *ngIf="order.orderCancellationFee.amount > 0; else adminRejectNote">
+          <strong>{{ order.orderCancellationFee.amount | number:'1.2-2' }} {{ 'common.currency' | t }}</strong>
+          <button
+            *ngIf="order.orderCancellationFee.state === 0"
+            type="button"
+            class="od__btn od__btn--primary"
+            (click)="onMarkCancellationFeePaid()"
+            [disabled]="isActionLoading('markFeePaid')"
+          >
+            {{ isActionLoading('markFeePaid') ? ('orders.updating' | t) : ('orders.markAsPaid' | t) }}
+          </button>
+        </div>
+        <ng-template #adminRejectNote>
+          <p class="od__card-text">{{ 'orders.rejectedByAdminHint' | t }}</p>
+        </ng-template>
+      </section>
+
+      <!-- PayPal refund -->
+      <section class="od__card od__card--warn" *ngIf="order.refundablePaypalAmount as refund">
+        <header class="od__card-head">
+          <div>
+            <p class="od__card-kicker">{{ 'orders.paypalRefund' | t }}</p>
+            <h2 class="od__card-title">{{ 'orders.refundDetails' | t }}</h2>
+          </div>
+          <span
+            class="od__chip"
+            [class.od__chip--warn]="!order.moneyRefunded"
+            [class.od__chip--ok]="order.moneyRefunded"
+          >
+            {{ order.moneyRefunded ? ('orders.moneyRefunded' | t) : ('orders.refundPending' | t) }}
+          </span>
+        </header>
+
+        <div class="od__receipt od__receipt--compact">
+          <div class="od__receipt-row">
+            <span>{{ 'orders.orderTotal' | t }}</span>
+            <strong>{{ refund.orderTotal | number:'1.2-2' }}</strong>
+          </div>
+          <div class="od__receipt-row" *ngIf="order.previousDebt > 0">
+            <span>{{ 'orders.previousDebt' | t }}</span>
+            <strong>−{{ order.previousDebt | number:'1.2-2' }}</strong>
+          </div>
+          <div class="od__receipt-row" *ngIf="refund.cancellationFees > 0">
+            <span>{{ 'orders.cancellationFee' | t }}</span>
+            <strong>−{{ refund.cancellationFees | number:'1.2-2' }}</strong>
+          </div>
+          <div class="od__receipt-total">
+            <span>{{ 'orders.refundableAmount' | t }}</span>
+            <strong>{{ refund.refundableAmount | number:'1.2-2' }} <small>{{ 'common.currency' | t }}</small></strong>
+          </div>
+        </div>
+
+        <div class="od__fee-row" *ngIf="canMarkMoneyRefunded()" style="margin-top: 1rem;">
+          <p class="od__card-text" style="margin: 0;">{{ 'orders.markRefundedHint' | t }}</p>
+          <button
+            type="button"
+            class="od__btn od__btn--primary"
+            (click)="onMarkMoneyRefunded()"
+            [disabled]="isActionLoading('markRefunded')"
+          >
+            {{ isActionLoading('markRefunded') ? ('orders.updating' | t) : ('orders.markAsRefunded' | t) }}
+          </button>
+        </div>
+      </section>
+
+      <!-- Notes + Passport -->
+      <div class="od__grid-2" *ngIf="order.notes || order.passportImage">
+        <section class="od__card" *ngIf="order.notes">
+          <header class="od__card-head">
+            <div>
+              <p class="od__card-kicker">{{ 'common.details' | t }}</p>
+              <h2 class="od__card-title">{{ 'common.notes' | t }}</h2>
+            </div>
+          </header>
+          <p class="od__notes">{{ order.notes }}</p>
+        </section>
+
+        <section class="od__card" *ngIf="order.passportImage">
+          <header class="od__card-head">
+            <div>
+              <p class="od__card-kicker">{{ 'common.media' | t }}</p>
+              <h2 class="od__card-title">{{ 'orders.passportImage' | t }}</h2>
+            </div>
+          </header>
+          <a class="od__passport" [href]="order.passportImage" target="_blank" rel="noopener">
+            <img [src]="order.passportImage" alt="" />
+          </a>
+        </section>
+      </div>
+    </div>
+</div>
+
+<!-- Send to merchants modal -->
+<div *ngIf="showMerchantsModal" class="od-modal" (click)="onCloseMerchantsModal()">
+  <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <header class="od-modal__header">
+      <div>
+        <h2 class="od-modal__title">{{ 'orders.sendToMerchants' | t }}</h2>
+        <p class="od-modal__subtitle">{{ 'orders.sendToMerchantsSubtitle' | t }}</p>
+      </div>
+      <button type="button" class="od-modal__close" (click)="onCloseMerchantsModal()" [attr.aria-label]="'common.close' | t">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+    <div class="od-modal__body">
+      <div *ngIf="isLoadingMerchants" class="od-modal__loading">
+        <div class="od__spinner" aria-hidden="true"></div>
+        <p>{{ 'common.loading' | t }}</p>
+      </div>
+      <div *ngIf="!isLoadingMerchants" class="od__list">
+        <label
+          class="od__check-row"
+          *ngFor="let m of activeMerchants"
+          (click)="toggleMerchantSelection(m.merchantId); $event.preventDefault()"
+        >
+          <input type="checkbox" [checked]="isMerchantSelected(m.merchantId)" readonly />
+          <span>
+            <strong>{{ m.fullName }}</strong>
+            <small>{{ m.mobileNumber }}</small>
+          </span>
+        </label>
+        <p *ngIf="!activeMerchants.length" class="od__empty-actions">{{ 'common.noData' | t }}</p>
+      </div>
+    </div>
+    <footer class="od-modal__footer">
+      <button type="button" class="od__btn od__btn--ghost" (click)="onCloseMerchantsModal()">{{ 'common.cancel' | t }}</button>
+      <button
+        type="button"
+        class="od__btn od__btn--primary"
+        (click)="onConfirmSendToMerchants()"
+        [disabled]="isLoadingMerchants || !selectedMerchantIds.length || isActionLoading('sendMerchants')"
+      >
+        {{ isActionLoading('sendMerchants') ? ('orders.processing' | t) : ('orders.sendToMerchants' | t) }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- Reassign merchant modal -->
+<div *ngIf="showReassignModal" class="od-modal" (click)="onCloseReassignModal()">
+  <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <header class="od-modal__header">
+      <div>
+        <h2 class="od-modal__title">{{ 'orders.reassignMerchant' | t }}</h2>
+        <p class="od-modal__subtitle">{{ 'orders.reassignMerchantSubtitle' | t }}</p>
+      </div>
+      <button type="button" class="od-modal__close" (click)="onCloseReassignModal()" [attr.aria-label]="'common.close' | t">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+    <div class="od-modal__body">
+      <div *ngIf="isLoadingReassign" class="od-modal__loading">
+        <div class="od__spinner" aria-hidden="true"></div>
+        <p>{{ 'common.loading' | t }}</p>
+      </div>
+      <div *ngIf="!isLoadingReassign" class="od__field">
+        <label class="od__label">{{ 'orders.newMerchant' | t }}</label>
+        <app-multi-select
+          [multiple]="false"
+          layout="table"
+          [options]="reassignMerchantOptions"
+          [(ngModel)]="reassignNewMerchantId"
+          [placeholder]="'common.select' | t"
+          [primaryColumnLabel]="'common.name' | t"
+          [secondaryColumnLabel]="'common.mobile' | t"
+        ></app-multi-select>
+      </div>
+    </div>
+    <footer class="od-modal__footer">
+      <button type="button" class="od__btn od__btn--ghost" (click)="onCloseReassignModal()">{{ 'common.cancel' | t }}</button>
+      <button
+        type="button"
+        class="od__btn od__btn--primary"
+        (click)="onConfirmReassign()"
+        [disabled]="!reassignNewMerchantId || isActionLoading('reassign')"
+      >
+        {{ isActionLoading('reassign') ? ('orders.processing' | t) : ('orders.reassignMerchant' | t) }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- Replace vehicle modal -->
+<div *ngIf="showReplaceVehicleModal" class="od-modal" (click)="onCloseReplaceVehicleModal()">
+  <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <header class="od-modal__header">
+      <div>
+        <h2 class="od-modal__title">{{ 'orders.replaceVehicle' | t }}</h2>
+        <p class="od-modal__subtitle">{{ 'orders.replaceVehicleSubtitle' | t }}</p>
+      </div>
+      <button type="button" class="od-modal__close" (click)="onCloseReplaceVehicleModal()" [attr.aria-label]="'common.close' | t">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+    <div class="od-modal__body">
+      <div *ngIf="isLoadingReplaceVehicles" class="od-modal__loading">
+        <div class="od__spinner" aria-hidden="true"></div>
+        <p>{{ 'common.loading' | t }}</p>
+      </div>
+      <div *ngIf="!isLoadingReplaceVehicles" class="od__field">
+        <label class="od__label">{{ 'orders.newVehicle' | t }}</label>
+        <app-multi-select
+          [multiple]="false"
+          layout="table"
+          [options]="replaceVehicleOptions"
+          [(ngModel)]="replaceNewVehicleId"
+          [placeholder]="'common.select' | t"
+          [primaryColumnLabel]="'common.name' | t"
+          [secondaryColumnLabel]="'vehicles.merchant' | t"
+        ></app-multi-select>
+        <p *ngIf="!replaceCandidates.length" class="od__kpi-hint">{{ 'orders.noReplaceVehicles' | t }}</p>
+      </div>
+    </div>
+    <footer class="od-modal__footer">
+      <button type="button" class="od__btn od__btn--ghost" (click)="onCloseReplaceVehicleModal()">{{ 'common.cancel' | t }}</button>
+      <button
+        type="button"
+        class="od__btn od__btn--primary"
+        (click)="onConfirmReplaceVehicle()"
+        [disabled]="!replaceNewVehicleId || isActionLoading('replaceVehicle')"
+      >
+        {{ isActionLoading('replaceVehicle') ? ('orders.processing' | t) : ('orders.replaceVehicle' | t) }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- Assign delivery modal -->
+<div *ngIf="showDeliveryModal" class="od-modal" (click)="onCloseDeliveryModal()">
+  <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <header class="od-modal__header">
+      <div>
+        <h2 class="od-modal__title">{{ 'orders.assignDelivery' | t }}</h2>
+        <p class="od-modal__subtitle" *ngIf="assigningVehicle">
+          {{ assigningVehicle.vehicleName }} · #{{ assigningVehicle.vehicleCode }}
+        </p>
+      </div>
+      <button type="button" class="od-modal__close" (click)="onCloseDeliveryModal()" [attr.aria-label]="'common.close' | t">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+    <div class="od-modal__body">
+      <div *ngIf="isLoadingDeliveries" class="od-modal__loading">
+        <div class="od__spinner" aria-hidden="true"></div>
+        <p>{{ 'common.loading' | t }}</p>
+      </div>
+      <div *ngIf="!isLoadingDeliveries" class="od__list">
+        <div class="od__field">
+          <label class="od__label">{{ 'orders.selectCourier' | t }}</label>
+          <app-multi-select
+            [multiple]="false"
+            layout="table"
+            [options]="deliveryOptions"
+            [(ngModel)]="selectedAssignDeliveryId"
+            [placeholder]="'common.select' | t"
+            [primaryColumnLabel]="'common.name' | t"
+            [secondaryColumnLabel]="'common.mobile' | t"
+          ></app-multi-select>
+        </div>
+      </div>
+    </div>
+    <footer class="od-modal__footer">
+      <button type="button" class="od__btn od__btn--ghost" (click)="onCloseDeliveryModal()">{{ 'common.cancel' | t }}</button>
+      <button
+        type="button"
+        class="od__btn od__btn--primary"
+        (click)="onConfirmAssignDelivery()"
+        [disabled]="!selectedAssignDeliveryId || isActionLoading('assignDelivery')"
+      >
+        {{ isActionLoading('assignDelivery') ? ('orders.processing' | t) : ('orders.assignDelivery' | t) }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- Handover modal -->
+<div *ngIf="showHandoverModal" class="od-modal" (click)="onCloseHandoverModal()">
+  <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <header class="od-modal__header">
+      <div>
+        <h2 class="od-modal__title">{{ 'orders.markHandover' | t }}</h2>
+        <p class="od-modal__subtitle">{{ 'orders.markHandoverSubtitle' | t }}</p>
+      </div>
+      <button type="button" class="od-modal__close" (click)="onCloseHandoverModal()" [attr.aria-label]="'common.close' | t">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+    <div class="od-modal__body">
+      <div class="od__list">
+        <label
+          class="od__check-row"
+          *ngFor="let d of unreceivedDeliveryVehicles"
+          (click)="toggleHandoverVehicle(d.vehicleId); $event.preventDefault()"
+        >
+          <input type="checkbox" [checked]="isHandoverSelected(d.vehicleId)" readonly />
+          <span>
+            <strong>{{ d.vehicleCode }}</strong>
+            <small>{{ d.deliveryName }}</small>
+          </span>
+        </label>
+        <p *ngIf="!unreceivedDeliveryVehicles.length" class="od__empty-actions">{{ 'common.noData' | t }}</p>
+      </div>
+    </div>
+    <footer class="od-modal__footer">
+      <button type="button" class="od__btn od__btn--ghost" (click)="onCloseHandoverModal()">{{ 'common.cancel' | t }}</button>
+      <button
+        type="button"
+        class="od__btn od__btn--primary"
+        (click)="onConfirmHandover()"
+        [disabled]="!selectedHandoverVehicleIds.length || isActionLoading('handover')"
+      >
+        {{ isActionLoading('handover') ? ('orders.processing' | t) : ('orders.markHandover' | t) }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- Vehicle lifecycle proof modal -->
+<div *ngIf="showLifecycleModal" class="od-modal" (click)="onCloseLifecycleModal()">
+  <div class="od-modal__dialog od-modal__dialog--proof" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <header class="od-modal__header od-proof__header">
+      <div class="od-proof__heading">
+        <span class="od-proof__icon" aria-hidden="true">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </span>
+        <div>
+          <h2 class="od-modal__title">{{ lifecycleStep ? lifecycleActionLabel(lifecycleStep) : '' }}</h2>
+          <p class="od-modal__subtitle">{{ 'orders.cycleProofHint' | t }}</p>
+        </div>
+      </div>
+      <button type="button" class="od-modal__close" (click)="onCloseLifecycleModal()" [attr.aria-label]="'common.close' | t">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+    <div class="od-modal__body od-proof__body">
+      <div class="od-proof__vehicle" *ngIf="lifecycleVehicle">
+        <div class="od-proof__vehicle-thumb" aria-hidden="true">
+          <img *ngIf="lifecycleVehicle.imageUrl" [src]="lifecycleVehicle.imageUrl" [alt]="lifecycleVehicle.vehicleName" />
+          <svg *ngIf="!lifecycleVehicle.imageUrl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 17h8M7 9h10l-1 8H8L7 9zm3-4h4l1 2H9l1-2z"/>
+          </svg>
+        </div>
+        <div class="od-proof__vehicle-meta">
+          <strong>{{ lifecycleVehicle.vehicleName }}</strong>
+          <span>{{ lifecycleVehicle.vehicleCode }}</span>
+        </div>
+        <span class="od-proof__optional">{{ 'orders.cycleProofOptional' | t }}</span>
+      </div>
+
+      <div
+        class="od-proof__drop"
+        [class.od-proof__drop--active]="lifecycleDropActive"
+        [class.od-proof__drop--filled]="!!lifecycleImage"
+        (dragover)="onLifecycleDragOver($event)"
+        (dragleave)="onLifecycleDragLeave($event)"
+        (drop)="onLifecycleDrop($event)"
+      >
+        <input
+          id="lifecycle-proof-file"
+          class="od-proof__input"
+          type="file"
+          accept="image/*"
+          (change)="onLifecycleImageSelected($event)"
+        />
+
+        <ng-container *ngIf="!lifecycleImage; else lifecyclePreview">
+          <label class="od-proof__zone" for="lifecycle-proof-file">
+            <span class="od-proof__zone-icon" aria-hidden="true">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6h.1a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+              </svg>
+            </span>
+            <strong>{{ 'orders.cycleProofDrop' | t }}</strong>
+            <small>{{ 'orders.cycleProofFormats' | t }}</small>
+          </label>
+        </ng-container>
+
+        <ng-template #lifecyclePreview>
+          <div class="od-proof__preview">
+            <img [src]="lifecycleImage" [alt]="lifecycleImageName || ('orders.cycleProofImage' | t)" />
+            <div class="od-proof__preview-bar">
+              <span class="od-proof__file" [title]="lifecycleImageName || ''">{{ lifecycleImageName || ('orders.cycleProofImage' | t) }}</span>
+              <div class="od-proof__preview-actions">
+                <label class="od-proof__text-btn" for="lifecycle-proof-file">{{ 'orders.cycleProofChange' | t }}</label>
+                <button type="button" class="od-proof__text-btn od-proof__text-btn--danger" (click)="clearLifecycleImage()">
+                  {{ 'orders.cycleProofRemove' | t }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+    <footer class="od-modal__footer">
+      <button type="button" class="od__btn od__btn--ghost" (click)="onCloseLifecycleModal()">{{ 'common.cancel' | t }}</button>
+      <button
+        type="button"
+        class="od__btn od__btn--primary"
+        (click)="onConfirmLifecycle()"
+        [disabled]="!!actionLoading"
+      >
+        {{ actionLoading ? ('orders.processing' | t) : ('orders.cycleProofConfirm' | t) }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<app-confirm-dialog
+  [isVisible]="showVehicleNotReceivedModal"
+  [title]="'orders.cancelVehicle' | t"
+  [message]="'orders.cancelVehicleConfirm' | t"
+  [type]="'danger'"
+  [isLoading]="isActionLoading('vehicleNotReceived')"
+  [confirmText]="'orders.cancelVehicle' | t"
+  [cancelText]="'common.cancel' | t"
+  (confirm)="onConfirmVehicleNotReceived()"
+  (cancel)="onCloseVehicleNotReceived()"
+></app-confirm-dialog>
+
+<app-confirm-dialog
+  [isVisible]="showConfirmOrderDialog"
+  [title]="'orders.confirmOrder' | t"
+  [message]="'orders.confirmConfirmedMessage' | t"
+  [type]="'info'"
+  [isLoading]="isActionLoading('confirm')"
+  [confirmText]="'orders.confirmOrder' | t"
+  [cancelText]="'common.cancel' | t"
+  (confirm)="onSubmitConfirmOrder()"
+  (cancel)="onCancelConfirmOrderDialog()"
+></app-confirm-dialog>
+
+<app-confirm-dialog
+  [isVisible]="showCancelDialog"
+  [title]="'orders.cancelOrder' | t"
+  [message]="'orders.cancelConfirmMessage' | t"
+  [type]="'danger'"
+  [isLoading]="cancelDialogLoading"
+  [confirmText]="'orders.cancelOrder' | t"
+  [cancelText]="'common.cancel' | t"
+  (confirm)="onConfirmCancelOrder()"
+  (cancel)="onCancelCancelDialog()"
+></app-confirm-dialog>
+
+<app-confirm-dialog
+  [isVisible]="showRefundDialog"
+  [title]="'orders.markAsRefunded' | t"
+  [message]="'orders.markRefundedConfirm' | t"
+  [type]="'warning'"
+  [isLoading]="refundDialogLoading"
+  [confirmText]="'orders.markAsRefunded' | t"
+  [cancelText]="'common.cancel' | t"
+  (confirm)="onConfirmMarkMoneyRefunded()"
+  (cancel)="onCancelRefundDialog()"
+></app-confirm-dialog>
+
+<app-confirm-dialog
+  [isVisible]="showRemoveVehicleDialog"
+  [title]="'orders.removeVehicle' | t"
+  [message]="'orders.removeVehicleConfirm' | t"
+  [type]="'danger'"
+  [isLoading]="removeVehicleLoading"
+  [confirmText]="'orders.removeVehicle' | t"
+  [cancelText]="'common.cancel' | t"
+  (confirm)="onConfirmRemoveVehicle()"
+  (cancel)="onCancelRemoveVehicle()"
+></app-confirm-dialog>

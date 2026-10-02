@@ -1,0 +1,14 @@
+﻿<div
+  class="splash"
+  *ngIf="splash.visible()"
+  role="dialog"
+  aria-busy="true"
+  aria-label="Yalla Scoot"
+>
+  <div class="splash__glow splash__glow--red"></div>
+  <div class="splash__glow splash__glow--gold"></div>
+  <div class="splash__track" aria-hidden="true"></div>
+  <img class="splash__logo" src="assets/images/Logo.png" alt="Yalla Scoot" />
+  <div class="splash__bar" aria-hidden="true"></div>
+</div>
+<router-outlet />

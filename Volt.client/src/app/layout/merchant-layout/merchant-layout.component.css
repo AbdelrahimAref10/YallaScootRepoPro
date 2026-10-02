@@ -1,0 +1,4 @@
+/* Merchant shell reuses dashboard-layout styles via styleUrls. */
+:host {
+  display: block;
+}

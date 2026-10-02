@@ -1,0 +1,82 @@
+<div class="login">
+  <div class="login__toolbar">
+    <app-lang-switcher></app-lang-switcher>
+    <app-theme-toggle></app-theme-toggle>
+  </div>
+
+  <section class="login__form-pane">
+    <div class="login__form-wrap">
+      <img
+        class="login__logo"
+        src="assets/images/Logo.png"
+        [attr.alt]="'app.name' | t"
+      />
+
+      <header class="login__intro">
+        <h1>{{ 'login.title' | t }}</h1>
+        <p>{{ 'login.subtitle' | t }}</p>
+      </header>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login__form">
+        <div *ngIf="errorMessage" class="login__error" role="alert">
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <div class="login__field">
+          <label for="userName">{{ 'login.username' | t }}</label>
+          <input
+            type="text"
+            id="userName"
+            formControlName="userName"
+            class="login__input"
+            [class.login__input--invalid]="userName?.invalid && userName?.touched"
+            [placeholder]="'login.usernamePlaceholder' | t"
+            autocomplete="username"
+          />
+          <div *ngIf="userName?.invalid && userName?.touched" class="login__field-error">
+            {{ userNameError }}
+          </div>
+        </div>
+
+        <div class="login__field">
+          <label for="password">{{ 'login.password' | t }}</label>
+          <div class="login__password">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              formControlName="password"
+              class="login__input"
+              [class.login__input--invalid]="password?.invalid && password?.touched"
+              [placeholder]="'login.passwordPlaceholder' | t"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="login__peek"
+              (click)="showPassword = !showPassword"
+              [attr.aria-label]="(showPassword ? 'login.hidePassword' : 'login.showPassword') | t"
+            >
+              {{ (showPassword ? 'login.hidePassword' : 'login.showPassword') | t }}
+            </button>
+          </div>
+          <div *ngIf="password?.invalid && password?.touched" class="login__field-error">
+            {{ passwordError }}
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="login__submit"
+          [disabled]="loginForm.invalid || isLoading"
+        >
+          <span *ngIf="!isLoading">{{ 'login.signIn' | t }}</span>
+          <span *ngIf="isLoading">{{ 'common.loading' | t }}</span>
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <aside class="login__visual" aria-hidden="true">
+    <img src="assets/images/Login.png" alt="" />
+  </aside>
+</div>

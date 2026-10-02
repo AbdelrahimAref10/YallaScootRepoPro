@@ -1,0 +1,306 @@
+/* Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Open multi-select must sit above the next stacked card/section */
+.entity-form__card:has(app-multi-select.ms-host--open),
+.order-form__card:has(app-multi-select.ms-host--open) {
+  position: relative;
+  z-index: 60;
+}
+
+/* â”€â”€ Design tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+:root {
+  --volt-bg: #f4f4f2;
+  --volt-bg-elevated: #ffffff;
+  --volt-surface: #ffffff;
+  --volt-surface-hover: #f3f3f1;
+  --volt-surface-muted: #ecece8;
+  --volt-border: #e6e6e2;
+  --volt-border-strong: #d4d4ce;
+  --volt-text-primary: #141414;
+  --volt-text-secondary: #5a5a56;
+  --volt-text-muted: #8a8a84;
+  --volt-accent: #c4161c;
+  --volt-accent-strong: #a51218;
+  --volt-accent-muted: rgba(196, 22, 28, 0.18);
+  --volt-accent-soft: rgba(196, 22, 28, 0.08);
+  --volt-gold: #d4a017;
+  --volt-gold-strong: #b8890f;
+  --volt-gold-soft: rgba(212, 160, 23, 0.16);
+  --volt-ink: #141414;
+  --volt-sidebar-bg: #ffffff;
+  --volt-sidebar-text: #6a6a66;
+  --volt-sidebar-text-active: #141414;
+  --volt-sidebar-hover: #f7f7f4;
+  --volt-sidebar-active: #f7f7f4;
+  --volt-sidebar-border: #ecece8;
+  --volt-header-bg: #ffffff;
+  --volt-shadow: 0 1px 2px rgba(20, 20, 18, 0.05), 0 8px 20px rgba(20, 20, 18, 0.04);
+  --volt-radius: 0.75rem;
+  --volt-radius-pill: 0.5rem;
+  --volt-font: "Plus Jakarta Sans", Cairo, system-ui, sans-serif;
+}
+
+html.dark {
+  --volt-bg: #0c0c0e;
+  --volt-bg-elevated: #141418;
+  --volt-surface: #18181d;
+  --volt-surface-hover: #222228;
+  --volt-surface-muted: #1c1c22;
+  --volt-border: #2a2a32;
+  --volt-border-strong: #3a3a44;
+  --volt-text-primary: #f4f4f5;
+  --volt-text-secondary: #a1a1aa;
+  --volt-text-muted: #71717a;
+  --volt-accent: #e23a42;
+  --volt-accent-strong: #c4161c;
+  --volt-accent-muted: rgba(226, 58, 66, 0.28);
+  --volt-accent-soft: rgba(226, 58, 66, 0.12);
+  --volt-gold: #d4a017;
+  --volt-gold-strong: #f0c44a;
+  --volt-gold-soft: rgba(212, 160, 23, 0.16);
+  --volt-ink: #f4f4f2;
+  --volt-sidebar-bg: #121212;
+  --volt-sidebar-text: #a3a39c;
+  --volt-sidebar-text-active: #f4f4f2;
+  --volt-sidebar-hover: #1c1c1c;
+  --volt-sidebar-active: #1c1c1c;
+  --volt-sidebar-border: #222228;
+  --volt-header-bg: rgba(16, 16, 20, 0.9);
+  --volt-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), 0 16px 36px rgba(0, 0, 0, 0.32);
+  --volt-radius: 1.15rem;
+  --volt-radius-pill: 999px;
+}
+
+html.locale-ar,
+html[dir="rtl"] {
+  --volt-font: Cairo, "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+/* â”€â”€ Base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--volt-font);
+    background: var(--volt-bg);
+    color: var(--volt-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  *,
+  *::before,
+  *::after {
+    border-color: var(--volt-border);
+  }
+
+  ::selection {
+    background: var(--volt-accent-muted);
+    color: var(--volt-text-primary);
+  }
+}
+
+/* â”€â”€ Shared utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@layer components {
+  .volt-page {
+    @apply flex flex-col gap-6;
+  }
+
+  .volt-page__header {
+    @apply flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between;
+  }
+
+  .volt-page__title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--volt-text-primary);
+    margin: 0;
+  }
+
+  .volt-page__subtitle {
+    margin: 0;
+    color: var(--volt-text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .volt-card {
+    background: var(--volt-surface);
+    border: 1px solid var(--volt-border);
+    border-radius: var(--volt-radius);
+    box-shadow: var(--volt-shadow);
+  }
+
+  .volt-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.05rem;
+    font-size: 0.84rem;
+    font-weight: 650;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    box-shadow: none;
+    background-image: none;
+    transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  }
+
+  .volt-btn--primary {
+    background: var(--volt-ink);
+    color: #fff;
+    border-color: var(--volt-ink);
+  }
+
+  .volt-btn--primary:hover {
+    background: #2a2a2a;
+    border-color: #2a2a2a;
+  }
+
+  .volt-btn--ghost {
+    background: var(--volt-surface);
+    color: var(--volt-text-secondary);
+    border: 1px solid var(--volt-border);
+  }
+
+  .volt-btn--ghost:hover {
+    background: var(--volt-surface-hover);
+    color: var(--volt-text-primary);
+  }
+}
+
+button,
+.btn,
+[class*="__btn"],
+[class*="-btn"] {
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+.btn--primary,
+.volt-btn--primary,
+.entity-form__btn--primary,
+.rp__btn--primary,
+.od__btn--primary,
+.profile-btn--primary,
+.merchants__btn--primary,
+.deliveries__btn--primary,
+.journals__btn--primary,
+.roles-modal__btn--primary,
+.mod__btn--primary {
+  background: var(--volt-ink) !important;
+  color: #fff !important;
+  border: 1px solid var(--volt-ink) !important;
+}
+
+.btn--primary:hover:not(:disabled),
+.volt-btn--primary:hover:not(:disabled),
+.entity-form__btn--primary:hover:not(:disabled),
+.rp__btn--primary:hover:not(:disabled),
+.od__btn--primary:hover:not(:disabled),
+.profile-btn--primary:hover:not(:disabled),
+.merchants__btn--primary:hover:not(:disabled),
+.deliveries__btn--primary:hover:not(:disabled),
+.journals__btn--primary:hover:not(:disabled),
+.roles-modal__btn--primary:hover:not(:disabled),
+.mod__btn--primary:hover:not(:disabled) {
+  background: #2a2a2a !important;
+  border-color: #2a2a2a !important;
+  transform: none !important;
+}
+
+html.dark .btn--primary,
+html.dark .volt-btn--primary,
+html.dark .entity-form__btn--primary,
+html.dark .rp__btn--primary,
+html.dark .od__btn--primary,
+html.dark .profile-btn--primary,
+html.dark .merchants__btn--primary,
+html.dark .deliveries__btn--primary,
+html.dark .journals__btn--primary,
+html.dark .roles-modal__btn--primary,
+html.dark .mod__btn--primary {
+  background: #f4f4f2 !important;
+  color: #141414 !important;
+  border-color: #f4f4f2 !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInDown {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+.animate-slide-in-right { animation: slideInRight 0.3s ease-out; }
+.animate-slide-in-down { animation: slideInDown 0.3s ease-out; }
+.animate-scale-in { animation: scaleIn 0.2s ease-out; }
+
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stagger-item {
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.stagger-item:nth-child(5) { animation-delay: 0.25s; }
+.stagger-item:nth-child(6) { animation-delay: 0.3s; }
+.stagger-item:nth-child(7) { animation-delay: 0.35s; }
+.stagger-item:nth-child(8) { animation-delay: 0.4s; }
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Admin mobile/tablet drawer: lock page scroll while open */
+body.dashboard-mobile-nav-open {
+  overflow: hidden;
+}

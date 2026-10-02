@@ -1,0 +1,255 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.login {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  display: grid;
+  grid-template-columns: 35% 65%;
+  background: #fff;
+  color: #111;
+}
+
+.login__toolbar {
+  position: absolute;
+  top: 1rem;
+  inset-inline-end: 1rem;
+  z-index: 3;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.login__form-pane {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4.25rem 1.5rem 1.75rem;
+  background: #fff;
+  min-height: 0;
+}
+
+.login__form-wrap {
+  width: min(22.5rem, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.login__logo {
+  display: block;
+  width: min(13.5rem, 78%);
+  height: auto;
+  margin: 0 auto 1.15rem;
+  object-fit: contain;
+}
+
+.login__intro {
+  margin-bottom: 1.25rem;
+  text-align: start;
+}
+
+.login__intro h1 {
+  margin: 0 0 0.3rem;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: #111;
+}
+
+.login__intro p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+.login__form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.login__error {
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.55rem;
+  background: rgba(227, 6, 19, 0.08);
+  border: 1px solid rgba(227, 6, 19, 0.2);
+  color: #c00;
+  font-size: 0.85rem;
+}
+
+.login__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.login__field label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.login__input {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 0.95rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.55rem;
+  background: #f7f8fa;
+  color: #111;
+  font: inherit;
+  font-size: 0.92rem;
+  box-sizing: border-box;
+}
+
+.login__input::placeholder {
+  color: #9ca3af;
+}
+
+.login__input:focus {
+  outline: none;
+  border-color: #e30613;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.12);
+}
+
+.login__input--invalid {
+  border-color: #ef4444;
+  background: #fff7f7;
+}
+
+.login__password {
+  position: relative;
+}
+
+.login__password .login__input {
+  padding-inline-end: 4.4rem;
+}
+
+.login__peek {
+  position: absolute;
+  inset-inline-end: 0.45rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #6b7280;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.25rem 0.35rem;
+}
+
+.login__peek:hover {
+  color: #111;
+}
+
+.login__field-error {
+  font-size: 0.78rem;
+  color: #dc2626;
+}
+
+.login__submit {
+  margin-top: 0.35rem;
+  width: 100%;
+  height: 2.9rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: #e30613;
+  color: #fff;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login__submit:hover:not(:disabled) {
+  background: #c80511;
+}
+
+.login__submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.login__visual {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #111;
+  align-self: stretch;
+}
+
+.login__visual img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+:host-context(html.dark) .login,
+:host-context(html.dark) .login__form-pane,
+:host-context(html.dark) .login__visual {
+  background: #111418;
+  color: #f3f4f6;
+}
+
+:host-context(html.dark) .login__intro h1 {
+  color: #fff;
+}
+
+:host-context(html.dark) .login__intro p,
+:host-context(html.dark) .login__peek {
+  color: #9ca3af;
+}
+
+:host-context(html.dark) .login__field label {
+  color: #d1d5db;
+}
+
+:host-context(html.dark) .login__input {
+  background: #1c2128;
+  border-color: #2a313a;
+  color: #f9fafb;
+}
+
+:host-context(html.dark) .login__input:focus {
+  background: #12151a;
+}
+
+:host-context(html.dark) .login__peek:hover {
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .login {
+    height: auto;
+    min-height: 100vh;
+    grid-template-columns: 1fr;
+    grid-template-rows: min(42vh, 20rem) 1fr;
+  }
+
+  .login__visual {
+    order: -1;
+    min-height: min(42vh, 20rem);
+    height: min(42vh, 20rem);
+  }
+
+  .login__form-pane {
+    align-items: flex-start;
+    padding: 1.35rem 1.15rem 1.75rem;
+  }
+}

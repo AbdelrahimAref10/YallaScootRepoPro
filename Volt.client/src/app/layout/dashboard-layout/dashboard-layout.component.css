@@ -1,0 +1,86 @@
+:host {
+  display: block;
+}
+
+.dashboard-layout {
+  min-height: 100vh;
+  display: flex;
+  background: var(--volt-bg);
+}
+
+.dashboard-layout__sidebar {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 40;
+}
+
+.dashboard-layout__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(16, 10, 12, 0.48);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: dashboardBackdropIn 0.22s ease;
+}
+
+.dashboard-layout__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-inline-start: 15.75rem;
+  transition: margin-inline-start 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dashboard-layout__main--sidebar-closed {
+  margin-inline-start: 4.85rem;
+}
+
+.dashboard-layout__header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.dashboard-layout__content {
+  flex: 1;
+  padding: 1.65rem 1.85rem 2.1rem;
+  overflow: auto;
+  animation: fadeIn 0.35s ease;
+  background: var(--volt-bg);
+}
+
+/* Tablet + mobile: no reserved rail — sidebar is an overlay drawer */
+@media (max-width: 1024px) {
+  .dashboard-layout__sidebar {
+    z-index: 60;
+  }
+
+  .dashboard-layout__main,
+  .dashboard-layout__main--sidebar-closed {
+    margin-inline-start: 0;
+  }
+
+  .dashboard-layout__content {
+    padding: 1.1rem 1rem 1.4rem;
+  }
+}
+
+@keyframes dashboardBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+:host ::ng-deep router-outlet + * {
+  animation: fadeIn 0.28s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-layout__content,
+  .dashboard-layout__backdrop,
+  :host ::ng-deep router-outlet + * {
+    animation: none;
+  }
+}
