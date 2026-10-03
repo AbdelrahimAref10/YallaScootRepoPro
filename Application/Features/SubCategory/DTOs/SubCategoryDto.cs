@@ -13,6 +13,8 @@ namespace Application.Features.SubCategory.DTOs
         public int CityId { get; set; }
         public string CityName { get; set; } = string.Empty;
         public int VehicleCount { get; set; }
+        /// <summary>Customer lists: lowest daily price among the subcategory's vehicles ("from" price).</summary>
+        public decimal? Price { get; set; }
     }
 
     public class SubCategoryLookupDto

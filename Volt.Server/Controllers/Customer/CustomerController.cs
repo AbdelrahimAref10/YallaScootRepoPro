@@ -32,7 +32,9 @@ namespace Volt.Server.Controllers.Customer
             _mediator = mediator;
         }
 
+        /// <summary>Anonymous: sign-up picks the city (then its zones) before the customer has a token.</summary>
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(List<CityLookupDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
         [Route("GetActiveCities")]
