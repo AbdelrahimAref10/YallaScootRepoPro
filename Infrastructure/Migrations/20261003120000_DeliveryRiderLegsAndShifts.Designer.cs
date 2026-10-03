@@ -551,6 +551,12 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(5)")
                         .HasColumnName("PreferredLanguage");
 
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
                     b.Property<bool>("IsInvitationCodeUsed")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")

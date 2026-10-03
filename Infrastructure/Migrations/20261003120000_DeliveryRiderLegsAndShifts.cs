@@ -73,6 +73,14 @@ namespace Infrastructure.Migrations
                 maxLength: 5,
                 nullable: true);
 
+            // ── Customer: self-service account deletion (row kept, personal data scrubbed) ──
+            migrationBuilder.AddColumn<bool>(
+                name: "IsDeleted",
+                table: "VO_Customer",
+                type: "bit",
+                nullable: false,
+                defaultValue: false);
+
             // ── DeliveryMenOrder: leg ──
             migrationBuilder.DropIndex(
                 name: "IX_VO_DeliveryMenOrder_Order_Vehicle",
@@ -398,6 +406,7 @@ WHERE p.Leg = 1
             migrationBuilder.DropColumn(name: "IosDevice", table: "VO_Delivery");
             migrationBuilder.DropColumn(name: "CashDebtLimit", table: "VO_Delivery");
             migrationBuilder.DropColumn(name: "PreferredLanguage", table: "VO_Customer");
+            migrationBuilder.DropColumn(name: "IsDeleted", table: "VO_Customer");
 
             migrationBuilder.DropColumn(name: "DeliveryLegCommissionPercent", table: "VO_City");
             migrationBuilder.DropColumn(name: "ReturnLegCommissionPercent", table: "VO_City");

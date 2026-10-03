@@ -79,7 +79,7 @@ namespace Application.Features.Order.Command.CreateOrderCommand
             var customer = await _context.Customers
                 .FirstOrDefaultAsync(c => c.UserId == _userSession.UserId, cancellationToken);
 
-            if (customer == null)
+            if (customer == null || customer.IsDeleted)
             {
                 return Result.Failure<OrderDto>("Customer not found");
             }

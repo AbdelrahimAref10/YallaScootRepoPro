@@ -92,6 +92,11 @@ namespace Infrastructure.MappingConfiguration
                 .HasColumnName("PreferredLanguage")
                 .HasMaxLength(5);
 
+            builder.Property(c => c.IsDeleted)
+                .HasColumnName("IsDeleted")
+                .HasDefaultValue(false)
+                .IsRequired();
+
             builder.Property(c => c.CityId)
                 .HasColumnName("CityId")
                 .IsRequired();
