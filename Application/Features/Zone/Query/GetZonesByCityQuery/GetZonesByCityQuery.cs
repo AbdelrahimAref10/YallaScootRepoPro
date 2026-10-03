@@ -68,10 +68,17 @@ namespace Application.Features.Zone.Query.GetZonesByCityQuery
             if (request.Latitude is double lat && request.Longitude is double lng
                 && lat is >= -90 and <= 90 && lng is >= -180 and <= 180)
             {
+                // A zone saved without coordinates (0, 0) has no real distance: null, listed last.
                 foreach (var zone in zones)
-                    zone.DistanceKm = Math.Round(global::Domain.Models.Zone.DistanceKm(lat, lng, zone.Latitude, zone.Longitude), 2);
+                    zone.DistanceKm = zone.Latitude == 0 && zone.Longitude == 0
+                        ? null
+                        : Math.Round(global::Domain.Models.Zone.DistanceKm(lat, lng, zone.Latitude, zone.Longitude), 2);
 
-                zones = zones.OrderBy(z => z.DistanceKm).ThenBy(z => z.Name).ToList();
+                zones = zones
+                    .OrderBy(z => z.DistanceKm == null)
+                    .ThenBy(z => z.DistanceKm)
+                    .ThenBy(z => z.Name)
+                    .ToList();
             }
 
             return Result.Success(zones);

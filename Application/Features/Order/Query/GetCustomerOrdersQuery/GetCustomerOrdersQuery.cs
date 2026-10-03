@@ -49,11 +49,15 @@ namespace Application.Features.Order.Query.GetCustomerOrdersQuery
                 .OrderByDescending(o => o.CreatedDate)
                 .AsQueryable();
 
+            // Same clamping as the rider lists: a 0/negative page would make Skip negative and throw.
+            var pageNumber = Math.Max(1, request.PageNumber);
+            var pageSize = Math.Clamp(request.PageSize, 1, 100);
+
             var totalCount = await query.CountAsync(cancellationToken);
 
             var orders = await Project(query
-                    .Skip((request.PageNumber - 1) * request.PageSize)
-                    .Take(request.PageSize))
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize))
                 .ToListAsync(cancellationToken);
 
             await AttachDetailsAsync(orders, cancellationToken);
@@ -62,8 +66,8 @@ namespace Application.Features.Order.Query.GetCustomerOrdersQuery
             {
                 Items = orders,
                 TotalCount = totalCount,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize
+                PageNumber = pageNumber,
+                PageSize = pageSize
             };
 
             return Result.Success(result);
