@@ -67,6 +67,22 @@ namespace Volt.Server
 
             // JWT Authentication
             app.UseAuthentication();
+
+            // Admin controllers only use [Authorize]; rider-app tokens must not reach them.
+            app.Use(async (context, next) =>
+            {
+                var user = context.User;
+                if (context.Request.Path.StartsWithSegments("/api/admin")
+                    && user.Identity?.IsAuthenticated == true
+                    && user.IsInRole(Domain.Enums.AppRoleNames.Delivery)
+                    && !user.IsInRole(Domain.Enums.AppRoleNames.SuperAdmin))
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return;
+                }
+                await next();
+            });
+
             app.UseAuthorization();
             app.MapControllers();
 

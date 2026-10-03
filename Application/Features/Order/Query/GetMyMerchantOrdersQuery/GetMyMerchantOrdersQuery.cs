@@ -81,7 +81,7 @@ namespace Application.Features.Order.Query.GetMyMerchantOrdersQuery
             {
                 var awaitingOrderIds = await _context.DeliveryMenOrders
                     .AsNoTracking()
-                    .Where(d => !d.DeliveryReceivedFromMerchant)
+                    .Where(d => !d.DeliveryReceivedFromMerchant && d.Leg == DeliveryLeg.Delivery)
                     .Join(
                         _context.MerchantOrderPaymentDetails.AsNoTracking()
                             .Where(p => p.MerchantId == merchant.MerchantId),
@@ -151,7 +151,7 @@ namespace Application.Features.Order.Query.GetMyMerchantOrdersQuery
 
             var pendingHandovers = await _context.DeliveryMenOrders
                 .AsNoTracking()
-                .Where(d => pageOrderIds.Contains(d.OrderId) && !d.DeliveryReceivedFromMerchant)
+                .Where(d => pageOrderIds.Contains(d.OrderId) && !d.DeliveryReceivedFromMerchant && d.Leg == DeliveryLeg.Delivery)
                 .Join(
                     _context.MerchantOrderPaymentDetails.AsNoTracking()
                         .Where(p => p.MerchantId == merchant.MerchantId),

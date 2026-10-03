@@ -273,3 +273,14 @@
     justify-content: center;
   }
 }
+
+.city-form__commission-total {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--volt-text-secondary);
+}
+
+.city-form__commission-total--over {
+  color: #dc2626;
+}

@@ -14,6 +14,12 @@ namespace Domain.Models
         public decimal? CancellationFees { get; private set; }
         public int? ZoneGroupId { get; private set; }
 
+        /// <summary>Rider commission for the delivery leg, as a percent of the vehicle delivery fee.</summary>
+        public decimal DeliveryLegCommissionPercent { get; private set; } = 50m;
+
+        /// <summary>Rider commission for the return leg, as a percent of the vehicle delivery fee.</summary>
+        public decimal ReturnLegCommissionPercent { get; private set; } = 50m;
+
         public ZoneGroup? ZoneGroup { get; private set; }
         public ICollection<Customer> Customers { get; private set; } = new List<Customer>();
         public ICollection<TieredDiscount> TieredDiscounts { get; private set; } = new List<TieredDiscount>();
@@ -117,6 +123,27 @@ namespace Domain.Models
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }
+
+        public void UpdateDeliveryCommission(
+            decimal deliveryLegPercent,
+            decimal returnLegPercent,
+            string? modifiedBy = null)
+        {
+            if (deliveryLegPercent < 0 || deliveryLegPercent > 100)
+                throw new ArgumentException("Delivery leg commission must be between 0 and 100 (percentage)", nameof(deliveryLegPercent));
+            if (returnLegPercent < 0 || returnLegPercent > 100)
+                throw new ArgumentException("Return leg commission must be between 0 and 100 (percentage)", nameof(returnLegPercent));
+            if (deliveryLegPercent + returnLegPercent > 100)
+                throw new ArgumentException("Delivery and return commissions together cannot exceed 100% of the delivery fee", nameof(returnLegPercent));
+
+            DeliveryLegCommissionPercent = deliveryLegPercent;
+            ReturnLegCommissionPercent = returnLegPercent;
+            LastModifiedBy = modifiedBy;
+            LastModifiedDate = DateTime.UtcNow;
+        }
+
+        public decimal CommissionPercentFor(Domain.Enums.DeliveryLeg leg) =>
+            leg == Domain.Enums.DeliveryLeg.Delivery ? DeliveryLegCommissionPercent : ReturnLegCommissionPercent;
 
         public decimal CalculateTieredDiscount(int reservationDays)
         {

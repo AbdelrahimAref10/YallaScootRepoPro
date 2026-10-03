@@ -708,34 +708,9 @@ namespace Domain.Models
             var wasFirst = !OrderVehicles.Any(v => v.ReceivedFromOwner);
             ov.MarkReceivedFromOwner(imageUrl, modifiedBy);
 
+            // Riders never pay merchants and never hold a cash float: the merchant's rental is
+            // accrued on customer delivery and settled by the company (PayMerchant), cash-on-receive or not.
             var lines = new List<OrderLedgerLine>();
-            if (snapshot.MerchantCashOnReceive && snapshot.VehicleRental > 0)
-            {
-                if (snapshot.DeliveryId <= 0)
-                    throw new InvalidOperationException("Delivery ID is required to credit cash on receive paid by delivery.");
-
-                lines.Add(new OrderLedgerLine(
-                    OrderId,
-                    snapshot.VehicleId,
-                    LedgerPartyType.Merchant,
-                    snapshot.MerchantId,
-                    JournalDirection.Debit,
-                    snapshot.VehicleRental,
-                    OrderJournalEntryKind.MerchantPaidByDeliveryCashOnReceive,
-                    $"order:{OrderId}:vehicle:{snapshot.VehicleId}:cash-on-receive",
-                    note: "Cash on receive — merchant debit vehicle rental"));
-
-                lines.Add(new OrderLedgerLine(
-                    OrderId,
-                    snapshot.VehicleId,
-                    LedgerPartyType.Delivery,
-                    snapshot.DeliveryId,
-                    JournalDirection.Credit,
-                    snapshot.VehicleRental,
-                    OrderJournalEntryKind.DeliveryCashAdvanceToMerchant,
-                    $"order:{OrderId}:vehicle:{snapshot.VehicleId}:cash-on-receive-delivery",
-                    note: "Cash on receive — delivery credit for cash paid to merchant"));
-            }
 
             if (wasFirst && OrderState == OrderState.DeliveryAssigned)
                 MarkOnWay(modifiedBy);
@@ -790,10 +765,37 @@ namespace Domain.Models
             Touch(modifiedBy);
         }
 
-        public void MarkVehicleDeliveredToOwner(int vehicleId, string? imageUrl, string? modifiedBy = null)
+        /// <param name="returnDeliveryId">Rider holding the return leg of this vehicle (null when unassigned).</param>
+        /// <param name="returnFeeShare">That rider's return-leg commission, credited now.</param>
+        public void MarkVehicleDeliveredToOwner(
+            int vehicleId,
+            string? imageUrl,
+            string? modifiedBy = null,
+            int? returnDeliveryId = null,
+            decimal returnFeeShare = 0m)
         {
             var ov = RequireOrderVehicle(vehicleId);
             ov.MarkDeliveredToOwner(imageUrl, modifiedBy);
+
+            if (returnDeliveryId is > 0 && returnFeeShare > 0)
+            {
+                RaiseDomainEvent(new OrderLedgerPostsRequested(
+                    OrderId,
+                    new List<OrderLedgerLine>
+                    {
+                        new OrderLedgerLine(
+                            OrderId,
+                            vehicleId,
+                            LedgerPartyType.Delivery,
+                            returnDeliveryId.Value,
+                            JournalDirection.Credit,
+                            returnFeeShare,
+                            OrderJournalEntryKind.DeliveryFeeAccrued,
+                            $"order:{OrderId}:vehicle:{vehicleId}:delivery-fee:return",
+                            note: "Delivery fee credit for the return leg on return to owner")
+                    },
+                    modifiedBy));
+            }
 
             if (ActiveOrderVehicles.Any()
                 && ActiveOrderVehicles.All(v => v.DeliveredToOwner)

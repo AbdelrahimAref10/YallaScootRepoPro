@@ -50,6 +50,7 @@
             <th>{{ 'common.phone' | t }}</th>
             <th>{{ 'common.email' | t }}</th>
             <th>{{ 'common.status' | t }}</th>
+            <th>{{ 'riders.availability' | t }}</th>
             <th>{{ 'deliveries.deleted' | t }}</th>
             <th>{{ 'common.createdDate' | t }}</th>
             <th>{{ 'common.actions' | t }}</th>
@@ -57,7 +58,7 @@
         </thead>
         <tbody>
           <tr *ngIf="deliveries.length === 0">
-            <td colspan="9" class="deliveries__empty">{{ 'deliveries.empty' | t }}</td>
+            <td colspan="10" class="deliveries__empty">{{ 'deliveries.empty' | t }}</td>
           </tr>
           <tr *ngFor="let d of deliveries">
             <td>{{ d.fullName }}</td>
@@ -73,6 +74,16 @@
               >
                 {{ statusLabel(d.isActive) }}
               </span>
+            </td>
+            <td>
+              <span *ngIf="availability.get(d.deliveryId) as a; else noAvailability" class="deliveries__presence">
+                <span class="deliveries__presence-dot" [ngClass]="'deliveries__presence-dot--' + availabilityTone(d.deliveryId)" aria-hidden="true"></span>
+                <span>
+                  {{ availabilityKey(d.deliveryId) | t }}
+                  <small *ngIf="a.currentShiftName">{{ a.currentShiftName }}</small>
+                </span>
+              </span>
+              <ng-template #noAvailability>—</ng-template>
             </td>
             <td>{{ d.isDeleted ? ('common.yes' | t) : ('common.no' | t) }}</td>
             <td>{{ d.createdDate | date:'yyyy-MM-dd' }}</td>

@@ -191,3 +191,30 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.deliveries__presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+  text-align: start;
+}
+
+.deliveries__presence small {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 550;
+  color: var(--volt-text-muted);
+}
+
+.deliveries__presence-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.deliveries__presence-dot--ok { background: #16a34a; }
+.deliveries__presence-dot--warn { background: #f59e0b; }
+.deliveries__presence-dot--off { background: var(--volt-text-muted); opacity: 0.55; }

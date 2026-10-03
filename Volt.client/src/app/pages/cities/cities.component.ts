@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CityClient, CityDto, PagedResultOfCityDto } from '../../core/services/clientAPI';
 import { LocaleService } from '../../core/services/locale.service';
+import { CityCommission, RiderDispatchService } from '../../core/services/rider-dispatch.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import {
@@ -29,8 +30,11 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 })
 export class CitiesComponent implements OnInit {
   private readonly localeService = inject(LocaleService);
+  private readonly dispatchService = inject(RiderDispatchService);
 
   cities: CityDto[] = [];
+  /** Rider leg commission per city (not in the generated CityDto yet). */
+  commissions = new Map<number, CityCommission>();
   currentPage = 1;
   pageSize = 10;
   totalCount = 0;
@@ -77,13 +81,14 @@ export class CitiesComponent implements OnInit {
     this.errorMessage = '';
 
     const isActive = this.toNullableBool(this.selectedStatusValues);
-    this.cityClient.getAll(
+    this.dispatchService.getCities(
       this.currentPage,
       this.pageSize,
       this.searchTerm.trim() || undefined,
       isActive
     ).subscribe({
-      next: (result: PagedResultOfCityDto) => {
+      next: ({ page: result, commissions }: { page: PagedResultOfCityDto; commissions: Map<number, CityCommission> }) => {
+        this.commissions = commissions;
         this.cities = result.items || [];
         this.totalCount = result.totalCount || 0;
         this.totalPages = result.totalPages || 0;

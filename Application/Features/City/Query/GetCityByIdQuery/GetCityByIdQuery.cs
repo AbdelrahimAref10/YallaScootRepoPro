@@ -51,6 +51,8 @@ namespace Application.Features.City.Query.GetCityByIdQuery
                 UrgentDelivery = city.UrgentDelivery,
                 ServiceFees = city.ServiceFees,
                 CancellationFees = city.CancellationFees,
+                DeliveryLegCommissionPercent = city.DeliveryLegCommissionPercent,
+                ReturnLegCommissionPercent = city.ReturnLegCommissionPercent,
                 TieredDiscounts = city.TieredDiscounts.Select(td => new DTOs.TieredDiscountDto
                 {
                     Id = td.Id,

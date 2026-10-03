@@ -52,7 +52,7 @@ namespace Application.Features.Order.Query.GetMyMerchantDashboardQuery
 
             var awaitingHandover = await _context.DeliveryMenOrders
                 .AsNoTracking()
-                .Where(d => !d.DeliveryReceivedFromMerchant)
+                .Where(d => !d.DeliveryReceivedFromMerchant && d.Leg == DeliveryLeg.Delivery)
                 .Join(
                     _context.MerchantOrderPaymentDetails.AsNoTracking()
                         .Where(p => p.MerchantId == merchant.MerchantId),

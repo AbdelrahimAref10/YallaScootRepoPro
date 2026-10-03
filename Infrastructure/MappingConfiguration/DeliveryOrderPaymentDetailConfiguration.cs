@@ -1,3 +1,4 @@
+using Domain.Enums;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -21,15 +22,17 @@ namespace Infrastructure.MappingConfiguration
             builder.Property(x => x.DeliveryId).HasColumnName("DeliveryId").IsRequired();
             builder.Property(x => x.VehicleId).HasColumnName("VehicleId").IsRequired();
             builder.Property(x => x.DeliveryFeeShare).HasColumnName("DeliveryFeeShare").HasColumnType("decimal(18,2)").IsRequired();
+            builder.Property(x => x.Leg).HasColumnName("Leg").HasDefaultValue(DeliveryLeg.Delivery).IsRequired();
+            builder.Property(x => x.CommissionPercent).HasColumnName("CommissionPercent").HasColumnType("decimal(5,2)").IsRequired();
 
             builder.Property(x => x.CreatedBy).HasColumnName("CreatedBy").HasMaxLength(256);
             builder.Property(x => x.CreatedDate).HasColumnName("CreatedDate").IsRequired();
             builder.Property(x => x.LastModifiedBy).HasColumnName("LastModifiedBy").HasMaxLength(256);
             builder.Property(x => x.LastModifiedDate).HasColumnName("LastModifiedDate").IsRequired();
 
-            builder.HasIndex(x => new { x.OrderId, x.VehicleId })
+            builder.HasIndex(x => new { x.OrderId, x.VehicleId, x.Leg })
                 .IsUnique()
-                .HasDatabaseName("IX_VO_DeliveryOrderPaymentDetail_Order_Vehicle");
+                .HasDatabaseName("IX_VO_DeliveryOrderPaymentDetail_Order_Vehicle_Leg");
 
             builder.HasOne(x => x.Order)
                 .WithMany(o => o.DeliveryOrderPaymentDetails)

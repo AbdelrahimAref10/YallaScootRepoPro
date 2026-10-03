@@ -9,5 +9,7 @@ namespace Application.Features.Order.DTOs
         public int VehicleId { get; set; }
         public string VehicleCode { get; set; } = string.Empty;
         public decimal DeliveryFeeShare { get; set; }
+        public Domain.Enums.DeliveryLeg Leg { get; set; } = Domain.Enums.DeliveryLeg.Delivery;
+        public decimal CommissionPercent { get; set; }
     }
 }

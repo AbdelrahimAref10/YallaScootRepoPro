@@ -1,10 +1,22 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CityClient, CityDto, AddCityCommand, UpdateCityCommand, TieredDiscountDto, ZoneGroupLookupDto } from '../../../core/services/clientAPI';
 import { LocaleService } from '../../../core/services/locale.service';
+import {
+  CityCommission,
+  DEFAULT_CITY_COMMISSION,
+  RiderDispatchService
+} from '../../../core/services/rider-dispatch.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+
+/** Rider commission for both trips together cannot exceed the vehicle delivery fee. */
+function commissionSumValidator(group: AbstractControl): ValidationErrors | null {
+  const delivery = Number(group.get('deliveryLegCommissionPercent')?.value ?? 0) || 0;
+  const ret = Number(group.get('returnLegCommissionPercent')?.value ?? 0) || 0;
+  return delivery + ret > 100 ? { commissionOver100: true } : null;
+}
 
 @Component({
   selector: 'app-city-form',
@@ -15,6 +27,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 })
 export class CityFormComponent implements OnInit {
   private readonly localeService = inject(LocaleService);
+  private readonly dispatchService = inject(RiderDispatchService);
 
   cityForm: FormGroup;
   isEditMode = false;
@@ -37,8 +50,10 @@ export class CityFormComponent implements OnInit {
       urgentDelivery: [0, [Validators.min(0)]],
       serviceFees: [0, [Validators.min(0)]],
       cancellationFees: [0, [Validators.min(0), Validators.max(100)]],
+      deliveryLegCommissionPercent: [DEFAULT_CITY_COMMISSION.deliveryLegCommissionPercent, [Validators.required, Validators.min(0), Validators.max(100)]],
+      returnLegCommissionPercent: [DEFAULT_CITY_COMMISSION.returnLegCommissionPercent, [Validators.required, Validators.min(0), Validators.max(100)]],
       tieredDiscounts: this.fb.array([])
-    });
+    }, { validators: commissionSumValidator });
   }
 
   ngOnInit(): void {
@@ -62,6 +77,19 @@ export class CityFormComponent implements OnInit {
         this.cityId = null;
       }
     });
+  }
+
+  get commissionTotal(): number {
+    const delivery = Number(this.cityForm.get('deliveryLegCommissionPercent')?.value ?? 0) || 0;
+    const ret = Number(this.cityForm.get('returnLegCommissionPercent')?.value ?? 0) || 0;
+    return Math.round((delivery + ret) * 100) / 100;
+  }
+
+  private get commissionValue(): CityCommission {
+    return {
+      deliveryLegCommissionPercent: Number(this.cityForm.get('deliveryLegCommissionPercent')?.value ?? 0) || 0,
+      returnLegCommissionPercent: Number(this.cityForm.get('returnLegCommissionPercent')?.value ?? 0) || 0
+    };
   }
 
   get tieredDiscountsFormArray(): FormArray {
@@ -144,9 +172,11 @@ export class CityFormComponent implements OnInit {
     if (!this.cityId) return;
 
     this.isLoading = true;
-    this.cityClient.getById(this.cityId).subscribe({
-      next: (city: CityDto) => {
+    this.dispatchService.getCity(this.cityId).subscribe({
+      next: ({ city, commission }: { city: CityDto; commission: CityCommission }) => {
         this.cityForm.patchValue({
+          deliveryLegCommissionPercent: commission.deliveryLegCommissionPercent,
+          returnLegCommissionPercent: commission.returnLegCommissionPercent,
           name: city.name,
           description: city.description ?? null,
           zoneGroupId: city.zoneGroupId ?? null,
@@ -178,6 +208,19 @@ export class CityFormComponent implements OnInit {
   onSubmit(): void {
     if (this.cityForm.get('name')?.invalid || this.cityForm.get('zoneGroupId')?.invalid) {
       this.cityForm.markAllAsTouched();
+      return;
+    }
+
+    if (
+      this.cityForm.get('deliveryLegCommissionPercent')?.invalid
+      || this.cityForm.get('returnLegCommissionPercent')?.invalid
+      || this.cityForm.hasError('commissionOver100')
+    ) {
+      this.cityForm.get('deliveryLegCommissionPercent')?.markAsTouched();
+      this.cityForm.get('returnLegCommissionPercent')?.markAsTouched();
+      this.errorMessage = this.localeService.translate(
+        this.cityForm.hasError('commissionOver100') ? 'cities.commissionSumTooHigh' : 'cities.commissionRange'
+      );
       return;
     }
 
@@ -239,7 +282,7 @@ export class CityFormComponent implements OnInit {
       command.cancellationFees = formValue.cancellationFees ?? null;
       command.tieredDiscounts = tieredDiscounts.length > 0 ? tieredDiscounts : null;
 
-      this.cityClient.update(command).subscribe({
+      this.dispatchService.updateCity(command, this.commissionValue).subscribe({
         next: () => {
           this.router.navigate(['/main/cities']);
         },
@@ -259,7 +302,7 @@ export class CityFormComponent implements OnInit {
       command.cancellationFees = formValue.cancellationFees ?? null;
       command.tieredDiscounts = tieredDiscounts.length > 0 ? tieredDiscounts : null;
 
-      this.cityClient.add(command).subscribe({
+      this.dispatchService.addCity(command, this.commissionValue).subscribe({
         next: () => {
           this.router.navigate(['/main/cities']);
         },

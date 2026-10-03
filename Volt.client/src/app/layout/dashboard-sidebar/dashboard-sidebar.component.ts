@@ -17,6 +17,7 @@ const ADMIN_MENU_ITEMS: DashboardMenuItem[] = [
   { labelKey: 'nav.customers', route: '/main/customers', icon: 'users' },
   { labelKey: 'nav.merchants', route: '/main/merchants', icon: 'users' },
   { labelKey: 'nav.deliveries', route: '/main/deliveries', icon: 'users' },
+  { labelKey: 'nav.shifts', route: '/main/shifts', icon: 'shifts' },
   { labelKey: 'nav.systemUsers', route: '/main/users', icon: 'system-users' },
   { labelKey: 'nav.roles', route: '/main/roles', icon: 'roles' },
   { labelKey: 'nav.cities', route: '/main/cities', icon: 'cities' },

@@ -145,6 +145,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/deliveries/delivery-form/delivery-form.component').then(m => m.DeliveryFormComponent)
       },
       {
+        path: 'shifts',
+        loadComponent: () => import('./pages/shifts/shifts.component').then(m => m.ShiftsComponent)
+      },
+      {
         path: 'reports',
         loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent)
       },

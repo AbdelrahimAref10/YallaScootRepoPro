@@ -13,6 +13,7 @@ namespace Application
             services.AddScoped<Features.Order.Services.IVehicleReservationQueryService, Features.Order.Services.VehicleReservationQueryService>();
             services.AddScoped<Features.Order.Services.IOrderJournalService, Features.Order.Services.OrderJournalService>();
             services.AddScoped<Features.Order.Services.IOrderRealtimeNotifier, Features.Order.Services.OrderRealtimeNotifier>();
+            services.AddScoped<Features.Delivery.Common.IRiderNotifier, Features.Delivery.Common.RiderNotifier>();
             services.AddScoped<Domain.Common.IDomainEventDispatcher, Common.DomainEvents.DomainEventDispatcher>();
 
             services.AddScoped<Features.Customer.Command.AdminCreateCustomerCommand.AdminCreateCustomerCommandValidator>();

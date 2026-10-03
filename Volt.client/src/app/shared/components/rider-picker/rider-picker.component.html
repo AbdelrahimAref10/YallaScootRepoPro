@@ -1,0 +1,85 @@
+<div
+  class="ms ms--single"
+  [class.ms--open]="open"
+  [class.ms--filled]="value != null"
+  [class.ms--disabled]="disabled"
+>
+  <div
+    class="ms__trigger"
+    role="button"
+    tabindex="0"
+    (click)="toggleOpen($event)"
+    (keydown.enter)="toggleOpen($event)"
+    (keydown.space)="$event.preventDefault(); toggleOpen($event)"
+    [attr.aria-expanded]="open"
+    [attr.aria-disabled]="disabled"
+    aria-haspopup="listbox"
+  >
+    <span class="ms__trigger-text" [class.ms__trigger-text--placeholder]="value == null">
+      <ng-container *ngIf="selected as s; else plainTrigger">
+        <span class="rp__dot" [ngClass]="'rp__dot--' + tone(s.status)" aria-hidden="true"></span>
+        <span class="ms__trigger-label">{{ s.fullName }}</span>
+        <span class="ms__trigger-meta">{{ statusLabel(s.status) }}</span>
+      </ng-container>
+      <ng-template #plainTrigger>
+        <span class="ms__trigger-label">{{ value != null ? (fallbackLabel || '#' + value) : placeholder }}</span>
+      </ng-template>
+    </span>
+    <span class="ms__trigger-actions">
+      <svg class="ms__caret" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6"/>
+      </svg>
+    </span>
+  </div>
+
+  <div *ngIf="open" class="ms__panel rp__panel" role="listbox">
+    <div class="ms__search">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input
+        type="search"
+        class="ms__search-input"
+        [(ngModel)]="query"
+        [placeholder]="'common.search' | t"
+        (click)="$event.stopPropagation()"
+      />
+    </div>
+
+    <div class="ms__options rp__options">
+      <button
+        *ngFor="let c of filtered"
+        type="button"
+        class="ms__option rp__option"
+        role="option"
+        [class.ms__option--selected]="c.deliveryId === value"
+        [attr.aria-selected]="c.deliveryId === value"
+        (click)="pick(c, $event)"
+      >
+        <span class="rp__dot" [ngClass]="'rp__dot--' + tone(c.status)" aria-hidden="true"></span>
+        <span class="rp__body">
+          <span class="rp__name">
+            {{ c.fullName }}
+            <span class="rp__tag" *ngIf="c.deliveryId === currentId">{{ 'riders.current' | t }}</span>
+          </span>
+          <span class="rp__meta">
+            <span [ngClass]="'rp__status--' + tone(c.status)">{{ statusLabel(c.status) }}</span>
+            <span aria-hidden="true">·</span>
+            <span>{{ c.currentShiftName || ('riders.noShiftNow' | t) }}</span>
+            <span aria-hidden="true">·</span>
+            <span>{{ 'riders.openTrips' | t:{ n: c.activeLegsCount } }}</span>
+            <ng-container *ngIf="c.zoneName">
+              <span aria-hidden="true">·</span>
+              <span>{{ c.zoneName }}</span>
+            </ng-container>
+          </span>
+        </span>
+        <span class="rp__mobile">{{ c.mobileNumber }}</span>
+      </button>
+
+      <div *ngIf="filtered.length === 0" class="ms__empty">
+        {{ (candidates.length ? 'common.noResults' : 'riders.noRiders') | t }}
+      </div>
+    </div>
+  </div>
+</div>
