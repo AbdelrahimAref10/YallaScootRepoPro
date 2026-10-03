@@ -54,3 +54,17 @@ same push twice.
 ```
 
 The phone is only shared while that trip is under way: the delivery rider (leg 1) while the order is on the way and the vehicle is not delivered yet; the return rider (leg 2) while the customer has the vehicle and waits for the pickup. The "rider assigned" push carries the name only.
+
+## Cost lines
+
+`GET /api/customer/CustomerOrder/{orderId}` and `MyOrders` items include:
+
+```json
+"priceBreakdown": {
+  "subTotal": 2100, "serviceFees": 100, "deliveryFees": 160, "urgentFees": 0,
+  "discount": 0, "previousDebt": 0, "total": 2360
+}
+```
+
+`total = subTotal + serviceFees + deliveryFees + urgentFees − discount + previousDebt`. It is null only for
+old orders without a totals row.

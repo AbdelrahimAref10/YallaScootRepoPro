@@ -33,6 +33,9 @@ namespace Application.Features.Order.DTOs
 
         /// <summary>Customer endpoints only: riders per vehicle trip, with the phone while that trip is under way.</summary>
         public List<CustomerOrderRiderDto>? Riders { get; set; }
+
+        /// <summary>Customer endpoints only: the cost lines behind OrderTotal.</summary>
+        public OrderPriceBreakdownDto? PriceBreakdown { get; set; }
     }
 }
 

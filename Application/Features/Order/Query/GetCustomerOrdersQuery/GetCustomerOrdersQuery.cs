@@ -56,7 +56,7 @@ namespace Application.Features.Order.Query.GetCustomerOrdersQuery
                     .Take(request.PageSize))
                 .ToListAsync(cancellationToken);
 
-            await AttachRidersAsync(orders, cancellationToken);
+            await AttachDetailsAsync(orders, cancellationToken);
 
             var result = new PagedResult<OrderDto>
             {
@@ -82,7 +82,7 @@ namespace Application.Features.Order.Query.GetCustomerOrdersQuery
             if (order == null)
                 return Result.Failure<OrderDto>("Order not found");
 
-            await AttachRidersAsync(new List<OrderDto> { order }, cancellationToken);
+            await AttachDetailsAsync(new List<OrderDto> { order }, cancellationToken);
             return Result.Success(order);
         }
 
@@ -102,13 +102,40 @@ namespace Application.Features.Order.Query.GetCustomerOrdersQuery
                 : Result.Failure<int>("Customer not found");
         }
 
-        private async Task AttachRidersAsync(List<OrderDto> orders, CancellationToken cancellationToken)
+        /// <summary>Riders per vehicle trip and the cost lines, for the orders on this page.</summary>
+        private async Task AttachDetailsAsync(List<OrderDto> orders, CancellationToken cancellationToken)
         {
-            var riders = await CustomerOrderRiders.LoadAsync(
-                _context, orders.Select(o => o.OrderId).ToList(), cancellationToken);
+            var orderIds = orders.Select(o => o.OrderId).ToList();
+            var riders = await CustomerOrderRiders.LoadAsync(_context, orderIds, cancellationToken);
+
+            var totals = await _context.OrderTotals
+                .AsNoTracking()
+                .Where(t => orderIds.Contains(t.OrderId))
+                .ToDictionaryAsync(t => t.OrderId, cancellationToken);
+
+            var previousDebts = await _context.Orders
+                .AsNoTracking()
+                .Where(o => orderIds.Contains(o.OrderId))
+                .ToDictionaryAsync(o => o.OrderId, o => o.PreviousDebt, cancellationToken);
 
             foreach (var order in orders)
+            {
                 order.Riders = riders.TryGetValue(order.OrderId, out var list) ? list : new List<CustomerOrderRiderDto>();
+
+                if (totals.TryGetValue(order.OrderId, out var t))
+                {
+                    order.PriceBreakdown = new OrderPriceBreakdownDto
+                    {
+                        SubTotal = t.SubTotal,
+                        ServiceFees = t.ServiceFees,
+                        DeliveryFees = t.DeliveryFees,
+                        UrgentFees = t.UrgentFees,
+                        Discount = t.TieredDiscount,
+                        PreviousDebt = previousDebts.TryGetValue(order.OrderId, out var debt) ? debt : 0,
+                        Total = order.OrderTotal
+                    };
+                }
+            }
         }
 
         private static IQueryable<OrderDto> Project(IQueryable<Domain.Models.Order> query) =>
