@@ -57,6 +57,20 @@ namespace Application.Features.Customer.Command.UpdateCustomerProfileCommand
             if (validationResult.IsFailure)
                 return Result.Failure<bool>(validationResult.Error);
 
+            // Check the new password against Identity's validators before anything is changed
+            // (images included), so a rejected password fails the request cleanly.
+            ApplicationUser? passwordUser = null;
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                passwordUser = await _userManager.FindByIdAsync(_userSession.UserId.ToString());
+                if (passwordUser == null)
+                    return Result.Failure<bool>("User account not found");
+
+                var passwordCheck = await Application.Common.PasswordPolicy.ValidateWithIdentityAsync(_userManager, passwordUser, request.Password);
+                if (passwordCheck.IsFailure)
+                    return Result.Failure<bool>($"Failed to update password: {passwordCheck.Error}");
+            }
+
             string? oldPersonalImage = customer.PersonalImage;
             string? oldCommercialRegisterImage = customer.CommercialRegisterImage;
 
@@ -86,25 +100,14 @@ namespace Application.Features.Customer.Command.UpdateCustomerProfileCommand
                 commercialRegisterImageUrl,
                 _userSession.UserId.ToString());
 
-            if (!string.IsNullOrWhiteSpace(request.Password))
+            if (passwordUser != null)
             {
-                var user = await _userManager.FindByIdAsync(_userSession.UserId.ToString());
-                if (user == null)
-                    return Result.Failure<bool>("User account not found");
+                var user = passwordUser;
 
-                var removeResult = await _userManager.RemovePasswordAsync(user);
-                if (!removeResult.Succeeded)
-                {
-                    var errors = string.Join(", ", removeResult.Errors.Select(e => e.Description));
-                    return Result.Failure<bool>($"Failed to update password: {errors}");
-                }
-
-                var addResult = await _userManager.AddPasswordAsync(user, request.Password);
-                if (!addResult.Succeeded)
-                {
-                    var errors = string.Join(", ", addResult.Errors.Select(e => e.Description));
-                    return Result.Failure<bool>($"Failed to update password: {errors}");
-                }
+                // Single validated write: the old password stays valid if this fails.
+                var replaceResult = await Application.Common.PasswordPolicy.ReplacePasswordAsync(_userManager, user, request.Password!);
+                if (replaceResult.IsFailure)
+                    return Result.Failure<bool>($"Failed to update password: {replaceResult.Error}");
 
                 if (!string.IsNullOrWhiteSpace(request.Email))
                 {

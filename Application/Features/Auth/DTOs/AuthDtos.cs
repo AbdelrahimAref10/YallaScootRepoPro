@@ -24,7 +24,6 @@ namespace Application.Features.Auth.DTOs
         public int? CustomerId { get; set; }
         public int? MerchantId { get; set; }
         public int? DeliveryId { get; set; }
-        public string InvitationCode { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
     }
 
