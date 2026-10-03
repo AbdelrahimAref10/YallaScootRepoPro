@@ -79,7 +79,11 @@ namespace Application.Features.Order.Command.RejectOrderCommand
             await CancellationDebtHelper.RevertUnderPaymentFeesToPendingAsync(_context, order.OrderId, cancellationToken);
 
             var orderPayment = order.OrderPayments.FirstOrDefault();
-            if (orderPayment != null && orderPayment.PaymentMethodId == (int)PaymentMethod.PayPal)
+            var isPayPal = orderPayment != null && orderPayment.PaymentMethodId == (int)PaymentMethod.PayPal;
+            // Only a captured (Paid) PayPal payment has money to give back.
+            var payPalCaptured = isPayPal && orderPayment!.State == PaymentState.Paid;
+
+            if (payPalCaptured)
             {
                 var refundableAmount = order.OrderTotal - order.PreviousDebt;
                 if (refundableAmount > 0)
@@ -95,7 +99,12 @@ namespace Application.Features.Order.Command.RejectOrderCommand
                     _context.RefundablePaypalAmounts.Add(refundablePaypal);
                 }
 
-                orderPayment.MarkAsRefunded(_userSession.UserName ?? "System");
+                orderPayment!.MarkAsRefunded(_userSession.UserName ?? "System");
+            }
+            else if (isPayPal && orderPayment!.State == PaymentState.Pending)
+            {
+                // Never captured: close the payment so it cannot be captured on a cancelled order.
+                orderPayment.MarkAsFailed(_userSession.UserName ?? "System");
             }
 
             if (order.OrderState == OrderState.Confirmed
@@ -120,6 +129,10 @@ namespace Application.Features.Order.Command.RejectOrderCommand
 
             // Cash → MoneyRefunded=true; PayPal → false until admin confirms
             order.Cancel(_userSession.UserName ?? "System");
+
+            // Unpaid PayPal: nothing was collected, so nothing is owed back (same as cash).
+            if (isPayPal && !payPalCaptured)
+                order.MarkMoneyRefunded(_userSession.UserName ?? "System");
 
             await _context.SaveChangesAsync(cancellationToken);
 
