@@ -63,6 +63,8 @@ namespace Application.Features.DeliveryApp.Query.GetRiderWalletQuery
                 - Sum(OrderJournalEntryKind.DeliveryCashFloatReturned, JournalDirection.Credit)
                 - Sum(OrderJournalEntryKind.DeliveryCashAdvanceToMerchant, JournalDirection.Credit);
 
+            var cashDebt = collected - remitted + legacyCashOwed;
+
             var credits = sums.Where(s => s.Direction == JournalDirection.Credit).Sum(s => s.Amount);
             var debits = sums.Where(s => s.Direction == JournalDirection.Debit).Sum(s => s.Amount);
 
@@ -70,7 +72,9 @@ namespace Application.Features.DeliveryApp.Query.GetRiderWalletQuery
             {
                 CashCollected = collected,
                 CashRemitted = remitted,
-                CashDebt = collected - remitted + legacyCashOwed,
+                CashDebt = cashDebt,
+                CashDebtLimit = rider.Value.CashDebtLimit,
+                IsOverCashDebtLimit = RiderCashDebt.IsOverLimit(cashDebt, rider.Value.CashDebtLimit),
                 CommissionEarned = earned,
                 CommissionPaid = paid,
                 Deductions = clawbacks,

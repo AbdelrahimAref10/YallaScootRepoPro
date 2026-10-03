@@ -188,6 +188,10 @@ namespace Application.Features.DeliveryApp.DTOs
 
         /// <summary>Cash the rider still owes the company (collected − remitted).</summary>
         public decimal CashDebt { get; set; }
+
+        /// <summary>Set by the admin; null = no limit. At or above it no new cash orders until he remits.</summary>
+        public decimal? CashDebtLimit { get; set; }
+        public bool IsOverCashDebtLimit { get; set; }
         public decimal CommissionEarned { get; set; }
         public decimal CommissionPaid { get; set; }
 

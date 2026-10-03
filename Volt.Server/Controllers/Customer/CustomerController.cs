@@ -130,7 +130,9 @@ namespace Volt.Server.Controllers.Customer
             var command = new SaveFireBaseTokensForCustomerCommand
             {
                 AndroidDevice = request.AndriodDevice,
-                IosDevice = request.IosDevice
+                IosDevice = request.IosDevice,
+                Language = request.Language,
+                FallbackLanguage = Request.Headers.AcceptLanguage.ToString()
             };
 
             var result = await _mediator.Send(command);

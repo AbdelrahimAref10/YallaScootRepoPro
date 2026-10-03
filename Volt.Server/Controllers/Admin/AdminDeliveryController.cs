@@ -1,6 +1,7 @@
 using Application.Features.Delivery.Command.AdminCreateDeliveryCommand;
 using Application.Features.Delivery.Command.AdminSoftDeleteDeliveryCommand;
 using Application.Features.Delivery.Command.AdminUpdateDeliveryCommand;
+using Application.Features.Delivery.Command.SetDeliveryCashDebtLimitCommand;
 using Application.Features.Delivery.DTOs;
 using Application.Features.Delivery.Query.GetActiveDeliveriesLookupQuery;
 using Application.Features.Delivery.Query.GetAllDeliveriesQuery;
@@ -89,6 +90,19 @@ namespace Volt.Server.Controllers.Admin
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Update(int deliveryId, [FromBody] AdminUpdateDeliveryCommand command)
+        {
+            command.DeliveryId = deliveryId;
+            var result = await _mediator.Send(command);
+            if (result.IsFailure)
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            return Ok(result.Value);
+        }
+
+        /// <summary>Max collected cash the rider may hold before he must remit. Null removes the limit.</summary>
+        [HttpPut("{deliveryId:int}/CashDebtLimit")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> SetCashDebtLimit(int deliveryId, [FromBody] SetDeliveryCashDebtLimitCommand command)
         {
             command.DeliveryId = deliveryId;
             var result = await _mediator.Send(command);

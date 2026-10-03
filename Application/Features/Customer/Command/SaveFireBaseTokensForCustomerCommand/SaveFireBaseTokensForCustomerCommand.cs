@@ -13,6 +13,10 @@ namespace Application.Features.Customer.Command.SaveFireBaseTokensForCustomerCom
     {
         public string? AndroidDevice { get; set; }
         public string? IosDevice { get; set; }
+        /// <summary>"ar" or "en"; customer pushes are sent in this language.</summary>
+        public string? Language { get; set; }
+        /// <summary>Accept-Language header; only used while the customer has no saved language.</summary>
+        public string? FallbackLanguage { get; set; }
 
         private class SaveFireBaseTokensForCustomerCommandHandler : IRequestHandler<SaveFireBaseTokensForCustomerCommand, Result>
         {
@@ -44,6 +48,10 @@ namespace Application.Features.Customer.Command.SaveFireBaseTokensForCustomerCom
                 }
 
                 customer.AddFireBaseDevices(request.AndroidDevice, request.IosDevice, _userSession.UserName ?? "System");
+                if (!string.IsNullOrWhiteSpace(request.Language))
+                    customer.SetPreferredLanguage(request.Language, _userSession.UserName ?? "System");
+                else if (customer.PreferredLanguage == null)
+                    customer.SetPreferredLanguage(request.FallbackLanguage, _userSession.UserName ?? "System");
 
                 var saveResult = await _context.SaveChangesAsyncWithResult(cancellationToken);
                 return (Result)saveResult;

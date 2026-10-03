@@ -320,14 +320,16 @@ namespace Application.Features.Order.Command.AdminUpdateOrderCommand
 
                 var notificationBody = new NotificationBodyForMultipleDevices
                 {
-                    Title = "طلبك اتعدّل",
-                    Body = $"اتعملت تعديلات على طلبك #{order.OrderCode}.",
+                    Title = customerWithTokens.PreferredLanguage == "en" ? "Order updated" : "طلبك اتعدّل",
+                    Body = customerWithTokens.PreferredLanguage == "en"
+                        ? $"Your order #{order.OrderCode} was updated."
+                        : $"اتعملت تعديلات على طلبك #{order.OrderCode}.",
                     FireBaseTokens = firebaseTokens,
                     PayLoad = new Dictionary<string, string>
                     {
                         { "orderId", order.OrderId.ToString() },
                         { "orderCode", order.OrderCode },
-                        { "type", ((int)NotificationType.OrderCreated).ToString() },
+                        { "type", ((int)NotificationType.OrderUpdated).ToString() },
                         { "action", "open_order_detail" }
                     }
                 };

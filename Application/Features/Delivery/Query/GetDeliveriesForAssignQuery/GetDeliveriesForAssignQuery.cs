@@ -26,6 +26,15 @@ namespace Application.Features.Delivery.Query.GetDeliveriesForAssignQuery
 
         /// <summary>Unfinished legs the rider holds on other orders.</summary>
         public int ActiveLegsCount { get; set; }
+
+        /// <summary>Cash collected from customers and not remitted yet.</summary>
+        public decimal CashDebt { get; set; }
+
+        /// <summary>Null = no limit.</summary>
+        public decimal? CashDebtLimit { get; set; }
+
+        /// <summary>At or above the limit: cannot take the delivery trip of a cash order.</summary>
+        public bool IsOverCashDebtLimit { get; set; }
     }
 
     /// <summary>
@@ -92,6 +101,7 @@ namespace Application.Features.Delivery.Query.GetDeliveriesForAssignQuery
                 .ToListAsync(cancellationToken);
 
             var openByRider = openLegs.GroupBy(id => id).ToDictionary(g => g.Key, g => g.Count());
+            var debts = await RiderCashDebt.ForRidersAsync(_context, riderIds, cancellationToken);
             var localNow = RiderTime.LocalNow();
 
             var result = riders
@@ -112,7 +122,10 @@ namespace Application.Features.Delivery.Query.GetDeliveriesForAssignQuery
                         CurrentShiftEndsAt = availability.CurrentShiftEndsAt.HasValue
                             ? RiderTime.ToUtc(availability.CurrentShiftEndsAt.Value)
                             : null,
-                        ActiveLegsCount = openByRider.TryGetValue(r.DeliveryId, out var c) ? c : 0
+                        ActiveLegsCount = openByRider.TryGetValue(r.DeliveryId, out var c) ? c : 0,
+                        CashDebt = debts.TryGetValue(r.DeliveryId, out var debt) ? debt : 0,
+                        CashDebtLimit = r.CashDebtLimit,
+                        IsOverCashDebtLimit = RiderCashDebt.IsOverLimit(debts.TryGetValue(r.DeliveryId, out var d2) ? d2 : 0, r.CashDebtLimit)
                     };
                 })
                 .OrderBy(x => x.Status)

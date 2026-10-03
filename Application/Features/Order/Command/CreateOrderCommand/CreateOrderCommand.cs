@@ -370,8 +370,10 @@ namespace Application.Features.Order.Command.CreateOrderCommand
 
                 var notificationBody = new NotificationBodyForMultipleDevices
                 {
-                    Title = "تم استلام طلبك",
-                    Body = $"طلبك #{order.OrderCode} وصلنا، وهنبلغك بكل خطوة فيه.",
+                    Title = customerWithTokens.PreferredLanguage == "en" ? "Order placed" : "تم استلام طلبك",
+                    Body = customerWithTokens.PreferredLanguage == "en"
+                        ? $"We got your order #{order.OrderCode}. We will keep you posted on every step."
+                        : $"طلبك #{order.OrderCode} وصلنا، وهنبلغك بكل خطوة فيه.",
                     FireBaseTokens = firebaseTokens,
                     PayLoad = new Dictionary<string, string>
                     {

@@ -23,6 +23,9 @@ namespace Domain.Models
         public string? AndriodDevice { get; private set; }
         public string? IosDevice { get; private set; }
 
+        /// <summary>"ar" or "en": the app language, used for push text. Null until the app reports it.</summary>
+        public string? PreferredLanguage { get; private set; }
+
         public int CityId { get; private set; }
         public int ZoneId { get; private set; }
         public City City { get; private set; } = null!;
@@ -241,6 +244,22 @@ namespace Domain.Models
                 throw new ArgumentException("Invitation code cannot be empty", nameof(newCode));
             InvitationCode = newCode;
             InvitationCodeExpiry = dateTimeProvider.Now.AddHours(24);
+        }
+
+        /// <summary>Keeps "ar" or "en" (any "ar-EG" / "en-US" style value is reduced); anything else is ignored.</summary>
+        public void SetPreferredLanguage(string? language, string? modifiedBy = null)
+        {
+            var code = language?.Trim().ToLowerInvariant();
+            if (string.IsNullOrEmpty(code))
+                return;
+
+            code = code.Length >= 2 ? code[..2] : code;
+            if (code != "ar" && code != "en")
+                return;
+
+            PreferredLanguage = code;
+            LastModifiedBy = modifiedBy;
+            LastModifiedDate = DateTime.UtcNow;
         }
 
         public void AddFireBaseDevices(string? androidDevice, string? iosDevice, string? modifiedBy = null)

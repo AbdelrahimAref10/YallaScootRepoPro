@@ -15,5 +15,11 @@ namespace Application.Features.Delivery.DTOs
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime CreatedDate { get; set; }
+
+        /// <summary>Cash collected from customers and not remitted yet.</summary>
+        public decimal CashDebt { get; set; }
+
+        /// <summary>Null = no limit. At or above it the rider cannot take cash orders.</summary>
+        public decimal? CashDebtLimit { get; set; }
     }
 }

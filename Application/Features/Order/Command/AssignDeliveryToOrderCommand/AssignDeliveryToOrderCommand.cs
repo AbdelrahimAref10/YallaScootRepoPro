@@ -139,7 +139,7 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
             var deliveries = await _context.Deliveries
                 .AsNoTracking()
                 .Where(d => deliveryIds.Contains(d.DeliveryId) && d.IsActive && !d.IsDeleted)
-                .Select(d => new { d.DeliveryId, d.CityId })
+                .Select(d => new { d.DeliveryId, d.CityId, d.FullName, d.CashDebtLimit })
                 .ToListAsync(cancellationToken);
 
             if (deliveries.Count != deliveryIds.Count)
@@ -147,6 +147,26 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
 
             if (deliveries.Any(d => d.CityId != order.CityId))
                 return Result.Failure<bool>("All deliveries must belong to the same city as the order");
+
+            // The delivery-trip rider collects the cash; a rider at his debt limit must remit first.
+            if (order.PaymentMethodId == (int)PaymentMethod.Cash)
+            {
+                var cashRiderIds = items
+                    .Where(i => i.Leg == DeliveryLeg.Delivery)
+                    .Select(i => i.DeliveryId)
+                    .Distinct()
+                    .ToList();
+                var limited = deliveries.Where(d => cashRiderIds.Contains(d.DeliveryId) && d.CashDebtLimit.HasValue).ToList();
+                if (limited.Count > 0)
+                {
+                    var debts = await RiderCashDebt.ForRidersAsync(_context, limited.Select(d => d.DeliveryId).ToList(), cancellationToken);
+                    var over = limited.Where(d => RiderCashDebt.IsOverLimit(debts[d.DeliveryId], d.CashDebtLimit)).ToList();
+                    if (over.Count > 0)
+                        return Result.Failure<bool>(
+                            "Cash debt limit reached, the rider must remit collected cash before taking a cash order: "
+                            + string.Join(", ", over.Select(d => $"{d.FullName} ({debts[d.DeliveryId]:0.##} / {d.CashDebtLimit:0.##})")));
+                }
+            }
 
             var city = await _context.Cities
                 .AsNoTracking()
@@ -285,22 +305,32 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
 
             foreach (var leg in assigned.GroupBy(a => a.Leg))
             {
-                var riders = string.Join(" و", leg
+                var riderNames = leg
                     .Select(a => names.TryGetValue(a.DeliveryId, out var n) ? n : null)
                     .Where(n => !string.IsNullOrWhiteSpace(n))
-                    .Distinct());
+                    .Distinct()
+                    .ToList();
 
-                var (title, body) = leg.Key == DeliveryLeg.Delivery
-                    ? ("تم تعيين مندوب التوصيل",
-                        string.IsNullOrEmpty(riders)
-                            ? "اتعيّن مندوب يوصّلك طلبك #{code}."
-                            : $"{riders} هيوصّلك طلبك #{{code}}.")
-                    : ("تم تعيين مندوب الاستلام",
-                        string.IsNullOrEmpty(riders)
+                // Name only: the phone number shows on the order while that trip is under way.
+                var ar = string.Join(" و", riderNames);
+                var en = string.Join(" and ", riderNames);
+                var text = leg.Key == DeliveryLeg.Delivery
+                    ? new CustomerPushText(
+                        "تم تعيين مندوب التوصيل",
+                        riderNames.Count == 0 ? "اتعيّن مندوب يوصّلك طلبك #{code}." : $"{ar} هيوصّلك طلبك #{{code}}.",
+                        "Delivery rider assigned",
+                        riderNames.Count == 0 ? "A rider was assigned to deliver order #{code}." : $"{en} will deliver order #{{code}}.")
+                    : new CustomerPushText(
+                        "تم تعيين مندوب الاستلام",
+                        riderNames.Count == 0
                             ? "اتعيّن مندوب ياخد المركبة منك في نهاية حجز طلبك #{code}."
-                            : $"{riders} هياخد المركبة منك في نهاية حجز طلبك #{{code}}.");
+                            : $"{ar} هياخد المركبة منك في نهاية حجز طلبك #{{code}}.",
+                        "Pickup rider assigned",
+                        riderNames.Count == 0
+                            ? "A rider was assigned to pick up the vehicle at the end of order #{code}."
+                            : $"{en} will pick up the vehicle at the end of order #{{code}}.");
 
-                await _customerNotifier.NotifyOrderAsync(orderId, title, body, NotificationType.RiderAssigned, cancellationToken);
+                await _customerNotifier.NotifyOrderAsync(orderId, text, NotificationType.RiderAssigned, cancellationToken);
             }
         }
     }

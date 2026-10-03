@@ -1,3 +1,4 @@
+using Application.Features.Delivery.Common;
 using Application.Features.Delivery.DTOs;
 using CSharpFunctionalExtensions;
 using Infrastructure;
@@ -63,9 +64,14 @@ namespace Application.Features.Delivery.Query.GetAllDeliveriesQuery
                     PersonalImage = d.PersonalImage,
                     IsActive = d.IsActive,
                     IsDeleted = d.IsDeleted,
-                    CreatedDate = d.CreatedDate
+                    CreatedDate = d.CreatedDate,
+                    CashDebtLimit = d.CashDebtLimit
                 })
                 .ToListAsync(cancellationToken);
+
+            var debts = await RiderCashDebt.ForRidersAsync(_context, list.Select(d => d.DeliveryId).ToList(), cancellationToken);
+            foreach (var item in list)
+                item.CashDebt = debts.TryGetValue(item.DeliveryId, out var debt) ? debt : 0;
 
             return Result.Success(list);
         }

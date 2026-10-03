@@ -19,13 +19,11 @@ which already returns vehicles sorted by the distance from that zone.
 
 ## Customer push notifications
 
-Sent to the customer's saved devices (`AndriodDevice` / `IosDevice`). Text is Arabic.
+Sent to the customer's saved devices (`AndriodDevice` / `IosDevice`) in the customer's app language. The app reports it in `POST /api/customer/Customer/AddDevices` as `language` ("ar" / "en"), falling back to the Accept-Language header; customers who never reported one get Arabic. The app re-sends it when the user switches language.
 
 | When | `type` |
 |---|---|
 | Order created (customer or admin) | 1 OrderCreated |
-| Sent to merchants | 7 OrderMerchantPending |
-| Merchant confirmed the vehicles | 8 OrderUpdated |
 | Confirmed | 2 OrderConfirmed |
 | Rider assigned to the delivery trip / the return trip | 9 RiderAssigned |
 | On the way | 3 OrderOnWay |
@@ -37,7 +35,22 @@ Sent to the customer's saved devices (`AndriodDevice` / `IosDevice`). Text is Ar
 
 Payload: `{ "type": "<int>", "action": "open_order_detail", "orderId": "<id>", "orderCode": "<code>" }`.
 
+The merchant steps before Confirmed are internal and send nothing (they can repeat when the admin swaps vehicles).
+
 State pushes come from one place: every `Order` state transition raises `OrderStateChangedEvent`, and
 `OrderStateChangedCustomerPushHandler` sends the push. The per-command customer pushes that used to do
 this (`UpdateOrderState`, `CancelOrder`, `RejectOrder`) were removed so the customer does not get the
 same push twice.
+
+## Rider name and phone
+
+`GET /api/customer/CustomerOrder/{orderId}` (new) and `MyOrders` items include:
+
+```json
+"riders": [
+  { "vehicleId": 5, "vehicleName": "Xiaomi Pro 2", "vehicleCode": "SC-1021", "leg": 1, "riderName": "أحمد محمود", "canCall": true, "riderMobileNumber": "01012345678" },
+  { "vehicleId": 5, "vehicleName": "Xiaomi Pro 2", "vehicleCode": "SC-1021", "leg": 2, "riderName": "محمد علي", "canCall": false, "riderMobileNumber": null }
+]
+```
+
+The phone is only shared while that trip is under way: the delivery rider (leg 1) while the order is on the way and the vehicle is not delivered yet; the return rider (leg 2) while the customer has the vehicle and waits for the pickup. The "rider assigned" push carries the name only.

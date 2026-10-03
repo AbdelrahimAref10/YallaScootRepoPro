@@ -21,9 +21,9 @@ namespace Application.Features.City.Command.UpdateCityCommand
         public decimal? UrgentDelivery { get; set; } // Amount value
         public decimal? ServiceFees { get; set; } // Amount value
         public decimal? CancellationFees { get; set; } // Percentage value (e.g., 5.0 means 5%)
-        /// <summary>Rider commission for the delivery trip, % of the vehicle delivery fee. Null keeps the current value (default 50).</summary>
+        /// <summary>Rider commission for the delivery trip, % of the vehicle delivery fee. Null keeps the current value (default 20).</summary>
         public decimal? DeliveryLegCommissionPercent { get; set; }
-        /// <summary>Rider commission for the return trip, % of the vehicle delivery fee. Null keeps the current value (default 50).</summary>
+        /// <summary>Rider commission for the return trip, % of the vehicle delivery fee. Null keeps the current value (default 20).</summary>
         public decimal? ReturnLegCommissionPercent { get; set; }
         public List<TieredDiscountDto>? TieredDiscounts { get; set; }
     }

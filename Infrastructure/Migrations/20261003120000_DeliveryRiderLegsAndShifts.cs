@@ -7,7 +7,7 @@ namespace Infrastructure.Migrations
 {
     /// <summary>
     /// Rider app: one rider per leg (delivery / return), per-city leg commission,
-    /// shifts with online/offline, rider device tokens, 4 handover photos, rider notifications.
+    /// shifts with online/offline, rider device tokens and cash debt limit, customer app language, 4 handover photos, rider notifications.
     /// Existing assignments become the delivery leg and get a return leg with the same rider
     /// at 0% commission, so riders already paid 100% on delivery are not paid twice.
     /// </summary>
@@ -22,14 +22,14 @@ namespace Infrastructure.Migrations
                 table: "VO_City",
                 type: "decimal(5,2)",
                 nullable: false,
-                defaultValue: 50m);
+                defaultValue: 20m);
 
             migrationBuilder.AddColumn<decimal>(
                 name: "ReturnLegCommissionPercent",
                 table: "VO_City",
                 type: "decimal(5,2)",
                 nullable: false,
-                defaultValue: 50m);
+                defaultValue: 20m);
 
             // ── Delivery: online + device tokens ──
             migrationBuilder.AddColumn<bool>(
@@ -57,6 +57,20 @@ namespace Infrastructure.Migrations
                 table: "VO_Delivery",
                 type: "nvarchar(500)",
                 maxLength: 500,
+                nullable: true);
+
+            migrationBuilder.AddColumn<decimal>(
+                name: "CashDebtLimit",
+                table: "VO_Delivery",
+                type: "decimal(18,2)",
+                nullable: true);
+
+            // ── Customer: app language for push text ──
+            migrationBuilder.AddColumn<string>(
+                name: "PreferredLanguage",
+                table: "VO_Customer",
+                type: "nvarchar(5)",
+                maxLength: 5,
                 nullable: true);
 
             // ── DeliveryMenOrder: leg ──
@@ -325,6 +339,8 @@ WHERE p.Leg = 1
             migrationBuilder.DropColumn(name: "OnlineStatusChangedAt", table: "VO_Delivery");
             migrationBuilder.DropColumn(name: "AndriodDevice", table: "VO_Delivery");
             migrationBuilder.DropColumn(name: "IosDevice", table: "VO_Delivery");
+            migrationBuilder.DropColumn(name: "CashDebtLimit", table: "VO_Delivery");
+            migrationBuilder.DropColumn(name: "PreferredLanguage", table: "VO_Customer");
 
             migrationBuilder.DropColumn(name: "DeliveryLegCommissionPercent", table: "VO_City");
             migrationBuilder.DropColumn(name: "ReturnLegCommissionPercent", table: "VO_City");

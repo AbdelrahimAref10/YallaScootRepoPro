@@ -9,13 +9,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Customer.Common
 {
-    /// <summary>Push to the customer who owns an order. Never throws.</summary>
+    /// <summary>
+    /// Push text in both app languages. <c>{code}</c> is replaced with the order code.
+    /// </summary>
+    public sealed record CustomerPushText(string TitleAr, string BodyAr, string TitleEn, string BodyEn);
+
+    /// <summary>Push to the customer who owns an order, in the customer's app language. Never throws.</summary>
     public interface ICustomerNotifier
     {
         Task NotifyOrderAsync(
             int orderId,
-            string title,
-            string body,
+            CustomerPushText text,
             NotificationType type,
             CancellationToken cancellationToken = default);
     }
@@ -35,8 +39,7 @@ namespace Application.Features.Customer.Common
 
         public async Task NotifyOrderAsync(
             int orderId,
-            string title,
-            string body,
+            CustomerPushText text,
             NotificationType type,
             CancellationToken cancellationToken = default)
         {
@@ -45,7 +48,13 @@ namespace Application.Features.Customer.Common
                 var target = await _context.Orders
                     .AsNoTracking()
                     .Where(o => o.OrderId == orderId)
-                    .Select(o => new { o.OrderCode, o.Customer.AndriodDevice, o.Customer.IosDevice })
+                    .Select(o => new
+                    {
+                        o.OrderCode,
+                        o.Customer.AndriodDevice,
+                        o.Customer.IosDevice,
+                        o.Customer.PreferredLanguage
+                    })
                     .FirstOrDefaultAsync(cancellationToken);
 
                 if (target == null)
@@ -60,10 +69,12 @@ namespace Application.Features.Customer.Common
                 if (tokens.Count == 0)
                     return;
 
+                // Customers who have not reported a language yet get Arabic.
+                var english = target.PreferredLanguage == "en";
                 await _push.SendNotificationAsyncToMultipleDevices(new NotificationBodyForMultipleDevices
                 {
-                    Title = title,
-                    Body = body.Replace("{code}", target.OrderCode),
+                    Title = (english ? text.TitleEn : text.TitleAr).Replace("{code}", target.OrderCode),
+                    Body = (english ? text.BodyEn : text.BodyAr).Replace("{code}", target.OrderCode),
                     FireBaseTokens = tokens,
                     PayLoad = new Dictionary<string, string>
                     {
@@ -81,7 +92,7 @@ namespace Application.Features.Customer.Common
         }
     }
 
-    /// <summary>Tells the customer about every order state change, whoever made it (admin, merchant, rider).</summary>
+    /// <summary>Tells the customer about order state changes, whoever made them (admin, merchant, rider).</summary>
     public class OrderStateChangedCustomerPushHandler : INotificationHandler<DomainEventNotification>
     {
         private readonly ICustomerNotifier _notifier;
@@ -99,23 +110,39 @@ namespace Application.Features.Customer.Common
             var message = MessageFor(e.ToState);
             return message == null
                 ? Task.CompletedTask
-                : _notifier.NotifyOrderAsync(e.OrderId, message.Value.Title, message.Value.Body, message.Value.Type, cancellationToken);
+                : _notifier.NotifyOrderAsync(e.OrderId, message.Value.Text, message.Value.Type, cancellationToken);
         }
 
         /// <summary>
-        /// DeliveryAssigned is skipped: the assign command pushes "rider assigned" with the rider's name.
-        /// <c>{code}</c> is replaced with the order code.
+        /// Starts at Confirmed: the merchant states before it are internal and can repeat when the admin
+        /// swaps vehicles. DeliveryAssigned is skipped because the assign command pushes the rider's name.
         /// </summary>
-        private static (string Title, string Body, NotificationType Type)? MessageFor(OrderState state) => state switch
+        private static (CustomerPushText Text, NotificationType Type)? MessageFor(OrderState state) => state switch
         {
-            OrderState.MerchantPending => ("طلبك قيد المراجعة", "بنأكد توفر المركبات لطلبك #{code} مع التاجر.", NotificationType.OrderMerchantPending),
-            OrderState.MerchantConfirmed => ("المركبات متاحة", "التاجر أكد توفر المركبات لطلبك #{code}.", NotificationType.OrderUpdated),
-            OrderState.Confirmed => ("تم تأكيد طلبك", "طلبك #{code} اتأكد، وهنبلغك أول ما نعيّن مندوب التوصيل.", NotificationType.OrderConfirmed),
-            OrderState.OnWay => ("طلبك في الطريق", "المندوب في طريقه ليك بطلبك #{code}.", NotificationType.OrderOnWay),
-            OrderState.CustomerReceived => ("تم استلام طلبك", "استلمت طلبك #{code}. رحلة سعيدة!", NotificationType.OrderCustomerReceived),
-            OrderState.CustomerRejectedReceipt => ("تم تسجيل عدم الاستلام", "اتسجّل إن طلبك #{code} ما اتسلمش، وفريقنا هيتواصل معاك.", NotificationType.OrderUpdated),
-            OrderState.Completed => ("تم إنهاء طلبك", "طلبك #{code} خلص. شكراً لاستخدامك يلا سكوت!", NotificationType.OrderCompleted),
-            OrderState.Cancelled => ("تم إلغاء طلبك", "طلبك #{code} اتلغى.", NotificationType.OrderCancelled),
+            OrderState.Confirmed => (new CustomerPushText(
+                "تم تأكيد طلبك", "طلبك #{code} اتأكد، وهنبلغك أول ما نعيّن مندوب التوصيل.",
+                "Order confirmed", "Your order #{code} is confirmed. We'll let you know when a rider is assigned."),
+                NotificationType.OrderConfirmed),
+            OrderState.OnWay => (new CustomerPushText(
+                "طلبك في الطريق", "المندوب في طريقه ليك بطلبك #{code}. تقدر تكلمه من صفحة الطلب.",
+                "Your order is on the way", "The rider is on the way with order #{code}. You can call them from the order page."),
+                NotificationType.OrderOnWay),
+            OrderState.CustomerReceived => (new CustomerPushText(
+                "تم استلام طلبك", "استلمت طلبك #{code}. رحلة سعيدة!",
+                "Order received", "You received order #{code}. Enjoy your ride!"),
+                NotificationType.OrderCustomerReceived),
+            OrderState.CustomerRejectedReceipt => (new CustomerPushText(
+                "تم تسجيل عدم الاستلام", "اتسجّل إن طلبك #{code} ما اتسلمش، وفريقنا هيتواصل معاك.",
+                "Not received", "Order #{code} was marked as not received. Our team will contact you."),
+                NotificationType.OrderUpdated),
+            OrderState.Completed => (new CustomerPushText(
+                "تم إنهاء طلبك", "طلبك #{code} خلص. شكراً لاستخدامك يلا سكوت!",
+                "Order completed", "Order #{code} is complete. Thanks for riding with YallaScoot!"),
+                NotificationType.OrderCompleted),
+            OrderState.Cancelled => (new CustomerPushText(
+                "تم إلغاء طلبك", "طلبك #{code} اتلغى.",
+                "Order cancelled", "Your order #{code} was cancelled."),
+                NotificationType.OrderCancelled),
             _ => null
         };
     }

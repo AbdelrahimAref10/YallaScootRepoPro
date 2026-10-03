@@ -121,7 +121,7 @@ Image URLs are relative; prefix them with the API base URL.
 ### Wallet
 | Method | Path | Returns |
 |---|---|---|
-| GET | `/api/delivery/DeliveryWallet/Summary` | `{ cashCollected, cashRemitted, cashDebt, commissionEarned, commissionPaid, deductions, commissionDue, balance, currencyCode }` — `deductions` = fault clawbacks; `commissionDue = earned − paid − deductions`; `balance` = all credits − all debits |
+| GET | `/api/delivery/DeliveryWallet/Summary` | `{ cashCollected, cashRemitted, cashDebt, cashDebtLimit, isOverCashDebtLimit, commissionEarned, commissionPaid, deductions, commissionDue, balance, currencyCode }` — `cashDebtLimit` is set by the admin per rider (null = no limit); at or above it the rider cannot be assigned the delivery trip of a cash order; `deductions` = fault clawbacks; `commissionDue = earned − paid − deductions`; `balance` = all credits − all debits |
 | GET | `/api/delivery/DeliveryWallet/Journals?pageNumber&pageSize` | `PagedResult` of `{ id, orderId, orderCode, entryKind, amount, note, createdDate }`, where `amount` is positive in the rider's favour and negative against |
 
 `entryKind` (int): `4 DeliveryFeeAccrued` (commission +), `5 CashCollectedFromCustomer` (−),
@@ -180,7 +180,7 @@ currentShiftName, currentShiftEndsAt, activeLegsCount }`.
 - `deliveryOrderPaymentDetails[].leg` and `.commissionPercent`
 - `handoverImages: [{ vehicleId, step, position, imageUrl, deliveryId, createdDate }]`
 
-**City** (`CityDto`): now includes `deliveryLegCommissionPercent` and `returnLegCommissionPercent`, default 50 / 50.
+**City** (`CityDto`): now includes `deliveryLegCommissionPercent` and `returnLegCommissionPercent`, default 20 / 20.
 In add / update they are optional; `null` keeps the current value, and the two together are ≤ 100.
 
 ## Migration `20261003120000_DeliveryRiderLegsAndShifts`
@@ -190,3 +190,9 @@ In add / update they are optional; `null` keeps the current value, and the two t
 - **New tables:** `VO_Shift`, `VO_DeliveryShift`, `VO_OrderVehicleHandoverImage`, `VO_DeliveryNotification`.
 - **Existing assignments:** each one also gets a return leg with the same rider at **0 %**. Riders were already paid
   100 % at delivery under the old rule, so they are not paid twice.
+
+## Rider cash debt limit (admin)
+
+- `PUT /api/admin/AdminDelivery/{deliveryId}/CashDebtLimit` body `{ "deliveryId": 7, "cashDebtLimit": 1500 }` (null removes the limit).
+- `GET /api/admin/AdminDelivery` and `/{id}` return `cashDebt` and `cashDebtLimit`; `ForAssign` candidates also return `isOverCashDebtLimit`.
+- `AssignDelivery` returns 400 `Cash debt limit reached ...` when a cash order's delivery trip goes to a rider at or over his limit.

@@ -84,6 +84,10 @@ namespace Infrastructure.MappingConfiguration
                 .HasColumnName("IosDevice")
                 .HasMaxLength(500);
 
+            builder.Property(d => d.CashDebtLimit)
+                .HasColumnName("CashDebtLimit")
+                .HasColumnType("decimal(18,2)");
+
             builder.Property(d => d.CreatedBy)
                 .HasColumnName("CreatedBy")
                 .HasMaxLength(256);

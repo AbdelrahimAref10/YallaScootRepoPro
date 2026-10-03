@@ -112,6 +112,20 @@ namespace Volt.Server.Controllers.Customer
             return Ok(result.Value);
         }
 
+        /// <summary>One of my orders, with riders per vehicle trip (phone only while that trip is under way).</summary>
+        [HttpGet("{orderId:int}")]
+        [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetMyOrder(int orderId)
+        {
+            var result = await _mediator.Send(new GetCustomerOrderByIdQuery { OrderId = orderId });
+            if (result.IsFailure)
+            {
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            }
+            return Ok(result.Value);
+        }
+
         [HttpPost("{orderId}/Cancel")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

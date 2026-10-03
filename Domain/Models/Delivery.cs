@@ -24,6 +24,12 @@ namespace Domain.Models
         public string? AndriodDevice { get; private set; }
         public string? IosDevice { get; private set; }
 
+        /// <summary>
+        /// Max cash (collected from customers, not yet remitted) the rider may hold. At or above it he
+        /// cannot be assigned cash orders. Null means no limit. Set by the admin per rider.
+        /// </summary>
+        public decimal? CashDebtLimit { get; private set; }
+
         public string? CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; }
         public string? LastModifiedBy { get; set; }
@@ -54,6 +60,16 @@ namespace Domain.Models
                 AndriodDevice = androidDevice;
             if (!string.IsNullOrWhiteSpace(iosDevice))
                 IosDevice = iosDevice;
+            LastModifiedDate = DateTime.UtcNow;
+        }
+
+        public void SetCashDebtLimit(decimal? limit, string? modifiedBy = null)
+        {
+            if (limit.HasValue && limit.Value < 0)
+                throw new ArgumentException("Cash debt limit cannot be negative", nameof(limit));
+
+            CashDebtLimit = limit;
+            LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }
 

@@ -88,6 +88,10 @@ namespace Infrastructure.MappingConfiguration
                 .HasColumnName("IosDevice")
                 .HasMaxLength(500);
 
+            builder.Property(c => c.PreferredLanguage)
+                .HasColumnName("PreferredLanguage")
+                .HasMaxLength(5);
+
             builder.Property(c => c.CityId)
                 .HasColumnName("CityId")
                 .IsRequired();

@@ -15,10 +15,10 @@ namespace Domain.Models
         public int? ZoneGroupId { get; private set; }
 
         /// <summary>Rider commission for the delivery leg, as a percent of the vehicle delivery fee.</summary>
-        public decimal DeliveryLegCommissionPercent { get; private set; } = 50m;
+        public decimal DeliveryLegCommissionPercent { get; private set; } = 20m;
 
         /// <summary>Rider commission for the return leg, as a percent of the vehicle delivery fee.</summary>
-        public decimal ReturnLegCommissionPercent { get; private set; } = 50m;
+        public decimal ReturnLegCommissionPercent { get; private set; } = 20m;
 
         public ZoneGroup? ZoneGroup { get; private set; }
         public ICollection<Customer> Customers { get; private set; } = new List<Customer>();

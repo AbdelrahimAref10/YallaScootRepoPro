@@ -546,6 +546,11 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(500)")
                         .HasColumnName("IosDevice");
 
+                    b.Property<string>("PreferredLanguage")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)")
+                        .HasColumnName("PreferredLanguage");
+
                     b.Property<bool>("IsInvitationCodeUsed")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -799,6 +804,10 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)")
                         .HasColumnName("IosDevice");
+
+                    b.Property<decimal?>("CashDebtLimit")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("CashDebtLimit");
 
                     b.Property<bool>("IsOnline")
                         .ValueGeneratedOnAdd()
