@@ -1,3 +1,4 @@
+using Application.Features.Customer.Common;
 using Application.Features.Delivery.Common;
 using Application.Features.Order.Services;
 using CSharpFunctionalExtensions;
@@ -48,17 +49,20 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
         private readonly IUserSession _userSession;
         private readonly IOrderRealtimeNotifier _realtime;
         private readonly IRiderNotifier _riderNotifier;
+        private readonly ICustomerNotifier _customerNotifier;
 
         public AssignDeliveryToOrderCommandHandler(
             DatabaseContext context,
             IUserSession userSession,
             IOrderRealtimeNotifier realtime,
-            IRiderNotifier riderNotifier)
+            IRiderNotifier riderNotifier,
+            ICustomerNotifier customerNotifier)
         {
             _context = context;
             _userSession = userSession;
             _realtime = realtime;
             _riderNotifier = riderNotifier;
+            _customerNotifier = customerNotifier;
         }
 
         public async Task<Result<bool>> Handle(AssignDeliveryToOrderCommand request, CancellationToken cancellationToken)
@@ -262,7 +266,42 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
                     cancellationToken);
             }
 
+            await NotifyCustomerAsync(order.OrderId, assigned, cancellationToken);
+
             return Result.Success(true);
+        }
+
+        /// <summary>One push per trip type: who brings the scooter, and who picks it up at the end.</summary>
+        private async Task NotifyCustomerAsync(
+            int orderId,
+            List<(int DeliveryId, DeliveryLeg Leg, int VehicleId)> assigned,
+            CancellationToken cancellationToken)
+        {
+            var riderIds = assigned.Select(a => a.DeliveryId).Distinct().ToList();
+            var names = await _context.Deliveries
+                .AsNoTracking()
+                .Where(d => riderIds.Contains(d.DeliveryId))
+                .ToDictionaryAsync(d => d.DeliveryId, d => d.FullName, cancellationToken);
+
+            foreach (var leg in assigned.GroupBy(a => a.Leg))
+            {
+                var riders = string.Join(" و", leg
+                    .Select(a => names.TryGetValue(a.DeliveryId, out var n) ? n : null)
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
+                    .Distinct());
+
+                var (title, body) = leg.Key == DeliveryLeg.Delivery
+                    ? ("تم تعيين مندوب التوصيل",
+                        string.IsNullOrEmpty(riders)
+                            ? "اتعيّن مندوب يوصّلك طلبك #{code}."
+                            : $"{riders} هيوصّلك طلبك #{{code}}.")
+                    : ("تم تعيين مندوب الاستلام",
+                        string.IsNullOrEmpty(riders)
+                            ? "اتعيّن مندوب ياخد المركبة منك في نهاية حجز طلبك #{code}."
+                            : $"{riders} هياخد المركبة منك في نهاية حجز طلبك #{{code}}.");
+
+                await _customerNotifier.NotifyOrderAsync(orderId, title, body, NotificationType.RiderAssigned, cancellationToken);
+            }
         }
     }
 }

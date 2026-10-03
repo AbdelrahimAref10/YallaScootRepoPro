@@ -51,9 +51,18 @@ namespace Volt.Server.Controllers.Customer
         [AllowAnonymous]
         [ProducesResponseType(typeof(List<ZoneLookupDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetZonesByCity([FromQuery] int cityId)
+        public async Task<IActionResult> GetZonesByCity(
+            [FromQuery] int cityId,
+            [FromQuery] double? latitude = null,
+            [FromQuery] double? longitude = null)
         {
-            var result = await _mediator.Send(new GetZonesByCityQuery { CityId = cityId });
+            // With the customer's location the first zone is the nearest one.
+            var result = await _mediator.Send(new GetZonesByCityQuery
+            {
+                CityId = cityId,
+                Latitude = latitude,
+                Longitude = longitude
+            });
             if (result.IsFailure)
             {
                 return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));

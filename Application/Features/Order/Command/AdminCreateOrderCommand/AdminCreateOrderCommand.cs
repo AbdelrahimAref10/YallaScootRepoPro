@@ -325,8 +325,8 @@ namespace Application.Features.Order.Command.AdminCreateOrderCommand
 
                 var notificationBody = new NotificationBodyForMultipleDevices
                 {
-                    Title = "Order Created",
-                    Body = $"Your order #{order.OrderCode} has been created and is pending.",
+                    Title = "تم استلام طلبك",
+                    Body = $"طلبك #{order.OrderCode} وصلنا، وهنبلغك بكل خطوة فيه.",
                     FireBaseTokens = firebaseTokens,
                     PayLoad = new Dictionary<string, string>
                     {

@@ -452,6 +452,15 @@ namespace Domain.Models
             || state == OrderState.Completed
             || state == OrderState.Cancelled;
 
+        /// <summary>Every transition goes through here so listeners (customer push) see it once.</summary>
+        private void ChangeState(OrderState newState, string? modifiedBy)
+        {
+            var from = OrderState;
+            OrderState = newState;
+            if (from != newState)
+                RaiseDomainEvent(new OrderStateChangedEvent(OrderId, from, newState, modifiedBy));
+        }
+
         // Domain methods
         public void MarkMerchantPending(string? modifiedBy = null)
         {
@@ -460,7 +469,7 @@ namespace Domain.Models
                 && OrderState != OrderState.MerchantConfirmed)
                 throw new InvalidOperationException($"Cannot send to merchants in {OrderState} state.");
 
-            OrderState = OrderState.MerchantPending;
+            ChangeState(OrderState.MerchantPending, modifiedBy);
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }
@@ -470,7 +479,7 @@ namespace Domain.Models
             if (OrderState != OrderState.MerchantPending)
                 throw new InvalidOperationException($"Cannot mark merchant confirmed in {OrderState} state. Order must be in MerchantPending state.");
 
-            OrderState = OrderState.MerchantConfirmed;
+            ChangeState(OrderState.MerchantConfirmed, modifiedBy);
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }
@@ -481,7 +490,7 @@ namespace Domain.Models
             if (OrderState != OrderState.MerchantConfirmed)
                 throw new InvalidOperationException($"Cannot confirm order in {OrderState} state. Order must be in MerchantConfirmed state.");
 
-            OrderState = OrderState.Confirmed;
+            ChangeState(OrderState.Confirmed, modifiedBy);
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }
@@ -492,7 +501,7 @@ namespace Domain.Models
             if (OrderState != OrderState.Confirmed && OrderState != OrderState.DeliveryAssigned)
                 throw new InvalidOperationException($"Cannot mark delivery assigned in {OrderState} state. Order must be Confirmed.");
 
-            OrderState = OrderState.DeliveryAssigned;
+            ChangeState(OrderState.DeliveryAssigned, modifiedBy);
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }
@@ -502,7 +511,7 @@ namespace Domain.Models
             if (OrderState != OrderState.DeliveryAssigned)
                 throw new InvalidOperationException($"Cannot mark order as OnWay in {OrderState} state. Order must be in DeliveryAssigned state.");
 
-            OrderState = OrderState.OnWay;
+            ChangeState(OrderState.OnWay, modifiedBy);
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }
@@ -512,7 +521,7 @@ namespace Domain.Models
             if (OrderState != OrderState.OnWay)
                 throw new InvalidOperationException($"Cannot mark customer received in {OrderState} state. Order must be in OnWay state.");
 
-            OrderState = OrderState.CustomerReceived;
+            ChangeState(OrderState.CustomerReceived, modifiedBy);
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }
@@ -525,7 +534,7 @@ namespace Domain.Models
             if (faultParty == FaultParty.None)
                 throw new ArgumentException("Fault party is required", nameof(faultParty));
 
-            OrderState = OrderState.CustomerRejectedReceipt;
+            ChangeState(OrderState.CustomerRejectedReceipt, modifiedBy);
             ReceiptFaultParty = faultParty;
             ReceiptRejectNote = note?.Trim();
             LastModifiedBy = modifiedBy;
@@ -537,7 +546,7 @@ namespace Domain.Models
             if (OrderState != OrderState.CustomerReceived)
                 throw new InvalidOperationException($"Cannot complete order in {OrderState} state. Order must be in CustomerReceived state.");
 
-            OrderState = OrderState.Completed;
+            ChangeState(OrderState.Completed, modifiedBy);
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }
@@ -551,7 +560,7 @@ namespace Domain.Models
                 throw new InvalidOperationException(
                     $"Cannot cancel order in {OrderState} state. Cancel stops once any vehicle is received from the merchant.");
 
-            OrderState = OrderState.Cancelled;
+            ChangeState(OrderState.Cancelled, modifiedBy);
 
             // Cash: money is considered refunded immediately. PayPal: admin marks refund later.
             MoneyRefunded = PaymentMethodId == (int)PaymentMethod.Cash;

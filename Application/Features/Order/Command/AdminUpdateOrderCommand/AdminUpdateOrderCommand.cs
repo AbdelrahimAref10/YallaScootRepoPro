@@ -320,8 +320,8 @@ namespace Application.Features.Order.Command.AdminUpdateOrderCommand
 
                 var notificationBody = new NotificationBodyForMultipleDevices
                 {
-                    Title = "Order Updated",
-                    Body = $"Your order #{order.OrderCode} has been updated.",
+                    Title = "طلبك اتعدّل",
+                    Body = $"اتعملت تعديلات على طلبك #{order.OrderCode}.",
                     FireBaseTokens = firebaseTokens,
                     PayLoad = new Dictionary<string, string>
                     {

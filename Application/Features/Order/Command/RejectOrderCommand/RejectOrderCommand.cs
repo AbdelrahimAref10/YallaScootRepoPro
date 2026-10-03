@@ -123,8 +123,6 @@ namespace Application.Features.Order.Command.RejectOrderCommand
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            await SendOrderRejectedNotification(order, cancellationToken);
-
             await _realtime.NotifyAsync(
                 order.OrderId,
                 "Order Rejected",
@@ -135,45 +133,5 @@ namespace Application.Features.Order.Command.RejectOrderCommand
             return Result.Success(true);
         }
 
-        private async Task SendOrderRejectedNotification(Domain.Models.Order order, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var customer = await _context.Customers
-                    .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId, cancellationToken);
-
-                if (customer == null)
-                    return;
-
-                var firebaseTokens = new List<string>();
-                if (!string.IsNullOrWhiteSpace(customer.AndriodDevice))
-                    firebaseTokens.Add(customer.AndriodDevice);
-                if (!string.IsNullOrWhiteSpace(customer.IosDevice))
-                    firebaseTokens.Add(customer.IosDevice);
-
-                if (firebaseTokens.Count == 0)
-                    return;
-
-                var notificationBody = new NotificationBodyForMultipleDevices
-                {
-                    Title = "Order Cancelled",
-                    Body = $"Your order #{order.OrderCode} has been cancelled by the admin.",
-                    FireBaseTokens = firebaseTokens,
-                    PayLoad = new Dictionary<string, string>
-                    {
-                        { "orderId", order.OrderId.ToString() },
-                        { "orderCode", order.OrderCode },
-                        { "type", ((int)NotificationType.OrderCancelled).ToString() },
-                        { "action", "open_order_detail" }
-                    }
-                };
-
-                await _notificationService.SendNotificationAsyncToMultipleDevices(notificationBody);
-            }
-            catch
-            {
-                // Notification failures must not block rejection.
-            }
-        }
     }
 }

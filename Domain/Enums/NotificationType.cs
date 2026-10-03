@@ -11,7 +11,9 @@ namespace Domain.Enums
         /// <summary>Admin sent order to merchant(s) — MerchantPending invitation.</summary>
         OrderMerchantPending = 7,
         /// <summary>Generic order-cycle change (replace vehicle, handover, delivery assignment, merchant response, etc.).</summary>
-        OrderUpdated = 8
+        OrderUpdated = 8,
+        /// <summary>Customer push: a rider was assigned to the delivery or the return trip.</summary>
+        RiderAssigned = 9
     }
 }
 

@@ -161,8 +161,6 @@ namespace Application.Features.Order.Command.CancelOrderCommand
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            await SendOrderCancelledNotification(order, cancellationToken);
-
             await _realtime.NotifyAsync(
                 order.OrderId,
                 "Order Cancelled",
@@ -173,45 +171,5 @@ namespace Application.Features.Order.Command.CancelOrderCommand
             return Result.Success(true);
         }
 
-        private async Task SendOrderCancelledNotification(Domain.Models.Order order, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var customer = await _context.Customers
-                    .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId, cancellationToken);
-
-                if (customer == null)
-                    return;
-
-                var firebaseTokens = new List<string>();
-                if (!string.IsNullOrWhiteSpace(customer.AndriodDevice))
-                    firebaseTokens.Add(customer.AndriodDevice);
-                if (!string.IsNullOrWhiteSpace(customer.IosDevice))
-                    firebaseTokens.Add(customer.IosDevice);
-
-                if (firebaseTokens.Count == 0)
-                    return;
-
-                var notificationBody = new NotificationBodyForMultipleDevices
-                {
-                    Title = "Order Cancelled",
-                    Body = $"Your order #{order.OrderCode} has been cancelled.",
-                    FireBaseTokens = firebaseTokens,
-                    PayLoad = new Dictionary<string, string>
-                    {
-                        { "orderId", order.OrderId.ToString() },
-                        { "orderCode", order.OrderCode },
-                        { "type", ((int)NotificationType.OrderCancelled).ToString() },
-                        { "action", "open_order_detail" }
-                    }
-                };
-
-                await _notificationService.SendNotificationAsyncToMultipleDevices(notificationBody);
-            }
-            catch (Exception)
-            {
-                // Notification failures should not affect order cancellation
-            }
-        }
     }
 }
