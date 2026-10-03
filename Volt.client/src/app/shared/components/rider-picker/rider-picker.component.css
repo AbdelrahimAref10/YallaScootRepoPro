@@ -1,9 +1,27 @@
 .rp__panel {
-  max-height: 20rem;
+  max-height: 24rem;
+}
+
+.rp--up .rp__panel {
+  top: auto;
+  bottom: calc(100% + 0.4rem);
 }
 
 .rp__options {
-  max-height: 14.5rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.rp__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.rp__head .rp__name {
+  flex: 1 1 auto;
 }
 
 .rp__option {
@@ -72,10 +90,21 @@
 .rp__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.15rem 0.35rem;
-  font-size: 0.72rem;
+  gap: 0.25rem;
+  font-size: 0.7rem;
   font-weight: 550;
   color: var(--volt-text-muted);
+}
+
+.rp__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.45rem;
+  min-height: 1.25rem;
+  border-radius: 999px;
+  background: var(--volt-surface-muted);
+  border: 1px solid var(--volt-border);
+  white-space: nowrap;
 }
 
 .rp__status--ok {

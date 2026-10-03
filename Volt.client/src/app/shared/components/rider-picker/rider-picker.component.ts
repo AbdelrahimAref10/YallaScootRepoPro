@@ -16,6 +16,13 @@ import {
   RiderCandidate
 } from '../../../core/services/rider-dispatch.service';
 
+/** Matches `.rp__panel` max-height (24rem). */
+const PANEL_HEIGHT_PX = 384;
+/** Below this the panel opens anyway and the dialog body scrolls. */
+const PANEL_MIN_HEIGHT_PX = 180;
+/** `.ms__panel` sits 0.4rem from the trigger, plus a little air. */
+const PANEL_GAP_PX = 12;
+
 /** Map a rider availability to its dot tone. */
 export function riderStatusTone(status: RiderAvailabilityStatus | null | undefined): 'ok' | 'warn' | 'off' {
   switch (status) {
@@ -68,6 +75,9 @@ export class RiderPickerComponent {
   @Output() valueChange = new EventEmitter<number>();
 
   open = false;
+  /** Panel opens above the trigger (set each time it opens). */
+  openUp = false;
+  panelMaxHeight = PANEL_HEIGHT_PX;
   query = '';
 
   get selected(): RiderCandidate | undefined {
@@ -93,11 +103,45 @@ export class RiderPickerComponent {
     return this.localeService.translate(riderStatusKey(status));
   }
 
+  openTripsLabel(count: number): string {
+    const key = count === 0 ? 'riders.openTripsNone' : count === 1 ? 'riders.openTripsOne' : 'riders.openTrips';
+    return this.localeService.translate(key, { n: count });
+  }
+
   toggleOpen(event?: Event): void {
     event?.stopPropagation();
     if (this.disabled) return;
     this.open = !this.open;
-    if (!this.open) this.query = '';
+    if (this.open) {
+      this.placePanel();
+    } else {
+      this.query = '';
+    }
+  }
+
+  /**
+   * The picker usually sits in a scrolling dialog body. Open on the side with more room when the
+   * panel does not fit below, and cap its height to that room so it is never clipped.
+   */
+  private placePanel(): void {
+    const el = this.host.nativeElement as HTMLElement;
+    const rect = el.getBoundingClientRect();
+    let top = 0;
+    let bottom = window.innerHeight;
+    for (let p = el.parentElement; p; p = p.parentElement) {
+      const overflowY = getComputedStyle(p).overflowY;
+      if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'hidden') {
+        const box = p.getBoundingClientRect();
+        top = Math.max(top, box.top);
+        bottom = Math.min(bottom, box.bottom);
+        break;
+      }
+    }
+    const below = bottom - rect.bottom - PANEL_GAP_PX;
+    const above = rect.top - top - PANEL_GAP_PX;
+    this.openUp = below < PANEL_HEIGHT_PX && above > below;
+    const room = this.openUp ? above : below;
+    this.panelMaxHeight = Math.max(PANEL_MIN_HEIGHT_PX, Math.min(PANEL_HEIGHT_PX, Math.floor(room)));
   }
 
   pick(candidate: RiderCandidate, event?: Event): void {

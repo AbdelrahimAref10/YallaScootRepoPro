@@ -1239,7 +1239,7 @@
     "reassignRiders": "Reassign riders",
     "assignRidersSubtitle": "{{n}} vehicles — each trip can have a different rider",
     "selectRider": "Choose a rider",
-    "sameRiderForReturn": "Same rider for the return trip",
+    "sameRiderForReturn": "↺ Use the delivery rider for the return",
     "assignChangesCount": "{{n}} change(s) to save",
     "saveRiders": "Save riders",
     "assignNoChanges": "No changes to save",
@@ -1458,6 +1458,8 @@
     "current": "Current",
     "noShiftNow": "No shift now",
     "openTrips": "{{n}} open trips",
+    "openTripsOne": "1 open trip",
+    "openTripsNone": "No open trips",
     "noRiders": "No active riders in this city",
     "online": "Online",
     "offline": "Offline"

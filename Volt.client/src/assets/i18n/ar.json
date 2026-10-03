@@ -1239,7 +1239,7 @@
     "reassignRiders": "تغيير المناديب",
     "assignRidersSubtitle": "{{n}} مركبات — كل مشوار ممكن يبقى له مندوب مختلف",
     "selectRider": "اختار المندوب",
-    "sameRiderForReturn": "نفس المندوب لمشوار الإرجاع",
+    "sameRiderForReturn": "↺ خلّي مندوب التوصيل هو اللي يرجّعها",
     "assignChangesCount": "{{n}} تغيير هيتحفظ",
     "saveRiders": "حفظ المناديب",
     "assignNoChanges": "مفيش تغييرات تتحفظ",
@@ -1458,6 +1458,8 @@
     "current": "الحالي",
     "noShiftNow": "مفيش شيفت دلوقتي",
     "openTrips": "{{n}} مشاوير مفتوحة",
+    "openTripsOne": "مشوار واحد مفتوح",
+    "openTripsNone": "مفيش مشاوير مفتوحة",
     "noRiders": "مفيش مناديب نشطين في المدينة دي",
     "online": "أونلاين",
     "offline": "أوفلاين"

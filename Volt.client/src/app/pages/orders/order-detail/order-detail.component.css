@@ -2191,14 +2191,20 @@
 
 .od-assign__same {
   align-self: flex-start;
-  padding: 0;
-  border: none;
-  background: none;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--volt-border);
+  border-radius: 999px;
+  background: var(--volt-surface-muted);
   font: inherit;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--volt-accent-strong);
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--volt-text-secondary);
   cursor: pointer;
+}
+
+.od-assign__same:hover {
+  border-color: var(--volt-accent-strong);
+  color: var(--volt-accent-strong);
 }
 
 .od-assign__changes {
