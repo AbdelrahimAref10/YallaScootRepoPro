@@ -918,6 +918,13 @@
         <p>{{ 'common.loading' | t }}</p>
       </div>
       <ng-container *ngIf="!isLoadingDeliveries">
+        <div *ngIf="assignError" class="od__alert od__alert--err" role="alert">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          <span>{{ assignError }}</span>
+        </div>
+
         <div class="od-assign__legend">
           <span><i class="od-assign__dot od-assign__dot--ok" aria-hidden="true"></i>{{ 'riders.statusAvailable' | t }}</span>
           <span><i class="od-assign__dot od-assign__dot--warn" aria-hidden="true"></i>{{ 'riders.statusInShiftOffline' | t }}</span>
@@ -944,9 +951,20 @@
                 [fallbackLabel]="draft.originalDeliveryName"
                 [placeholder]="'orders.selectRider' | t"
                 [disabled]="!!draft.deliveryLockKey"
+                [blockOverDebt]="isCashOrder"
                 (valueChange)="onDraftDeliveryChange(draft, $event)"
               ></app-rider-picker>
               <p class="od-assign__hint" *ngIf="draft.deliveryLockKey">{{ draft.deliveryLockKey | t }}</p>
+              <p
+                class="od-assign__warn"
+                role="status"
+                *ngIf="riderAvailabilityWarningKey(draft.deliveryId, draft.originalDeliveryId) as warnKey"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/>
+                </svg>
+                <span>{{ warnKey | t }}</span>
+              </p>
             </div>
 
             <div class="od__field">
@@ -964,6 +982,16 @@
                 (valueChange)="onDraftReturnChange(draft, $event)"
               ></app-rider-picker>
               <p class="od-assign__hint" *ngIf="draft.returnLockKey">{{ draft.returnLockKey | t }}</p>
+              <p
+                class="od-assign__warn"
+                role="status"
+                *ngIf="riderAvailabilityWarningKey(draft.returnId, draft.originalReturnId) as warnKey"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/>
+                </svg>
+                <span>{{ warnKey | t }}</span>
+              </p>
               <button
                 *ngIf="canUseSameRiderForReturn(draft)"
                 type="button"
@@ -1232,3 +1260,22 @@
   (confirm)="onConfirmRemoveVehicle()"
   (cancel)="onCancelRemoveVehicle()"
 ></app-confirm-dialog>
+
+<app-confirm-dialog
+  [isVisible]="showUnavailableAssignConfirm"
+  [title]="'orders.unavailableRidersTitle' | t"
+  [message]="'orders.unavailableRidersMessage' | t"
+  [type]="'warning'"
+  [confirmText]="'orders.assignAnyway' | t"
+  [cancelText]="'orders.backToRiders' | t"
+  (confirm)="onConfirmUnavailableAssign()"
+  (cancel)="onCancelUnavailableAssign()"
+>
+  <ul class="od-unavail">
+    <li *ngFor="let u of unavailableAssignments; trackBy: trackUnavailable" class="od-unavail__item">
+      <span class="od-unavail__name">{{ u.riderName }}</span>
+      <span class="od-unavail__status">{{ u.statusKey | t }}</span>
+      <small class="od-unavail__leg">{{ u.legKey | t }} · {{ u.vehicleLabel }}</small>
+    </li>
+  </ul>
+</app-confirm-dialog>

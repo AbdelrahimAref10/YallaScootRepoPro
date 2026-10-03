@@ -54,7 +54,10 @@
         class="ms__option rp__option"
         role="option"
         [class.ms__option--selected]="c.deliveryId === value"
+        [class.rp__option--blocked]="isBlocked(c)"
         [attr.aria-selected]="c.deliveryId === value"
+        [attr.aria-disabled]="isBlocked(c) || null"
+        [attr.title]="isBlocked(c) ? ('riders.overDebtLimitHint' | t) : null"
         (click)="pick(c, $event)"
       >
         <span class="rp__dot" [ngClass]="'rp__dot--' + tone(c.status)" aria-hidden="true"></span>
@@ -71,6 +74,12 @@
             <span class="rp__chip">{{ c.currentShiftName || ('riders.noShiftNow' | t) }}</span>
             <span class="rp__chip">{{ openTripsLabel(c.activeLegsCount) }}</span>
             <span class="rp__chip" *ngIf="c.zoneName">{{ c.zoneName }}</span>
+            <span
+              class="rp__chip rp__debt"
+              *ngIf="hasDebtInfo(c)"
+              [class.rp__debt--over]="c.isOverCashDebtLimit"
+            >{{ debtLabel(c) }}</span>
+            <span class="rp__chip rp__debt-block" *ngIf="isBlocked(c)">{{ 'riders.overDebtLimit' | t }}</span>
           </span>
         </span>
       </button>

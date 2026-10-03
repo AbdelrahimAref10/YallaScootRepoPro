@@ -2189,6 +2189,67 @@
   color: #b45309;
 }
 
+/* Picked rider is offline / off shift right now. */
+.od-assign__warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+  font-size: 0.74rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.od-assign__warn svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+/* Riders listed in the "assign anyway?" confirm step. */
+.od-unavail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.od-unavail__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.5rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.od-unavail__name {
+  font-weight: 750;
+  color: #111827; /* confirm dialog is always light */
+}
+
+.od-unavail__status {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.od-unavail__leg {
+  flex-basis: 100%;
+  font-size: 0.74rem;
+  color: #6b7280;
+}
+
 .od-assign__same {
   align-self: flex-start;
   padding: 0.2rem 0.6rem;

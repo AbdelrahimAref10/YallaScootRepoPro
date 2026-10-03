@@ -5,6 +5,7 @@ import {
   API_BASE_URL,
   AddCityCommand,
   CityDto,
+  DeliveryDto,
   OrderDetailDto,
   PagedResultOfCityDto,
   UpdateCityCommand
@@ -93,7 +94,28 @@ export interface RiderCandidate {
   currentShiftName: string | null;
   currentShiftEndsAt: string | null;
   activeLegsCount: number;
+  /** Cash collected from customers and not remitted yet. */
+  cashDebt: number;
+  /** Null = no limit. */
+  cashDebtLimit: number | null;
+  /** At or above the limit: the backend refuses him the delivery trip of a cash order. */
+  isOverCashDebtLimit: boolean;
 }
+
+/** A rider's cash debt and its limit, from the admin delivery list / detail. */
+export interface RiderCashDebtInfo {
+  cashDebt: number;
+  /** Null = no limit. */
+  cashDebtLimit: number | null;
+}
+
+/** Same rule as the backend `RiderCashDebt.IsOverLimit`. */
+export function isOverCashDebtLimit(debt: number, limit: number | null | undefined): boolean {
+  return limit != null && debt >= limit;
+}
+
+/** AssignDelivery fails with "Cash debt limit reached, …: Name (350 / 300), …". */
+export const CASH_DEBT_LIMIT_ERROR_PREFIX = 'Cash debt limit reached';
 
 export interface LegAssignmentItem {
   vehicleId: number;
@@ -142,8 +164,8 @@ export interface CityCommission {
 }
 
 export const DEFAULT_CITY_COMMISSION: CityCommission = {
-  deliveryLegCommissionPercent: 50,
-  returnLegCommissionPercent: 50
+  deliveryLegCommissionPercent: 20,
+  returnLegCommissionPercent: 20
 };
 
 /** Old rows have no leg; they are the delivery trip. Accepts ints or enum names. */
@@ -156,6 +178,13 @@ export function normalizeLeg(value: unknown): DeliveryLeg {
 function toNumber(value: unknown, fallback: number): number {
   const n = typeof value === 'string' ? Number(value) : (value as number);
   return typeof n === 'number' && Number.isFinite(n) ? n : fallback;
+}
+
+function readCashDebt(raw: any): RiderCashDebtInfo {
+  return {
+    cashDebt: toNumber(raw?.cashDebt, 0),
+    cashDebtLimit: raw?.cashDebtLimit != null ? toNumber(raw.cashDebtLimit, 0) : null
+  };
 }
 
 function readCommission(raw: any): CityCommission {
@@ -204,6 +233,37 @@ export class RiderDispatchService {
 
   getCandidatesForCity(cityId: number): Observable<RiderCandidate[]> {
     return this.getCandidates(new HttpParams().set('cityId', String(cityId)));
+  }
+
+  /**
+   * Same query as `AdminDeliveryClient.getAll`, keeping each rider's cash debt and limit
+   * (the generated `DeliveryDto` drops them).
+   */
+  getDeliveries(
+    search?: string | null,
+    isDeleted?: boolean | null
+  ): Observable<{ list: DeliveryDto[]; debts: Map<number, RiderCashDebtInfo> }> {
+    let params = new HttpParams();
+    if (search) params = params.set('Search', search);
+    if (isDeleted != null) params = params.set('IsDeleted', String(isDeleted));
+    return this.http.get<any[]>(`${this.baseUrl}/api/admin/AdminDelivery`, { params }).pipe(
+      map(raw => {
+        const debts = new Map<number, RiderCashDebtInfo>();
+        const list = (raw || []).map(item => {
+          debts.set(item.deliveryId, readCashDebt(item));
+          return DeliveryDto.fromJS(item);
+        });
+        return { list, debts };
+      })
+    );
+  }
+
+  /** Max collected cash the rider may hold before he must remit. Null removes the limit. */
+  setCashDebtLimit(deliveryId: number, cashDebtLimit: number | null): Observable<boolean> {
+    return this.http.put<boolean>(`${this.baseUrl}/api/admin/AdminDelivery/${deliveryId}/CashDebtLimit`, {
+      deliveryId,
+      cashDebtLimit
+    });
   }
 
   /** Assign or reassign riders per (vehicle, leg). */
@@ -301,7 +361,11 @@ export class RiderDispatchService {
           (list || []).map(c => ({
             ...c,
             status: toNumber(c.status, RiderAvailabilityStatus.OffShift) as RiderAvailabilityStatus,
-            activeLegsCount: toNumber(c.activeLegsCount, 0)
+            activeLegsCount: toNumber(c.activeLegsCount, 0),
+            ...readCashDebt(c),
+            isOverCashDebtLimit: c.isOverCashDebtLimit != null
+              ? !!c.isOverCashDebtLimit
+              : isOverCashDebtLimit(toNumber(c.cashDebt, 0), c.cashDebtLimit != null ? toNumber(c.cashDebtLimit, 0) : null)
           }))
         )
       );

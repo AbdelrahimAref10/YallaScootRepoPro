@@ -46,6 +46,23 @@ export function riderStatusKey(status: RiderAvailabilityStatus | null | undefine
   }
 }
 
+/** Plain amount, up to 2 decimals, Latin digits (same as the rest of the admin). */
+export function formatCashAmount(value: number): string {
+  return Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+
+/** "Debt 350 / 500 EGP", or "Debt 350 EGP" without a limit. */
+export function cashDebtLabel(
+  debt: number,
+  limit: number | null | undefined,
+  translate: (key: string, params?: Record<string, string | number>) => string
+): string {
+  const currency = translate('riders.currencyShort');
+  return limit != null
+    ? translate('riders.cashDebtOfLimit', { debt: formatCashAmount(debt), limit: formatCashAmount(limit), currency })
+    : translate('riders.cashDebtNoLimit', { debt: formatCashAmount(debt), currency });
+}
+
 /**
  * Single rider dropdown for the assign dialog. Same look as `app-multi-select`, plus each rider's
  * availability dot, current shift and open trips. Candidates are expected best-first.
@@ -72,6 +89,11 @@ export class RiderPickerComponent {
   @Input() fallbackLabel = '';
   @Input() placeholder = '';
   @Input() disabled = false;
+  /**
+   * Riders at/over their cash debt limit cannot be picked (delivery trip of a cash order, which the
+   * backend refuses). The current rider stays pickable: keeping him is not a new assignment.
+   */
+  @Input() blockOverDebt = false;
   @Output() valueChange = new EventEmitter<number>();
 
   open = false;
@@ -106,6 +128,19 @@ export class RiderPickerComponent {
   openTripsLabel(count: number): string {
     const key = count === 0 ? 'riders.openTripsNone' : count === 1 ? 'riders.openTripsOne' : 'riders.openTrips';
     return this.localeService.translate(key, { n: count });
+  }
+
+  /** Nothing to say for a rider with no debt and no limit. */
+  hasDebtInfo(c: RiderCandidate): boolean {
+    return c.cashDebt !== 0 || c.cashDebtLimit != null;
+  }
+
+  debtLabel(c: RiderCandidate): string {
+    return cashDebtLabel(c.cashDebt, c.cashDebtLimit, (key, params) => this.localeService.translate(key, params));
+  }
+
+  isBlocked(c: RiderCandidate): boolean {
+    return this.blockOverDebt && c.isOverCashDebtLimit && c.deliveryId !== this.currentId;
   }
 
   toggleOpen(event?: Event): void {
@@ -146,7 +181,7 @@ export class RiderPickerComponent {
 
   pick(candidate: RiderCandidate, event?: Event): void {
     event?.stopPropagation();
-    if (this.disabled) return;
+    if (this.disabled || this.isBlocked(candidate)) return;
     this.value = candidate.deliveryId;
     this.valueChange.emit(candidate.deliveryId);
     this.open = false;

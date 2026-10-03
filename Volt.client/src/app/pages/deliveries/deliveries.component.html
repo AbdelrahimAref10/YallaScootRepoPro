@@ -51,6 +51,7 @@
             <th>{{ 'common.email' | t }}</th>
             <th>{{ 'common.status' | t }}</th>
             <th>{{ 'riders.availability' | t }}</th>
+            <th>{{ 'deliveries.cashDebt' | t }}</th>
             <th>{{ 'deliveries.deleted' | t }}</th>
             <th>{{ 'common.createdDate' | t }}</th>
             <th>{{ 'common.actions' | t }}</th>
@@ -58,7 +59,7 @@
         </thead>
         <tbody>
           <tr *ngIf="deliveries.length === 0">
-            <td colspan="10" class="deliveries__empty">{{ 'deliveries.empty' | t }}</td>
+            <td colspan="11" class="deliveries__empty">{{ 'deliveries.empty' | t }}</td>
           </tr>
           <tr *ngFor="let d of deliveries">
             <td>{{ d.fullName }}</td>
@@ -85,11 +86,27 @@
               </span>
               <ng-template #noAvailability>—</ng-template>
             </td>
+            <td>
+              <span
+                *ngIf="debtOf(d.deliveryId) as debt"
+                class="deliveries__debt"
+                [class.deliveries__debt--over]="isOverDebtLimit(d.deliveryId)"
+                [attr.title]="isOverDebtLimit(d.deliveryId) ? ('riders.overDebtLimit' | t) : null"
+              >
+                <strong>{{ money(debt.cashDebt) }} <small>{{ 'riders.currencyShort' | t }}</small></strong>
+                <small class="deliveries__debt-limit">
+                  {{ debt.cashDebtLimit != null
+                    ? ('deliveries.debtLimitOf' | t:{ limit: money(debt.cashDebtLimit) })
+                    : ('deliveries.noDebtLimit' | t) }}
+                </small>
+              </span>
+            </td>
             <td>{{ d.isDeleted ? ('common.yes' | t) : ('common.no' | t) }}</td>
             <td>{{ d.createdDate | date:'yyyy-MM-dd' }}</td>
             <td>
               <div class="deliveries__row-actions" *ngIf="!d.isDeleted">
                 <button type="button" class="deliveries__link" (click)="onEdit(d)">{{ 'common.edit' | t }}</button>
+                <button type="button" class="deliveries__link" (click)="onEditDebtLimit(d)">{{ 'deliveries.debtLimitAction' | t }}</button>
                 <button type="button" class="deliveries__link deliveries__link--danger" (click)="onDelete(d)" [disabled]="isDeleting">
                   {{ 'common.delete' | t }}
                 </button>
@@ -114,3 +131,67 @@
   (confirm)="onConfirmDelete()"
   (cancel)="onCancelDelete()"
 ></app-confirm-dialog>
+
+<!-- Cash debt limit -->
+<div *ngIf="limitTarget as target" class="dl-modal" (click)="onCloseDebtLimit()">
+  <div class="dl-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="dl-limit-title">
+    <header class="dl-modal__header">
+      <div>
+        <h2 id="dl-limit-title" class="dl-modal__title">{{ 'deliveries.debtLimitTitle' | t }}</h2>
+        <p class="dl-modal__subtitle">{{ target.fullName }} · {{ target.mobileNumber }}</p>
+      </div>
+      <button type="button" class="dl-modal__close" (click)="onCloseDebtLimit()" [attr.aria-label]="'common.close' | t">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+
+    <form class="dl-modal__body entity-form" (ngSubmit)="onSaveDebtLimit()">
+      <div class="dl-modal__current" [class.dl-modal__current--over]="isOverDebtLimit(target.deliveryId)">
+        <span>{{ 'deliveries.currentDebt' | t }}</span>
+        <strong>{{ money(debtOf(target.deliveryId).cashDebt) }} {{ 'riders.currencyShort' | t }}</strong>
+      </div>
+
+      <div class="entity-form__field">
+        <label class="entity-form__label" for="dl-limit">{{ 'deliveries.debtLimitLabel' | t }}</label>
+        <div class="entity-form__affix">
+          <input
+            id="dl-limit"
+            name="cashDebtLimit"
+            type="number"
+            min="0"
+            step="any"
+            inputmode="decimal"
+            class="entity-form__input"
+            [(ngModel)]="limitInput"
+            (ngModelChange)="limitError = ''"
+            [placeholder]="'deliveries.noDebtLimit' | t"
+            autocomplete="off"
+          />
+          <span class="entity-form__affix-addon entity-form__affix-addon--trail">{{ 'riders.currencyShort' | t }}</span>
+        </div>
+        <small class="entity-form__hint">{{ 'deliveries.debtLimitHint' | t }}</small>
+      </div>
+
+      <p *ngIf="limitError" class="entity-form__error" role="alert">{{ limitError }}</p>
+      <button type="submit" hidden></button>
+    </form>
+
+    <footer class="dl-modal__footer">
+      <button
+        *ngIf="debtOf(target.deliveryId).cashDebtLimit != null"
+        type="button"
+        class="deliveries__btn dl-modal__remove"
+        (click)="onRemoveDebtLimit()"
+        [disabled]="isSavingLimit"
+      >
+        {{ 'deliveries.debtLimitRemove' | t }}
+      </button>
+      <button type="button" class="deliveries__btn" (click)="onCloseDebtLimit()" [disabled]="isSavingLimit">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="deliveries__btn deliveries__btn--primary" (click)="onSaveDebtLimit()" [disabled]="isSavingLimit">
+        {{ (isSavingLimit ? 'common.saving' : 'common.save') | t }}
+      </button>
+    </footer>
+  </div>
+</div>

@@ -36,6 +36,7 @@ import { VehicleStatus } from '../../../core/enums/vehicle-status.enum';
 import { LocaleService } from '../../../core/services/locale.service';
 import { AdminNotificationService } from '../../../core/services/admin-notification.service';
 import {
+  CASH_DEBT_LIMIT_ERROR_PREFIX,
   DeliveryLeg,
   DeliveryPayoutLeg,
   HandoverImage,
@@ -44,10 +45,11 @@ import {
   LegAssignmentItem,
   OrderDispatchInfo,
   OrderLegRider,
+  RiderAvailabilityStatus,
   RiderCandidate,
   RiderDispatchService
 } from '../../../core/services/rider-dispatch.service';
-import { RiderPickerComponent } from '../../../shared/components/rider-picker/rider-picker.component';
+import { RiderPickerComponent, riderStatusKey } from '../../../shared/components/rider-picker/rider-picker.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { VehicleSpecsComponent } from '../../../shared/components/vehicle-specs/vehicle-specs.component';
@@ -85,6 +87,15 @@ interface AssignLegDraft {
   /** Translation key of why the leg cannot change, or null when it can. */
   deliveryLockKey: string | null;
   returnLockKey: string | null;
+}
+
+/** A changed leg going to a rider who is not online in a shift; listed in the confirm step. */
+interface UnavailableAssignment {
+  key: string;
+  riderName: string;
+  statusKey: string;
+  legKey: string;
+  vehicleLabel: string;
 }
 
 /** Order states in which each leg can still be (re)assigned. */
@@ -166,6 +177,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   assignDrafts: AssignLegDraft[] = [];
   riderCandidates: RiderCandidate[] = [];
   isLoadingDeliveries = false;
+  /** Why the last save failed, shown inside the dialog (the page alert sits behind it). */
+  assignError = '';
+  /** Confirm step before giving trips to riders who are offline / off shift. */
+  showUnavailableAssignConfirm = false;
+  unavailableAssignments: UnavailableAssignment[] = [];
 
   // Handover photo viewer
   galleryImages: HandoverImage[] = [];
@@ -694,6 +710,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       };
     });
     this.riderCandidates = [];
+    this.assignError = '';
     this.showDeliveryModal = true;
     this.isLoadingDeliveries = true;
 
@@ -711,7 +728,33 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** The rider who collects the cash (delivery trip) is refused at his debt limit on cash orders. */
+  get isCashOrder(): boolean {
+    return this.order?.paymentMethod === PaymentMethod.Cash;
+  }
+
+  private candidateById(deliveryId: number | null): RiderCandidate | undefined {
+    return deliveryId == null ? undefined : this.riderCandidates.find(c => c.deliveryId === deliveryId);
+  }
+
+  /**
+   * Inline warning under a picker whose newly picked rider is not online in a shift. Riders who
+   * already hold the leg are not warned about.
+   */
+  riderAvailabilityWarningKey(deliveryId: number | null, originalId: number | null): string | null {
+    if (deliveryId == null || deliveryId === originalId) return null;
+    switch (this.candidateById(deliveryId)?.status) {
+      case RiderAvailabilityStatus.InShiftOffline:
+        return 'orders.riderOfflineWarning';
+      case RiderAvailabilityStatus.OffShift:
+        return 'orders.riderOffShiftWarning';
+      default:
+        return null;
+    }
+  }
+
   onDraftDeliveryChange(draft: AssignLegDraft, deliveryId: number): void {
+    this.assignError = '';
     draft.deliveryId = deliveryId;
     // A fresh vehicle gets the same rider on both trips, like the old single-rider flow.
     if (!draft.returnLockKey && draft.originalReturnId == null && draft.returnId == null) {
@@ -720,6 +763,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
 
   onDraftReturnChange(draft: AssignLegDraft, deliveryId: number): void {
+    this.assignError = '';
     draft.returnId = deliveryId;
   }
 
@@ -729,6 +773,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   useSameRiderForReturn(draft: AssignLegDraft): void {
     if (this.canUseSameRiderForReturn(draft)) {
+      this.assignError = '';
       draft.returnId = draft.deliveryId;
     }
   }
@@ -751,6 +796,24 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return this.assignDrafts.some(d => d.originalDeliveryId != null || d.originalReturnId != null);
   }
 
+  /** Changed legs whose new rider is offline or off shift right now. */
+  private collectUnavailableAssignments(assignments: LegAssignmentItem[]): UnavailableAssignment[] {
+    const result: UnavailableAssignment[] = [];
+    for (const item of assignments) {
+      const rider = this.candidateById(item.deliveryId);
+      if (!rider || rider.status === RiderAvailabilityStatus.Available) continue;
+      const vehicle = this.assignDrafts.find(d => d.vehicle.vehicleId === item.vehicleId)?.vehicle;
+      result.push({
+        key: `${item.vehicleId}-${item.leg}`,
+        riderName: rider.fullName,
+        statusKey: riderStatusKey(rider.status),
+        legKey: item.leg === DeliveryLeg.Return ? 'orders.legReturn' : 'orders.legDelivery',
+        vehicleLabel: vehicle ? `${vehicle.vehicleName} · #${vehicle.vehicleCode}` : `#${item.vehicleId}`
+      });
+    }
+    return result;
+  }
+
   onConfirmAssignDelivery(): void {
     const assignments = this.pendingAssignments;
     if (!this.order || !assignments.length) {
@@ -758,6 +821,33 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const unavailable = this.collectUnavailableAssignments(assignments);
+    if (unavailable.length) {
+      this.unavailableAssignments = unavailable;
+      this.showUnavailableAssignConfirm = true;
+      return;
+    }
+    this.submitAssignments(assignments);
+  }
+
+  onConfirmUnavailableAssign(): void {
+    this.showUnavailableAssignConfirm = false;
+    this.unavailableAssignments = [];
+    this.submitAssignments(this.pendingAssignments);
+  }
+
+  onCancelUnavailableAssign(): void {
+    this.showUnavailableAssignConfirm = false;
+    this.unavailableAssignments = [];
+  }
+
+  trackUnavailable(_: number, item: UnavailableAssignment): string {
+    return item.key;
+  }
+
+  private submitAssignments(assignments: LegAssignmentItem[]): void {
+    if (!assignments.length) return;
+    this.assignError = '';
     this.actionLoading = 'assignDelivery';
     this.dispatchService.assignLegs(this.orderId, assignments).subscribe({
       next: () => {
@@ -767,16 +857,44 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
         this.actionLoading = '';
       },
       error: (error: any) => {
-        this.showErrorMessage(
-          error?.errorMessage || error?.error?.errorMessage || this.localeService.translate('orders.assignDeliveryFailed')
-        );
+        const message: string =
+          error?.errorMessage || error?.error?.errorMessage || error?.result?.errorMessage || '';
+        this.assignError = this.assignErrorText(message);
         this.actionLoading = '';
+        // Debts moved since the dialog opened; refresh the chips so the blocked rider shows as such.
+        if (message.startsWith(CASH_DEBT_LIMIT_ERROR_PREFIX)) {
+          this.refreshRiderCandidates();
+        }
       }
+    });
+  }
+
+  /** The cash-debt refusal is in English from the backend; keep its rider list, translate the rest. */
+  private assignErrorText(message: string): string {
+    if (message.startsWith(CASH_DEBT_LIMIT_ERROR_PREFIX)) {
+      const colon = message.indexOf(':');
+      const riders = colon >= 0 ? message.slice(colon + 1).trim() : '';
+      return riders
+        ? this.localeService.translate('orders.assignCashDebtLimitError', { riders })
+        : this.localeService.translate('orders.assignCashDebtLimitErrorShort');
+    }
+    return message || this.localeService.translate('orders.assignDeliveryFailed');
+  }
+
+  private refreshRiderCandidates(): void {
+    this.dispatchService.getCandidatesForOrder(this.orderId).subscribe({
+      next: (list) => {
+        if (this.showDeliveryModal) this.riderCandidates = list;
+      },
+      error: () => {}
     });
   }
 
   onCloseDeliveryModal(): void {
     this.showDeliveryModal = false;
+    this.showUnavailableAssignConfirm = false;
+    this.unavailableAssignments = [];
+    this.assignError = '';
     this.assignDrafts = [];
     this.riderCandidates = [];
   }
