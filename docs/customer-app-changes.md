@@ -6,6 +6,8 @@
 
 `latitude` / `longitude` are optional. With them, the list is nearest first, so the first item is the
 customer's nearest zone. Without them, the list is sorted by name and `distanceKm` is `null`.
+A zone saved without coordinates (latitude and longitude both 0) always has `distanceKm: null` and is
+listed after the zones that have a distance.
 
 ```json
 [
@@ -80,3 +82,44 @@ used to show the admin's notifications for the customer's orders; it now shows w
 | GET | `/api/customer/Customer/Notifications/UnreadCount` | `int` |
 | POST | `/api/customer/Customer/Notifications/{id}/Read` | `true` |
 | POST | `/api/customer/Customer/Notifications/ReadAll` | `true` |
+
+## Push tokens
+
+`POST /api/customer/Customer/AddDevices` now also removes the same token from any other customer, so a
+phone that two people log in on only gets the pushes of whoever is logged in now.
+
+On logout the app should forget its token:
+
+| Method | Path | Notes |
+|---|---|---|
+| DELETE | `/api/customer/Customer/Devices?token={fcmToken}` | clears the token from the signed-in customer (Android or iOS slot); `true` |
+
+## Account deletion
+
+`DELETE /api/customer/Customer/DeleteAccount` no longer fails for customers who have orders.
+
+- It is refused while any order is still open (any state other than Completed, Cancelled or
+  "not received"): "Cannot delete account. You have active orders. Please complete or cancel them first."
+- Otherwise the account is anonymized: name, phone, email, gender, images, push tokens, language and
+  saved location are removed, the login is disabled and refresh tokens are revoked. Orders stay for the
+  records. The same phone number (or email) can register again as a new account.
+- The app must drop its stored access/refresh tokens right after a successful call.
+
+## Register and passwords
+
+- `POST /api/auth/Register` no longer returns `invitationCode`; the activation code only goes out by
+  SMS/email.
+- Register, reset password and profile password change share one rule set: at least 8 characters, with
+  an uppercase letter, a lowercase letter and a digit. Messages: "Password must be at least 8 characters
+  long", "Password must contain at least one digit (0-9)", "... uppercase letter (A-Z)", "... lowercase
+  letter (a-z)".
+- A rejected new password (reset or profile) now leaves the old password working.
+
+## PayPal
+
+- If the PayPal order cannot be created, `CreateOrder` still returns the error, but the order is now
+  cancelled and its vehicles released, so the customer can try again straight away. It shows in `MyOrders`
+  as Cancelled and the usual "order cancelled" push is sent.
+- Cancelling a PayPal order that was never paid (capture not completed) has no cancellation fee and no
+  refund; it is simply cancelled. A cancelled order can no longer be paid
+  (`CompletePayPalPayment` → "Order is cancelled and can no longer be paid").

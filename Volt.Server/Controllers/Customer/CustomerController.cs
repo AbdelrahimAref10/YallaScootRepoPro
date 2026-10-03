@@ -178,6 +178,20 @@ namespace Volt.Server.Controllers.Customer
             return Ok();
         }
 
+        /// <summary>Logout: forgets this push token for the signed-in customer.</summary>
+        [HttpDelete("Devices")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RemoveDevice([FromQuery] string token)
+        {
+            var result = await _mediator.Send(new RemoveFireBaseTokenForCustomerCommand { Token = token });
+            if (result.IsFailure)
+            {
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            }
+            return Ok(result.Value);
+        }
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
