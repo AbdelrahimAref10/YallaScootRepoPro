@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -118,7 +119,7 @@ namespace Infrastructure.Services
                             amount = new
                             {
                                 currency_code = currency,
-                                value = amount.ToString("F2")
+                                value = amount.ToString("F2", CultureInfo.InvariantCulture)
                             }
                         }
                     }
@@ -272,7 +273,7 @@ namespace Infrastructure.Services
                             amount = new
                             {
                                 currency_code = currency,
-                                value = amount.ToString("F2")
+                                value = amount.ToString("F2", CultureInfo.InvariantCulture)
                             }
                         }
                     },
