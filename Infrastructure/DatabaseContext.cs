@@ -67,6 +67,7 @@ namespace Infrastructure
         public DbSet<DeliveryShift> DeliveryShifts { get; set; }
         public DbSet<OrderVehicleHandoverImage> OrderVehicleHandoverImages { get; set; }
         public DbSet<DeliveryNotification> DeliveryNotifications { get; set; }
+        public DbSet<CustomerNotification> CustomerNotifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

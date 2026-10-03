@@ -7,7 +7,7 @@ namespace Infrastructure.Migrations
 {
     /// <summary>
     /// Rider app: one rider per leg (delivery / return), per-city leg commission,
-    /// shifts with online/offline, rider device tokens and cash debt limit, customer app language, 4 handover photos, rider notifications.
+    /// shifts with online/offline, rider device tokens and cash debt limit, customer app language, 4 handover photos, rider notifications, customer notifications with read state.
     /// Existing assignments become the delivery leg and get a return leg with the same rider
     /// at 0% commission, so riders already paid 100% on delivery are not paid twice.
     /// </summary>
@@ -297,11 +297,68 @@ WHERE p.Leg = 1
                 name: "IX_VO_DeliveryNotification_OrderId",
                 table: "VO_DeliveryNotification",
                 column: "OrderId");
+
+            // ── Customer notifications ──
+            migrationBuilder.CreateTable(
+                name: "VO_CustomerNotification",
+                columns: table => new
+                {
+                    CustomerNotificationId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    OrderId = table.Column<int>(type: "int", nullable: true),
+                    NotificationType = table.Column<int>(type: "int", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    ReadAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    LastModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VO_CustomerNotification", x => x.CustomerNotificationId);
+                    table.ForeignKey(
+                        name: "FK_VO_CustomerNotification_VO_Customer_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "VO_Customer",
+                        principalColumn: "CustomerId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_VO_CustomerNotification_VO_Order_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "VO_Order",
+                        principalColumn: "OrderId",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VO_CustomerNotification_CreatedDate",
+                table: "VO_CustomerNotification",
+                column: "CreatedDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VO_CustomerNotification_CustomerId",
+                table: "VO_CustomerNotification",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VO_CustomerNotification_IsRead",
+                table: "VO_CustomerNotification",
+                column: "IsRead");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VO_CustomerNotification_OrderId",
+                table: "VO_CustomerNotification",
+                column: "OrderId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(name: "VO_CustomerNotification");
             migrationBuilder.DropTable(name: "VO_DeliveryNotification");
             migrationBuilder.DropTable(name: "VO_OrderVehicleHandoverImage");
             migrationBuilder.DropTable(name: "VO_DeliveryShift");

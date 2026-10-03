@@ -101,6 +101,39 @@ namespace Volt.Server.Controllers.Customer
             return Ok(result.Value);
         }
 
+        [HttpGet("Notifications/UnreadCount")]
+        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetUnreadNotificationsCount()
+        {
+            var result = await _mediator.Send(new GetCustomerUnreadNotificationsCountQuery());
+            if (result.IsFailure)
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            return Ok(result.Value);
+        }
+
+        [HttpPost("Notifications/{notificationId:int}/Read")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> MarkNotificationRead(int notificationId)
+        {
+            var result = await _mediator.Send(new MarkCustomerNotificationsReadCommand { NotificationId = notificationId });
+            if (result.IsFailure)
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            return Ok(result.Value);
+        }
+
+        [HttpPost("Notifications/ReadAll")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> MarkAllNotificationsRead()
+        {
+            var result = await _mediator.Send(new MarkCustomerNotificationsReadCommand());
+            if (result.IsFailure)
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            return Ok(result.Value);
+        }
+
         [HttpGet]
         [ProducesResponseType(typeof(List<CustomerNotificationDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

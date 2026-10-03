@@ -2,6 +2,7 @@ using Application.Common.DomainEvents;
 using Domain.Enums;
 using Domain.Events;
 using Infrastructure;
+using Domain.Models;
 using Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +52,7 @@ namespace Application.Features.Customer.Common
                     .Select(o => new
                     {
                         o.OrderCode,
+                        o.CustomerId,
                         o.Customer.AndriodDevice,
                         o.Customer.IosDevice,
                         o.Customer.PreferredLanguage
@@ -59,6 +61,16 @@ namespace Application.Features.Customer.Common
 
                 if (target == null)
                     return;
+
+                // Customers who have not reported a language yet get Arabic.
+                var english = target.PreferredLanguage == "en";
+                var title = (english ? text.TitleEn : text.TitleAr).Replace("{code}", target.OrderCode);
+                var body = (english ? text.BodyEn : text.BodyAr).Replace("{code}", target.OrderCode);
+
+                // Kept for the in-app list (with read state) even when the customer has no device token.
+                _context.CustomerNotifications.Add(
+                    CustomerNotification.Create(target.CustomerId, title, body, type, orderId, "System"));
+                await _context.SaveChangesAsync(cancellationToken);
 
                 var tokens = new[] { target.AndriodDevice, target.IosDevice }
                     .Where(t => !string.IsNullOrWhiteSpace(t))
@@ -69,12 +81,10 @@ namespace Application.Features.Customer.Common
                 if (tokens.Count == 0)
                     return;
 
-                // Customers who have not reported a language yet get Arabic.
-                var english = target.PreferredLanguage == "en";
                 await _push.SendNotificationAsyncToMultipleDevices(new NotificationBodyForMultipleDevices
                 {
-                    Title = (english ? text.TitleEn : text.TitleAr).Replace("{code}", target.OrderCode),
-                    Body = (english ? text.BodyEn : text.BodyAr).Replace("{code}", target.OrderCode),
+                    Title = title,
+                    Body = body,
                     FireBaseTokens = tokens,
                     PayLoad = new Dictionary<string, string>
                     {
@@ -87,7 +97,12 @@ namespace Application.Features.Customer.Common
             }
             catch (Exception ex)
             {
+                // Must never fail the action that triggered it, nor be retried by a later save on this context.
                 _logger.LogError(ex, "Failed to push order {OrderId} to its customer", orderId);
+                foreach (var entry in _context.ChangeTracker.Entries<CustomerNotification>()
+                             .Where(e => e.State == EntityState.Added)
+                             .ToList())
+                    entry.State = EntityState.Detached;
             }
         }
     }

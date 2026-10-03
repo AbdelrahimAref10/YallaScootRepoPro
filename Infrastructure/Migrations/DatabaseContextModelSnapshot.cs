@@ -1027,6 +1027,68 @@ namespace Infrastructure.Migrations
                     b.ToTable("VO_DeliveryNotification", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Models.CustomerNotification", b =>
+                {
+                    b.Property<int>("CustomerNotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CustomerNotificationId"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("CustomerNotificationId");
+
+                    b.HasIndex("CreatedDate");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("IsRead");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("VO_CustomerNotification", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Models.DeliveryShift", b =>
                 {
                     b.Property<int>("DeliveryShiftId")
@@ -3127,6 +3189,24 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Delivery");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Domain.Models.CustomerNotification", b =>
+                {
+                    b.HasOne("Domain.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Customer");
 
                     b.Navigation("Order");
                 });

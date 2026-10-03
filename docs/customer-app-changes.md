@@ -68,3 +68,15 @@ The phone is only shared while that trip is under way: the delivery rider (leg 1
 
 `total = subTotal + serviceFees + deliveryFees + urgentFees − discount + previousDebt`. It is null only for
 old orders without a totals row.
+
+## Notification list with read state
+
+Every customer push is also saved in `VO_CustomerNotification` (in the language it was sent in). The list
+used to show the admin's notifications for the customer's orders; it now shows what the customer was sent.
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/customer/Customer/Notifications?skip=&take=` | newest first; each item has `isRead`, `readAt` |
+| GET | `/api/customer/Customer/Notifications/UnreadCount` | `int` |
+| POST | `/api/customer/Customer/Notifications/{id}/Read` | `true` |
+| POST | `/api/customer/Customer/Notifications/ReadAll` | `true` |

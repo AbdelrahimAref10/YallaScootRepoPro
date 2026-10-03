@@ -1,3 +1,4 @@
+using Application.Features.Customer.Common;
 using Application.Features.Order.Common;
 using Application.Features.Order.DTOs;
 using Application.Features.Order.Services;
@@ -41,7 +42,7 @@ namespace Application.Features.Order.Command.CreateOrderCommand
         private readonly DatabaseContext _context;
         private readonly IUserSession _userSession;
         private readonly IPayPalService _payPalService;
-        private readonly INotificationService _notificationService;
+        private readonly ICustomerNotifier _customerNotifier;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IOrderRealtimeNotifier _realtime;
 
@@ -49,14 +50,14 @@ namespace Application.Features.Order.Command.CreateOrderCommand
             DatabaseContext context,
             IUserSession userSession,
             IPayPalService payPalService,
-            INotificationService notificationService,
+            ICustomerNotifier customerNotifier,
             IDateTimeProvider dateTimeProvider,
             IOrderRealtimeNotifier realtime)
         {
             _context = context;
             _userSession = userSession;
             _payPalService = payPalService;
-            _notificationService = notificationService;
+            _customerNotifier = customerNotifier;
             _dateTimeProvider = dateTimeProvider;
             _realtime = realtime;
         }
@@ -349,46 +350,15 @@ namespace Application.Features.Order.Command.CreateOrderCommand
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        private async Task SendOrderCreatedNotification(Domain.Models.Customer customer, Domain.Models.Order order, CancellationToken cancellationToken)
+        private Task SendOrderCreatedNotification(Domain.Models.Customer customer, Domain.Models.Order order, CancellationToken cancellationToken)
         {
-            try
-            {
-                var customerWithTokens = await _context.Customers
-                    .FirstOrDefaultAsync(c => c.CustomerId == customer.CustomerId, cancellationToken);
-
-                if (customerWithTokens == null)
-                    return;
-
-                var firebaseTokens = new List<string>();
-                if (!string.IsNullOrWhiteSpace(customerWithTokens.AndriodDevice))
-                    firebaseTokens.Add(customerWithTokens.AndriodDevice);
-                if (!string.IsNullOrWhiteSpace(customerWithTokens.IosDevice))
-                    firebaseTokens.Add(customerWithTokens.IosDevice);
-
-                if (firebaseTokens.Count == 0)
-                    return;
-
-                var notificationBody = new NotificationBodyForMultipleDevices
-                {
-                    Title = customerWithTokens.PreferredLanguage == "en" ? "Order placed" : "تم استلام طلبك",
-                    Body = customerWithTokens.PreferredLanguage == "en"
-                        ? $"We got your order #{order.OrderCode}. We will keep you posted on every step."
-                        : $"طلبك #{order.OrderCode} وصلنا، وهنبلغك بكل خطوة فيه.",
-                    FireBaseTokens = firebaseTokens,
-                    PayLoad = new Dictionary<string, string>
-                    {
-                        { "orderId", order.OrderId.ToString() },
-                        { "orderCode", order.OrderCode },
-                        { "type", ((int)NotificationType.OrderCreated).ToString() },
-                        { "action", "open_order_detail" }
-                    }
-                };
-
-                await _notificationService.SendNotificationAsyncToMultipleDevices(notificationBody);
-            }
-            catch (Exception)
-            {
-            }
+            return _customerNotifier.NotifyOrderAsync(
+                order.OrderId,
+                new CustomerPushText(
+                    "تم استلام طلبك", "طلبك #{code} وصلنا، وهنبلغك بكل خطوة فيه.",
+                    "Order placed", "We got your order #{code}. We will keep you posted on every step."),
+                NotificationType.OrderCreated,
+                cancellationToken);
         }
     }
 }
