@@ -101,7 +101,8 @@ On logout the app should forget its token:
 - It is refused while any order is still open (any state other than Completed, Cancelled or
   "not received"): "Cannot delete account. You have active orders. Please complete or cancel them first."
 - Otherwise the account is anonymized: name, phone, email, gender, images, push tokens, language and
-  saved location are removed, the login is disabled and refresh tokens are revoked. Orders stay for the
+  saved location are removed, the passport photo is removed from every kept order, the login is
+  disabled and refresh tokens are revoked. Orders stay for the
   records. The same phone number (or email) can register again as a new account.
 - The app must drop its stored access/refresh tokens right after a successful call.
 

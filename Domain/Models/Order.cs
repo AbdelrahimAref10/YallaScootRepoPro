@@ -620,6 +620,17 @@ namespace Domain.Models
             return lines;
         }
 
+        /// <summary>Removes the passport photo (customer deleted the account). The order itself is kept.</summary>
+        public void ClearPassportImage(string? modifiedBy = null)
+        {
+            if (string.IsNullOrEmpty(PassportImage))
+                return;
+
+            PassportImage = string.Empty;
+            LastModifiedBy = modifiedBy;
+            LastModifiedDate = DateTime.UtcNow;
+        }
+
         public void MarkMoneyRefunded(string? modifiedBy = null)
         {
             MoneyRefunded = true;

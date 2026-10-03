@@ -15,7 +15,7 @@ namespace Application.Features.Customer.Command.DeleteCustomerAccountCommand
     /// <summary>
     /// Self-service account deletion (app-store requirement). Orders reference the customer with a
     /// Restrict FK and are financial records, so the customer row is kept and anonymized instead of
-    /// being removed: personal data is scrubbed, the login is disabled and freed (the same phone or
+    /// being removed: personal data (incl. passport photos on kept orders) is scrubbed, the login is disabled and freed (the same phone or
     /// email can register again), refresh tokens are revoked and push stops. Everything is written
     /// in one SaveChanges so a failure leaves the account untouched.
     /// </summary>
@@ -80,6 +80,14 @@ namespace Application.Features.Customer.Command.DeleteCustomerAccountCommand
                 .ToList();
 
             customer.DeleteAccount(actor);
+
+            // Passport photos are personal data: removed from every order the customer kept.
+            var ordersWithPassport = await _context.Orders
+                .AsTracking()
+                .Where(o => o.CustomerId == customer.CustomerId && o.PassportImage != "")
+                .ToListAsync(cancellationToken);
+            foreach (var order in ordersWithPassport)
+                order.ClearPassportImage(actor);
 
             if (customer.CustomerLocation != null)
                 _context.CustomerLocations.Remove(customer.CustomerLocation);
