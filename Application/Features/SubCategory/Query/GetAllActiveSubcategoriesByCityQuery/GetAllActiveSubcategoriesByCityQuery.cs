@@ -13,7 +13,7 @@ namespace Application.Features.SubCategory.Query.GetAllActiveSubcategoriesByCity
 {
     public record GetAllActiveSubcategoriesByCityQuery : IRequest<Result<List<SubCategoryDto>>>
     {
-        public int CustomerId { get; set; }
+        public int UserId { get; set; }
     }
 
     public class GetAllActiveSubcategoriesByCityQueryHandler : IRequestHandler<GetAllActiveSubcategoriesByCityQuery, Result<List<SubCategoryDto>>>
@@ -31,7 +31,7 @@ namespace Application.Features.SubCategory.Query.GetAllActiveSubcategoriesByCity
         {
             // Get Customer to retrieve CityId
             var customer = await _context.Customers
-                .FirstOrDefaultAsync(c => c.CustomerId == request.CustomerId, cancellationToken);
+                .FirstOrDefaultAsync(c => c.UserId == request.UserId, cancellationToken);
 
             if (customer == null)
             {

@@ -30,16 +30,16 @@ namespace Volt.Server.Controllers.Customer
         [Route("GetAllActiveCategories")]
         public async Task<IActionResult> GetAllActiveCategories()
         {
-            // Get CustomerId from session (UserId for customers)
-            var customerId = _userSession.UserId;
-            if (customerId <= 0)
+            // The token carries the account (Identity) id, not CustomerId
+            var userId = _userSession.UserId;
+            if (userId <= 0)
             {
                 return BadRequest(ProblemDetail.CreateProblemDetail("Customer not authenticated"));
             }
 
             var query = new GetAllActiveCategoriesByCityQuery
             {
-                CustomerId = customerId
+                UserId = userId
             };
 
             var result = await _mediator.Send(query);

@@ -31,16 +31,16 @@ namespace Volt.Server.Controllers.Customer
         [Route("GetAllActiveSubcategories")]
         public async Task<IActionResult> GetAllActiveSubcategories()
         {
-            // Get CustomerId from session (UserId for customers)
-            var customerId = _userSession.UserId;
-            if (customerId <= 0)
+            // The token carries the account (Identity) id, not CustomerId
+            var userId = _userSession.UserId;
+            if (userId <= 0)
             {
                 return BadRequest(ProblemDetail.CreateProblemDetail("Customer not authenticated"));
             }
 
             var query = new GetAllActiveSubcategoriesByCityQuery
             {
-                CustomerId = customerId
+                UserId = userId
             };
 
             var result = await _mediator.Send(query);
@@ -57,16 +57,16 @@ namespace Volt.Server.Controllers.Customer
         [Route("GetAllOffers")]
         public async Task<IActionResult> GetAllOffers()
         {
-            // Get CustomerId from session (UserId for customers)
-            var customerId = _userSession.UserId;
-            if (customerId <= 0)
+            // The token carries the account (Identity) id, not CustomerId
+            var userId = _userSession.UserId;
+            if (userId <= 0)
             {
                 return BadRequest(ProblemDetail.CreateProblemDetail("Customer not authenticated"));
             }
 
             var query = new GetAllOffersByCityQuery
             {
-                CustomerId = customerId
+                UserId = userId
             };
 
             var result = await _mediator.Send(query);
