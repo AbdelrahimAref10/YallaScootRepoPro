@@ -13,7 +13,7 @@ namespace Application.Features.Category.Query.GetAllActiveCategoriesByCityQuery
 {
     public record GetAllActiveCategoriesByCityQuery : IRequest<Result<List<CategoryDto>>>
     {
-        public int CustomerId { get; set; }
+        public int UserId { get; set; }
     }
 
     public class GetAllActiveCategoriesByCityQueryHandler : IRequestHandler<GetAllActiveCategoriesByCityQuery, Result<List<CategoryDto>>>
@@ -31,7 +31,7 @@ namespace Application.Features.Category.Query.GetAllActiveCategoriesByCityQuery
         {
             // Get Customer to retrieve CityId
             var customer = await _context.Customers
-                .FirstOrDefaultAsync(c => c.CustomerId == request.CustomerId, cancellationToken);
+                .FirstOrDefaultAsync(c => c.UserId == request.UserId, cancellationToken);
 
             if (customer == null)
             {
