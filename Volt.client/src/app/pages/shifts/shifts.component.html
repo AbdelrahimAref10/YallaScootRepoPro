@@ -1,0 +1,256 @@
+<div class="shifts">
+  <header class="shifts__header">
+    <div>
+      <h1 class="shifts__title">{{ 'shifts.title' | t }}</h1>
+      <p class="shifts__subtitle">{{ 'shifts.subtitle' | t }}</p>
+    </div>
+    <button type="button" class="shifts__add-btn" (click)="onAdd()">
+      <span>{{ 'shifts.add' | t }}</span>
+    </button>
+  </header>
+
+  <div *ngIf="successMessage" class="shifts__alert shifts__alert--ok" role="status">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="shifts__alert" role="alert">{{ errorMessage }}</div>
+
+  <section class="shifts__filters" aria-label="filters">
+    <app-multi-select
+      [multiple]="false"
+      [searchable]="true"
+      [clearable]="true"
+      [options]="cityOptions"
+      [ngModel]="cityFilter"
+      (ngModelChange)="onCityFilterChange($event)"
+      [placeholder]="'shifts.allCities' | t"
+    ></app-multi-select>
+
+    <button type="button" class="shifts__btn" (click)="loadShifts()">
+      {{ 'common.refresh' | t }}
+    </button>
+  </section>
+
+  <div *ngIf="isLoading" class="shifts__loading">{{ 'common.loading' | t }}</div>
+
+  <section *ngIf="!isLoading" class="shifts__panel">
+    <div class="shifts__table-scroll">
+      <table class="shifts__table">
+        <thead>
+          <tr>
+            <th>{{ 'common.name' | t }}</th>
+            <th>{{ 'common.city' | t }}</th>
+            <th>{{ 'shifts.timeWindow' | t }}</th>
+            <th>{{ 'shifts.days' | t }}</th>
+            <th>{{ 'common.status' | t }}</th>
+            <th>{{ 'shifts.riders' | t }}</th>
+            <th>{{ 'common.actions' | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="shifts.length === 0">
+            <td colspan="7" class="shifts__empty">{{ 'shifts.empty' | t }}</td>
+          </tr>
+          <tr *ngFor="let s of shifts">
+            <td><strong>{{ s.name }}</strong></td>
+            <td>{{ s.cityName || '—' }}</td>
+            <td>
+              <span class="shifts__time">{{ s.startTime }}–{{ s.endTime }}</span>
+              <span *ngIf="crossesMidnight(s)" class="shifts__note">{{ 'shifts.crossesMidnight' | t }}</span>
+            </td>
+            <td>
+              <span *ngIf="isEveryDay(s.daysOfWeekMask); else dayChips" class="shifts__day shifts__day--on">{{ 'shifts.everyDay' | t }}</span>
+              <ng-template #dayChips>
+                <span class="shifts__days">
+                  <span
+                    *ngFor="let d of days"
+                    class="shifts__day"
+                    [class.shifts__day--on]="isDayOn(s.daysOfWeekMask, d.bit)"
+                  >{{ d.key | t }}</span>
+                </span>
+              </ng-template>
+            </td>
+            <td>
+              <span class="shifts__badges">
+                <span
+                  class="shifts__badge"
+                  [class.shifts__badge--on]="s.isActive"
+                  [class.shifts__badge--off]="!s.isActive"
+                >
+                  {{ (s.isActive ? 'common.active' : 'common.inactive') | t }}
+                </span>
+                <span *ngIf="s.isRunningNow" class="shifts__badge shifts__badge--live">
+                  <span class="shifts__live-dot" aria-hidden="true"></span>
+                  {{ 'shifts.runningNow' | t }}
+                </span>
+              </span>
+            </td>
+            <td>
+              <div class="shifts__riders">
+                <span class="shifts__rider-count">
+                  {{ 'shifts.ridersCount' | t:{ n: s.riders.length, online: onlineCount(s) } }}
+                </span>
+                <span class="shifts__dots" *ngIf="s.riders.length">
+                  <span
+                    *ngFor="let r of s.riders"
+                    class="shifts__dot"
+                    [class.shifts__dot--on]="r.isOnline"
+                    [attr.title]="r.fullName + ' · ' + ((r.isOnline ? 'riders.online' : 'riders.offline') | t)"
+                  ></span>
+                </span>
+              </div>
+            </td>
+            <td>
+              <div class="shifts__row-actions">
+                <button type="button" class="shifts__link" (click)="onEdit(s)">{{ 'common.edit' | t }}</button>
+                <button type="button" class="shifts__link shifts__link--danger" (click)="onDelete(s)" [disabled]="isDeleting">
+                  {{ 'common.delete' | t }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- Create / edit shift -->
+<div *ngIf="showModal" class="sh-modal" (click)="closeModal()">
+  <div class="sh-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <header class="sh-modal__header">
+      <div>
+        <h2 class="sh-modal__title">{{ (editingShift ? 'shifts.edit' : 'shifts.add') | t }}</h2>
+        <p class="sh-modal__subtitle">{{ 'shifts.formSubtitle' | t }}</p>
+      </div>
+      <button type="button" class="sh-modal__close" (click)="closeModal()" [attr.aria-label]="'common.close' | t">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="sh-modal__body entity-form">
+      <div class="entity-form__row">
+        <div class="entity-form__field">
+          <label class="entity-form__label">{{ 'common.city' | t }}<span class="entity-form__req">*</span></label>
+          <app-multi-select
+            [multiple]="false"
+            [clearable]="false"
+            [options]="cityOptions"
+            [ngModel]="form.cityId"
+            (ngModelChange)="onFormCityChange($event)"
+            [placeholder]="'deliveries.selectCity' | t"
+          ></app-multi-select>
+        </div>
+        <div class="entity-form__field">
+          <label class="entity-form__label" for="shift-name">{{ 'shifts.name' | t }}<span class="entity-form__req">*</span></label>
+          <input
+            id="shift-name"
+            type="text"
+            class="entity-form__input"
+            [(ngModel)]="form.name"
+            [placeholder]="'shifts.namePlaceholder' | t"
+            maxlength="100"
+          />
+        </div>
+      </div>
+
+      <div class="entity-form__row">
+        <div class="entity-form__field">
+          <label class="entity-form__label" for="shift-start">{{ 'shifts.startTime' | t }}<span class="entity-form__req">*</span></label>
+          <input id="shift-start" type="time" class="entity-form__input" [(ngModel)]="form.startTime" />
+        </div>
+        <div class="entity-form__field">
+          <label class="entity-form__label" for="shift-end">{{ 'shifts.endTime' | t }}<span class="entity-form__req">*</span></label>
+          <input id="shift-end" type="time" class="entity-form__input" [(ngModel)]="form.endTime" />
+        </div>
+      </div>
+      <p class="sh-modal__note" [class.sh-modal__note--warn]="formCrossesMidnight">
+        {{ (formCrossesMidnight ? 'shifts.crossesMidnightHint' : 'shifts.timeZoneHint') | t }}
+      </p>
+
+      <div class="entity-form__field">
+        <div class="sh-modal__label-row">
+          <span class="entity-form__label">{{ 'shifts.days' | t }}<span class="entity-form__req">*</span></span>
+          <button type="button" class="sh-modal__text-btn" (click)="setEveryDay()">
+            {{ (isEveryDay(form.daysOfWeekMask) ? 'shifts.clearDays' : 'shifts.everyDay') | t }}
+          </button>
+        </div>
+        <div class="sh-modal__days" role="group" [attr.aria-label]="'shifts.days' | t">
+          <button
+            *ngFor="let d of days"
+            type="button"
+            class="sh-modal__day"
+            [class.sh-modal__day--on]="isDayOn(form.daysOfWeekMask, d.bit)"
+            [attr.aria-pressed]="isDayOn(form.daysOfWeekMask, d.bit)"
+            (click)="toggleDay(d.bit)"
+          >
+            {{ d.key | t }}
+          </button>
+        </div>
+      </div>
+
+      <label class="entity-form__check">
+        <input type="checkbox" [(ngModel)]="form.isActive" />
+        <span>{{ 'shifts.isActive' | t }}</span>
+      </label>
+
+      <div class="entity-form__field">
+        <div class="sh-modal__label-row">
+          <span class="entity-form__label">{{ 'shifts.riders' | t }}</span>
+          <span class="sh-modal__count">{{ 'common.selectedCount' | t:{ count: form.deliveryIds.length } }}</span>
+        </div>
+
+        <p *ngIf="!form.cityId" class="sh-modal__muted">{{ 'shifts.pickCityFirst' | t }}</p>
+        <p *ngIf="form.cityId && isLoadingRiders" class="sh-modal__muted">{{ 'common.loading' | t }}</p>
+
+        <ng-container *ngIf="form.cityId && !isLoadingRiders">
+          <input
+            *ngIf="riderRows.length > 6"
+            type="search"
+            class="entity-form__input sh-modal__search"
+            [(ngModel)]="riderSearch"
+            [placeholder]="'shifts.searchRiders' | t"
+          />
+          <div class="sh-modal__riders">
+            <label
+              *ngFor="let r of filteredRiderRows"
+              class="sh-modal__rider"
+              [class.sh-modal__rider--on]="isRiderSelected(r.deliveryId)"
+            >
+              <input type="checkbox" [checked]="isRiderSelected(r.deliveryId)" (change)="toggleRider(r.deliveryId)" />
+              <span class="sh-modal__rider-dot" [ngClass]="'sh-modal__rider-dot--' + r.tone" aria-hidden="true"></span>
+              <span class="sh-modal__rider-copy">
+                <strong>{{ r.fullName }}</strong>
+                <small>
+                  {{ r.statusKey | t }}<ng-container *ngIf="r.shiftName"> · {{ r.shiftName }}</ng-container><ng-container *ngIf="r.zoneName"> · {{ r.zoneName }}</ng-container>
+                </small>
+              </span>
+              <span class="sh-modal__rider-mobile">{{ r.mobileNumber }}</span>
+            </label>
+            <p *ngIf="!filteredRiderRows.length" class="sh-modal__muted">{{ 'riders.noRiders' | t }}</p>
+          </div>
+        </ng-container>
+      </div>
+
+      <p *ngIf="formError" class="entity-form__error" role="alert">{{ formError }}</p>
+    </div>
+
+    <footer class="sh-modal__footer">
+      <button type="button" class="shifts__btn" (click)="closeModal()">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="shifts__btn shifts__btn--primary" (click)="onSave()" [disabled]="isSaving">
+        {{ (isSaving ? 'common.saving' : 'common.save') | t }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<app-confirm-dialog
+  [isVisible]="showConfirmDialog"
+  [title]="'common.delete' | t"
+  [message]="'shifts.deleteConfirm' | t:{ name: pendingDelete?.name || '' }"
+  [type]="'danger'"
+  [isLoading]="isDeleting"
+  [confirmText]="'common.delete' | t"
+  [cancelText]="'common.cancel' | t"
+  (confirm)="onConfirmDelete()"
+  (cancel)="onCancelDelete()"
+></app-confirm-dialog>

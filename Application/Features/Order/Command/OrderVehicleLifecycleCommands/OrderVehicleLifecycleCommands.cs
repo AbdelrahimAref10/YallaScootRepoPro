@@ -25,9 +25,10 @@ namespace Application.Features.Order.Command.OrderVehicleLifecycleCommands
             if (merchantDetail == null)
                 return Result.Failure<VehicleSettlementSnapshot>("Merchant payment detail not found for vehicle. Confirm order first.");
 
+            // The settlement snapshot is about the delivery trip: its rider collects cash and earns the delivery-leg commission.
             var deliveryDetail = await context.DeliveryOrderPaymentDetails
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.OrderId == orderId && p.VehicleId == vehicleId, cancellationToken);
+                .FirstOrDefaultAsync(p => p.OrderId == orderId && p.VehicleId == vehicleId && p.Leg == DeliveryLeg.Delivery, cancellationToken);
 
             if (deliveryDetail == null)
                 return Result.Failure<VehicleSettlementSnapshot>("Delivery payment detail not found for vehicle. Assign delivery first.");
@@ -133,7 +134,9 @@ namespace Application.Features.Order.Command.OrderVehicleLifecycleCommands
 
             var assignment = await _context.DeliveryMenOrders
                 .AsTracking()
-                .FirstOrDefaultAsync(d => d.OrderId == request.OrderId && d.VehicleId == request.VehicleId, cancellationToken);
+                .FirstOrDefaultAsync(d => d.OrderId == request.OrderId
+                    && d.VehicleId == request.VehicleId
+                    && d.Leg == DeliveryLeg.Delivery, cancellationToken);
             assignment?.MarkReceivedFromMerchant(actor);
 
             await _context.SaveChangesAsync(cancellationToken);
@@ -356,9 +359,21 @@ namespace Application.Features.Order.Command.OrderVehicleLifecycleCommands
                     : request.ImageUrl);
 
             var actor = _userSession.UserName ?? "System";
+
+            var returnDetail = await _context.DeliveryOrderPaymentDetails
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.OrderId == request.OrderId
+                    && p.VehicleId == request.VehicleId
+                    && p.Leg == DeliveryLeg.Return, cancellationToken);
+
             try
             {
-                order.MarkVehicleDeliveredToOwner(request.VehicleId, imagePath, actor);
+                order.MarkVehicleDeliveredToOwner(
+                    request.VehicleId,
+                    imagePath,
+                    actor,
+                    returnDetail?.DeliveryId,
+                    returnDetail?.DeliveryFeeShare ?? 0m);
             }
             catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
             {

@@ -63,7 +63,9 @@ namespace Application.Features.City.Query.GetAllCitiesQuery
                     ZoneGroupName = c.ZoneGroup != null ? c.ZoneGroup.Name : null,
                     UrgentDelivery = c.UrgentDelivery,
                     ServiceFees = c.ServiceFees,
-                    CancellationFees = c.CancellationFees
+                    CancellationFees = c.CancellationFees,
+                    DeliveryLegCommissionPercent = c.DeliveryLegCommissionPercent,
+                    ReturnLegCommissionPercent = c.ReturnLegCommissionPercent
                 })
                 .ToListAsync(cancellationToken);
 

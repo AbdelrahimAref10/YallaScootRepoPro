@@ -170,6 +170,8 @@ namespace Application.Features.Auth.Command.LoginCommand
                     var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
                     if (customer == null)
                         return Result.Failure("Customer profile not found");
+                    if (customer.IsDeleted)
+                        return Result.Failure("Customer profile not found");
                     if (customer.State == CustomerState.Blocked)
                         return Result.Failure("Customer account is blocked. Please contact support.");
                     if (customer.State != CustomerState.Active)

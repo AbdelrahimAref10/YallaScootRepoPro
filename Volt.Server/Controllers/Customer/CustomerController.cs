@@ -32,7 +32,9 @@ namespace Volt.Server.Controllers.Customer
             _mediator = mediator;
         }
 
+        /// <summary>Anonymous: sign-up picks the city (then its zones) before the customer has a token.</summary>
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(List<CityLookupDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
         [Route("GetActiveCities")]
@@ -51,9 +53,18 @@ namespace Volt.Server.Controllers.Customer
         [AllowAnonymous]
         [ProducesResponseType(typeof(List<ZoneLookupDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetZonesByCity([FromQuery] int cityId)
+        public async Task<IActionResult> GetZonesByCity(
+            [FromQuery] int cityId,
+            [FromQuery] double? latitude = null,
+            [FromQuery] double? longitude = null)
         {
-            var result = await _mediator.Send(new GetZonesByCityQuery { CityId = cityId });
+            // With the customer's location the first zone is the nearest one.
+            var result = await _mediator.Send(new GetZonesByCityQuery
+            {
+                CityId = cityId,
+                Latitude = latitude,
+                Longitude = longitude
+            });
             if (result.IsFailure)
             {
                 return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
@@ -90,6 +101,39 @@ namespace Volt.Server.Controllers.Customer
             return Ok(result.Value);
         }
 
+        [HttpGet("Notifications/UnreadCount")]
+        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetUnreadNotificationsCount()
+        {
+            var result = await _mediator.Send(new GetCustomerUnreadNotificationsCountQuery());
+            if (result.IsFailure)
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            return Ok(result.Value);
+        }
+
+        [HttpPost("Notifications/{notificationId:int}/Read")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> MarkNotificationRead(int notificationId)
+        {
+            var result = await _mediator.Send(new MarkCustomerNotificationsReadCommand { NotificationId = notificationId });
+            if (result.IsFailure)
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            return Ok(result.Value);
+        }
+
+        [HttpPost("Notifications/ReadAll")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> MarkAllNotificationsRead()
+        {
+            var result = await _mediator.Send(new MarkCustomerNotificationsReadCommand());
+            if (result.IsFailure)
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            return Ok(result.Value);
+        }
+
         [HttpGet]
         [ProducesResponseType(typeof(List<CustomerNotificationDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -121,7 +165,9 @@ namespace Volt.Server.Controllers.Customer
             var command = new SaveFireBaseTokensForCustomerCommand
             {
                 AndroidDevice = request.AndriodDevice,
-                IosDevice = request.IosDevice
+                IosDevice = request.IosDevice,
+                Language = request.Language,
+                FallbackLanguage = Request.Headers.AcceptLanguage.ToString()
             };
 
             var result = await _mediator.Send(command);
@@ -130,6 +176,20 @@ namespace Volt.Server.Controllers.Customer
                 return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
             }
             return Ok();
+        }
+
+        /// <summary>Logout: forgets this push token for the signed-in customer.</summary>
+        [HttpDelete("Devices")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RemoveDevice([FromQuery] string token)
+        {
+            var result = await _mediator.Send(new RemoveFireBaseTokenForCustomerCommand { Token = token });
+            if (result.IsFailure)
+            {
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            }
+            return Ok(result.Value);
         }
 
         [HttpPost]

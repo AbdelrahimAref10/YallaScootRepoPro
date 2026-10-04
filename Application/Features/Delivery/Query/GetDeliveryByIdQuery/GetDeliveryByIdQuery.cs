@@ -1,3 +1,4 @@
+using Application.Features.Delivery.Common;
 using Application.Features.Delivery.DTOs;
 using CSharpFunctionalExtensions;
 using Infrastructure;
@@ -44,12 +45,16 @@ namespace Application.Features.Delivery.Query.GetDeliveryByIdQuery
                     PersonalImage = d.PersonalImage,
                     IsActive = d.IsActive,
                     IsDeleted = d.IsDeleted,
-                    CreatedDate = d.CreatedDate
+                    CreatedDate = d.CreatedDate,
+                    CashDebtLimit = d.CashDebtLimit
                 })
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (delivery == null)
                 return Result.Failure<DeliveryDto>("Delivery not found");
+
+            var debts = await RiderCashDebt.ForRidersAsync(_context, new[] { delivery.DeliveryId }, cancellationToken);
+            delivery.CashDebt = debts[delivery.DeliveryId];
 
             return Result.Success(delivery);
         }

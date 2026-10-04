@@ -71,6 +71,15 @@
         {{ isActionLoading('confirm') ? ('orders.confirming' | t) : ('orders.confirmOrder' | t) }}
       </button>
       <button
+        *ngIf="canAssignAnyVehicle"
+        type="button"
+        class="od__btn od__btn--ghost"
+        (click)="onOpenAssignDelivery()"
+        [disabled]="isActionLoading('assignDelivery')"
+      >
+        {{ (hasAnyLegRider ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
+      </button>
+      <button
         *ngIf="canMarkHandover()"
         type="button"
         class="od__btn od__btn--ghost"
@@ -293,23 +302,44 @@
                     [class.od__courier--on]="!!deliveryFor(vehicle.vehicleId)"
                     [class.od__courier--off]="!deliveryFor(vehicle.vehicleId)"
                   >
-                    <div class="od__courier-copy" *ngIf="deliveryFor(vehicle.vehicleId) as courier; else noCourier">
-                      <p class="od__courier-kicker">{{ 'orders.assignedCourier' | t }}</p>
-                      <strong>{{ courier.deliveryName }}</strong>
-                      <span
-                        class="od__chip"
-                        [class.od__chip--ok]="courier.deliveryReceivedFromMerchant"
-                        [class.od__chip--warn]="!courier.deliveryReceivedFromMerchant"
-                      >
-                        {{ (courier.deliveryReceivedFromMerchant ? 'orders.handoverDone' : 'orders.handoverPending') | t }}
-                      </span>
-                    </div>
-                    <ng-template #noCourier>
-                      <div class="od__courier-copy">
-                        <p class="od__courier-kicker">{{ 'orders.courier' | t }}</p>
-                        <strong>{{ 'orders.unassignedCourier' | t }}</strong>
+                    <div class="od__legs">
+                      <div class="od__courier-copy od__leg">
+                        <p class="od__courier-kicker">{{ 'orders.legDelivery' | t }} · {{ 'orders.legDeliveryRoute' | t }}</p>
+                        <ng-container *ngIf="deliveryFor(vehicle.vehicleId) as courier; else noDeliveryRider">
+                          <strong>{{ courier.deliveryName }}</strong>
+                          <span
+                            class="od__chip"
+                            [class.od__chip--ok]="vehicle.receivedFromOwner || courier.deliveryReceivedFromMerchant"
+                            [class.od__chip--warn]="!vehicle.receivedFromOwner && !courier.deliveryReceivedFromMerchant"
+                          >
+                            {{ (vehicle.deliveredToCustomer
+                              ? 'orders.cycleDeliveredToCustomer'
+                              : (vehicle.receivedFromOwner || courier.deliveryReceivedFromMerchant ? 'orders.handoverDone' : 'orders.handoverPending')) | t }}
+                          </span>
+                        </ng-container>
+                        <ng-template #noDeliveryRider>
+                          <strong class="od__leg-empty">{{ 'orders.unassignedCourier' | t }}</strong>
+                        </ng-template>
                       </div>
-                    </ng-template>
+                      <div class="od__courier-copy od__leg">
+                        <p class="od__courier-kicker">{{ 'orders.legReturn' | t }} · {{ 'orders.legReturnRoute' | t }}</p>
+                        <ng-container *ngIf="returnFor(vehicle.vehicleId) as courier; else noReturnRider">
+                          <strong>{{ courier.deliveryName }}</strong>
+                          <span
+                            class="od__chip"
+                            [class.od__chip--ok]="vehicle.receivedFromCustomer"
+                            [class.od__chip--muted]="!vehicle.receivedFromCustomer"
+                          >
+                            {{ (vehicle.deliveredToOwner
+                              ? 'orders.cycleReturnedToOwner'
+                              : (vehicle.receivedFromCustomer ? 'orders.cycleReceivedFromCustomer' : 'orders.legReturnWaiting')) | t }}
+                          </span>
+                        </ng-container>
+                        <ng-template #noReturnRider>
+                          <strong class="od__leg-empty">{{ 'orders.unassignedCourier' | t }}</strong>
+                        </ng-template>
+                      </div>
+                    </div>
                     <button
                       *ngIf="canAssignVehicle(vehicle)"
                       type="button"
@@ -317,7 +347,7 @@
                       (click)="onOpenAssignDelivery(vehicle)"
                       [disabled]="isActionLoading('assignDelivery')"
                     >
-                      {{ deliveryFor(vehicle.vehicleId) ? ('orders.changeDelivery' | t) : ('orders.assignDelivery' | t) }}
+                      {{ (hasAnyRider(vehicle.vehicleId) ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
                     </button>
                   </div>
 
@@ -377,6 +407,20 @@
                     >
                       <img [src]="cycleProofUrl(vehicle, step.id)" alt="" />
                     </a>
+                    <ng-container *ngIf="stepImages(vehicle, step.id) as photos">
+                      <span class="od__cycle-photos" *ngIf="photos.length">
+                        <button
+                          *ngFor="let photo of photos; let i = index"
+                          type="button"
+                          class="od__cycle-proof od__cycle-photo"
+                          (click)="openGallery(vehicle, step.id, i)"
+                          [attr.title]="positionLabelKey(photo.position) | t"
+                          [attr.aria-label]="(step.labelKey | t) + ' · ' + (positionLabelKey(photo.position) | t)"
+                        >
+                          <img [src]="photo.imageUrl" alt="" />
+                        </button>
+                      </span>
+                    </ng-container>
                   </li>
                 </ol>
 
@@ -476,6 +520,8 @@
               <tr>
                 <th>{{ 'orders.partyDelivery' | t }}</th>
                 <th>{{ 'orders.vehicleCode' | t }}</th>
+                <th>{{ 'orders.legCol' | t }}</th>
+                <th>{{ 'orders.commissionPercentCol' | t }}</th>
                 <th>{{ 'orders.deliveryFeeShare' | t }}</th>
               </tr>
             </thead>
@@ -483,6 +529,13 @@
               <tr *ngFor="let row of order.deliveryOrderPaymentDetails">
                 <td>{{ row.deliveryName }}</td>
                 <td>{{ row.vehicleCode }}</td>
+                <td>{{ legLabelKey(payoutLeg(row.deliveryOrderPaymentDetailId)?.leg) | t }}</td>
+                <td>
+                  <ng-container *ngIf="payoutLeg(row.deliveryOrderPaymentDetailId)?.commissionPercent != null; else noPercent">
+                    {{ payoutLeg(row.deliveryOrderPaymentDetailId)?.commissionPercent | number:'1.0-2' }}%
+                  </ng-container>
+                  <ng-template #noPercent>—</ng-template>
+                </td>
                 <td><strong>{{ row.deliveryFeeShare | number:'1.2-2' }}</strong></td>
               </tr>
             </tbody>
@@ -840,14 +893,17 @@
   </div>
 </div>
 
-<!-- Assign delivery modal -->
+<!-- Assign / reassign riders modal (delivery + return trip per vehicle) -->
 <div *ngIf="showDeliveryModal" class="od-modal" (click)="onCloseDeliveryModal()">
-  <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+  <div class="od-modal__dialog od-modal__dialog--assign" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
     <header class="od-modal__header">
       <div>
-        <h2 class="od-modal__title">{{ 'orders.assignDelivery' | t }}</h2>
-        <p class="od-modal__subtitle" *ngIf="assigningVehicle">
-          {{ assigningVehicle.vehicleName }} · #{{ assigningVehicle.vehicleCode }}
+        <h2 class="od-modal__title">{{ (assignDialogIsReassign ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}</h2>
+        <p class="od-modal__subtitle" *ngIf="assignDrafts.length === 1">
+          {{ assignDrafts[0].vehicle.vehicleName }} · #{{ assignDrafts[0].vehicle.vehicleCode }}
+        </p>
+        <p class="od-modal__subtitle" *ngIf="assignDrafts.length > 1">
+          {{ 'orders.assignRidersSubtitle' | t:{ n: assignDrafts.length } }}
         </p>
       </div>
       <button type="button" class="od-modal__close" (click)="onCloseDeliveryModal()" [attr.aria-label]="'common.close' | t">
@@ -856,37 +912,154 @@
         </svg>
       </button>
     </header>
-    <div class="od-modal__body">
+    <div class="od-modal__body od-assign__body">
       <div *ngIf="isLoadingDeliveries" class="od-modal__loading">
         <div class="od__spinner" aria-hidden="true"></div>
         <p>{{ 'common.loading' | t }}</p>
       </div>
-      <div *ngIf="!isLoadingDeliveries" class="od__list">
-        <div class="od__field">
-          <label class="od__label">{{ 'orders.selectCourier' | t }}</label>
-          <app-multi-select
-            [multiple]="false"
-            layout="table"
-            [options]="deliveryOptions"
-            [(ngModel)]="selectedAssignDeliveryId"
-            [placeholder]="'common.select' | t"
-            [primaryColumnLabel]="'common.name' | t"
-            [secondaryColumnLabel]="'common.mobile' | t"
-          ></app-multi-select>
+      <ng-container *ngIf="!isLoadingDeliveries">
+        <div *ngIf="assignError" class="od__alert od__alert--err" role="alert">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          <span>{{ assignError }}</span>
         </div>
-      </div>
+
+        <div class="od-assign__legend">
+          <span><i class="od-assign__dot od-assign__dot--ok" aria-hidden="true"></i>{{ 'riders.statusAvailable' | t }}</span>
+          <span><i class="od-assign__dot od-assign__dot--warn" aria-hidden="true"></i>{{ 'riders.statusInShiftOffline' | t }}</span>
+          <span><i class="od-assign__dot od-assign__dot--off" aria-hidden="true"></i>{{ 'riders.statusOffShift' | t }}</span>
+        </div>
+
+        <section class="od-assign__vehicle" *ngFor="let draft of assignDrafts">
+          <header class="od-assign__vehicle-head" *ngIf="assignDrafts.length > 1">
+            <strong>{{ draft.vehicle.vehicleName }}</strong>
+            <span>#{{ draft.vehicle.vehicleCode }}</span>
+            <span *ngIf="draft.vehicle.merchantName">· {{ draft.vehicle.merchantName }}</span>
+          </header>
+
+          <div class="od-assign__legs">
+            <div class="od__field">
+              <label class="od__label">
+                {{ 'orders.legDelivery' | t }}
+                <small class="od-assign__route">{{ 'orders.legDeliveryRoute' | t }}</small>
+              </label>
+              <app-rider-picker
+                [candidates]="riderCandidates"
+                [value]="draft.deliveryId"
+                [currentId]="draft.originalDeliveryId"
+                [fallbackLabel]="draft.originalDeliveryName"
+                [placeholder]="'orders.selectRider' | t"
+                [disabled]="!!draft.deliveryLockKey"
+                [blockOverDebt]="isCashOrder"
+                (valueChange)="onDraftDeliveryChange(draft, $event)"
+              ></app-rider-picker>
+              <p class="od-assign__hint" *ngIf="draft.deliveryLockKey">{{ draft.deliveryLockKey | t }}</p>
+              <p
+                class="od-assign__warn"
+                role="status"
+                *ngIf="riderAvailabilityWarningKey(draft.deliveryId, draft.originalDeliveryId) as warnKey"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/>
+                </svg>
+                <span>{{ warnKey | t }}</span>
+              </p>
+            </div>
+
+            <div class="od__field">
+              <label class="od__label">
+                {{ 'orders.legReturn' | t }}
+                <small class="od-assign__route">{{ 'orders.legReturnRoute' | t }}</small>
+              </label>
+              <app-rider-picker
+                [candidates]="riderCandidates"
+                [value]="draft.returnId"
+                [currentId]="draft.originalReturnId"
+                [fallbackLabel]="draft.originalReturnName"
+                [placeholder]="'orders.selectRider' | t"
+                [disabled]="!!draft.returnLockKey"
+                (valueChange)="onDraftReturnChange(draft, $event)"
+              ></app-rider-picker>
+              <p class="od-assign__hint" *ngIf="draft.returnLockKey">{{ draft.returnLockKey | t }}</p>
+              <p
+                class="od-assign__warn"
+                role="status"
+                *ngIf="riderAvailabilityWarningKey(draft.returnId, draft.originalReturnId) as warnKey"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/>
+                </svg>
+                <span>{{ warnKey | t }}</span>
+              </p>
+              <button
+                *ngIf="canUseSameRiderForReturn(draft)"
+                type="button"
+                class="od-assign__same"
+                (click)="useSameRiderForReturn(draft)"
+              >
+                {{ 'orders.sameRiderForReturn' | t }}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <p *ngIf="!riderCandidates.length" class="od__kpi-hint">{{ 'riders.noRiders' | t }}</p>
+      </ng-container>
     </div>
     <footer class="od-modal__footer">
+      <span class="od-assign__changes" *ngIf="pendingAssignments.length">
+        {{ 'orders.assignChangesCount' | t:{ n: pendingAssignments.length } }}
+      </span>
       <button type="button" class="od__btn od__btn--ghost" (click)="onCloseDeliveryModal()">{{ 'common.cancel' | t }}</button>
       <button
         type="button"
         class="od__btn od__btn--primary"
         (click)="onConfirmAssignDelivery()"
-        [disabled]="!selectedAssignDeliveryId || isActionLoading('assignDelivery')"
+        [disabled]="isLoadingDeliveries || !pendingAssignments.length || isActionLoading('assignDelivery')"
       >
-        {{ isActionLoading('assignDelivery') ? ('orders.processing' | t) : ('orders.assignDelivery' | t) }}
+        {{ isActionLoading('assignDelivery') ? ('orders.processing' | t) : ('orders.saveRiders' | t) }}
       </button>
     </footer>
+  </div>
+</div>
+
+<!-- Handover photos viewer -->
+<div *ngIf="galleryImage as photo" class="od-modal" (click)="closeGallery()">
+  <div class="od-modal__dialog od-modal__dialog--gallery" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <header class="od-modal__header">
+      <div>
+        <h2 class="od-modal__title">{{ stepLabelKey(galleryStep) | t }}</h2>
+        <p class="od-modal__subtitle">
+          <ng-container *ngIf="galleryVehicle">{{ galleryVehicle.vehicleName }} · #{{ galleryVehicle.vehicleCode }}</ng-container>
+          <ng-container *ngIf="photoTakenBy(photo) as by"> · {{ 'orders.photoBy' | t:{ name: by } }}</ng-container>
+          · {{ photo.createdDate | date:'MMM d, y · HH:mm' }}
+        </p>
+      </div>
+      <button type="button" class="od-modal__close" (click)="closeGallery()" [attr.aria-label]="'common.close' | t">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+    <div class="od-modal__body od-gallery">
+      <a class="od-gallery__main" [href]="photo.imageUrl" target="_blank" rel="noopener">
+        <img [src]="photo.imageUrl" [alt]="positionLabelKey(photo.position) | t" />
+        <span class="od-gallery__caption">{{ positionLabelKey(photo.position) | t }}</span>
+      </a>
+      <div class="od-gallery__thumbs" *ngIf="galleryImages.length > 1">
+        <button
+          *ngFor="let img of galleryImages; let i = index"
+          type="button"
+          class="od-gallery__thumb"
+          [class.od-gallery__thumb--on]="i === galleryIndex"
+          (click)="galleryIndex = i"
+        >
+          <img [src]="img.imageUrl" alt="" />
+          <span>{{ positionLabelKey(img.position) | t }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1087,3 +1260,22 @@
   (confirm)="onConfirmRemoveVehicle()"
   (cancel)="onCancelRemoveVehicle()"
 ></app-confirm-dialog>
+
+<app-confirm-dialog
+  [isVisible]="showUnavailableAssignConfirm"
+  [title]="'orders.unavailableRidersTitle' | t"
+  [message]="'orders.unavailableRidersMessage' | t"
+  [type]="'warning'"
+  [confirmText]="'orders.assignAnyway' | t"
+  [cancelText]="'orders.backToRiders' | t"
+  (confirm)="onConfirmUnavailableAssign()"
+  (cancel)="onCancelUnavailableAssign()"
+>
+  <ul class="od-unavail">
+    <li *ngFor="let u of unavailableAssignments; trackBy: trackUnavailable" class="od-unavail__item">
+      <span class="od-unavail__name">{{ u.riderName }}</span>
+      <span class="od-unavail__status">{{ u.statusKey | t }}</span>
+      <small class="od-unavail__leg">{{ u.legKey | t }} · {{ u.vehicleLabel }}</small>
+    </li>
+  </ul>
+</app-confirm-dialog>

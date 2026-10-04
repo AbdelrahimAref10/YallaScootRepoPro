@@ -8,11 +8,6 @@ import {
   AdminAvailableVehicleItemDto,
   AdminReplacementOrderVehicleCommand,
   AdminRemoveOrderVehicleCommand,
-  AssignDeliveryToOrderCommand,
-  AssignDeliveryVehicleItem,
-  DeliveryClient,
-  DeliveryLookupDto,
-  DeliveryMenOrderDto,
   FaultParty,
   JournalDirection,
   LedgerPartyType,
@@ -40,6 +35,21 @@ import {
 import { VehicleStatus } from '../../../core/enums/vehicle-status.enum';
 import { LocaleService } from '../../../core/services/locale.service';
 import { AdminNotificationService } from '../../../core/services/admin-notification.service';
+import {
+  CASH_DEBT_LIMIT_ERROR_PREFIX,
+  DeliveryLeg,
+  DeliveryPayoutLeg,
+  HandoverImage,
+  HandoverImagePosition,
+  HandoverStep,
+  LegAssignmentItem,
+  OrderDispatchInfo,
+  OrderLegRider,
+  RiderAvailabilityStatus,
+  RiderCandidate,
+  RiderDispatchService
+} from '../../../core/services/rider-dispatch.service';
+import { RiderPickerComponent, riderStatusKey } from '../../../shared/components/rider-picker/rider-picker.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { VehicleSpecsComponent } from '../../../shared/components/vehicle-specs/vehicle-specs.component';
@@ -65,10 +75,58 @@ interface PipelineStep {
   key: string;
 }
 
+/** One vehicle in the assign / reassign riders dialog. */
+interface AssignLegDraft {
+  vehicle: OrderVehicleDto;
+  deliveryId: number | null;
+  returnId: number | null;
+  originalDeliveryId: number | null;
+  originalReturnId: number | null;
+  originalDeliveryName: string;
+  originalReturnName: string;
+  /** Translation key of why the leg cannot change, or null when it can. */
+  deliveryLockKey: string | null;
+  returnLockKey: string | null;
+}
+
+/** A changed leg going to a rider who is not online in a shift; listed in the confirm step. */
+interface UnavailableAssignment {
+  key: string;
+  riderName: string;
+  statusKey: string;
+  legKey: string;
+  vehicleLabel: string;
+}
+
+/** Order states in which each leg can still be (re)assigned. */
+const DELIVERY_LEG_STATES: OrderState[] = [OrderState.Confirmed, OrderState.DeliveryAssigned, OrderState.OnWay];
+const RETURN_LEG_STATES: OrderState[] = [...DELIVERY_LEG_STATES, OrderState.CustomerReceived];
+
+const STEP_BY_LIFECYCLE: Record<VehicleLifecycleStep, HandoverStep> = {
+  receivedFromOwner: HandoverStep.ReceivedFromOwner,
+  deliveredToCustomer: HandoverStep.DeliveredToCustomer,
+  receivedFromCustomer: HandoverStep.ReceivedFromCustomer,
+  deliveredToOwner: HandoverStep.DeliveredToOwner
+};
+
+const STEP_LABEL_KEYS: Record<HandoverStep, string> = {
+  [HandoverStep.ReceivedFromOwner]: 'orders.cyclePickup',
+  [HandoverStep.DeliveredToCustomer]: 'orders.cycleDeliveredToCustomer',
+  [HandoverStep.ReceivedFromCustomer]: 'orders.cycleReceivedFromCustomer',
+  [HandoverStep.DeliveredToOwner]: 'orders.cycleReturnedToOwner'
+};
+
+const POSITION_LABEL_KEYS: Record<HandoverImagePosition, string> = {
+  [HandoverImagePosition.Front]: 'orders.photoFront',
+  [HandoverImagePosition.Back]: 'orders.photoBack',
+  [HandoverImagePosition.Left]: 'orders.photoLeft',
+  [HandoverImagePosition.Right]: 'orders.photoRight'
+};
+
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, ConfirmDialogComponent, VehicleSpecsComponent, MultiSelectComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, ConfirmDialogComponent, VehicleSpecsComponent, MultiSelectComponent, RiderPickerComponent],
   templateUrl: './order-detail.component.html',
   styleUrls: [
     './order-detail.component.css',
@@ -78,11 +136,13 @@ interface PipelineStep {
 export class OrderDetailComponent implements OnInit, OnDestroy {
   private readonly localeService = inject(LocaleService);
   private readonly merchantClient = inject(MerchantClient);
-  private readonly deliveryClient = inject(DeliveryClient);
+  private readonly dispatchService = inject(RiderDispatchService);
   private readonly adminNotifications = inject(AdminNotificationService);
   private readonly destroy$ = new Subject<void>();
 
   order: OrderDetailDto | null = null;
+  /** Per-leg riders, handover photos and payout legs (not in the generated DTO yet). */
+  dispatch: OrderDispatchInfo = { legs: [], handoverImages: [], payoutLegs: [] };
   orderId: number = 0;
   isLoading = false;
   errorMessage = '';
@@ -112,12 +172,22 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   removeVehicleId: number | null = null;
   removeVehicleLoading = false;
 
-  // Assign delivery
+  // Assign / reassign riders (delivery + return leg per vehicle)
   showDeliveryModal = false;
-  assigningVehicleId: number | null = null;
-  selectedAssignDeliveryId: number | null = null;
-  activeDeliveries: DeliveryLookupDto[] = [];
+  assignDrafts: AssignLegDraft[] = [];
+  riderCandidates: RiderCandidate[] = [];
   isLoadingDeliveries = false;
+  /** Why the last save failed, shown inside the dialog (the page alert sits behind it). */
+  assignError = '';
+  /** Confirm step before giving trips to riders who are offline / off shift. */
+  showUnavailableAssignConfirm = false;
+  unavailableAssignments: UnavailableAssignment[] = [];
+
+  // Handover photo viewer
+  galleryImages: HandoverImage[] = [];
+  galleryIndex = 0;
+  galleryVehicle: OrderVehicleDto | null = null;
+  galleryStep: HandoverStep | null = null;
 
   // Merchant handover
   showHandoverModal = false;
@@ -147,16 +217,6 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
         value: v.vehicleId as number,
         label: `${v.name || ''} (${v.vehicleCode || ''})`.trim(),
         description: v.merchantName || '—'
-      }));
-  }
-
-  get deliveryOptions(): MultiSelectOption[] {
-    return this.activeDeliveries
-      .filter(d => d.deliveryId != null)
-      .map(d => ({
-        value: d.deliveryId as number,
-        label: d.fullName || String(d.deliveryId),
-        description: d.mobileNumber || '—'
       }));
   }
 
@@ -258,9 +318,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       this.isLoading = true;
       this.errorMessage = '';
     }
-    this.orderClient.getOrderById(this.orderId).subscribe({
-      next: (order: OrderDetailDto) => {
+    this.dispatchService.getOrderDetail(this.orderId).subscribe({
+      next: ({ order, dispatch }) => {
         this.order = order;
+        this.dispatch = dispatch;
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -571,18 +632,49 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  deliveryFor(vehicleId: number): DeliveryMenOrderDto | undefined {
-    return (this.order?.deliveryMenOrders || []).find(d => d.vehicleId === vehicleId);
+  /** Rider holding the delivery trip (merchant → customer). Rows without a leg are delivery. */
+  deliveryFor(vehicleId: number): OrderLegRider | undefined {
+    return this.dispatch.legs.find(d => d.vehicleId === vehicleId && d.leg === DeliveryLeg.Delivery);
+  }
+
+  /** Rider holding the return trip (customer → merchant). */
+  returnFor(vehicleId: number): OrderLegRider | undefined {
+    return this.dispatch.legs.find(d => d.vehicleId === vehicleId && d.leg === DeliveryLeg.Return);
+  }
+
+  hasAnyRider(vehicleId: number): boolean {
+    return !!this.deliveryFor(vehicleId) || !!this.returnFor(vehicleId);
+  }
+
+  /** Why the delivery trip of this vehicle can no longer change, or null when it can. */
+  deliveryLegLockKey(vehicle: OrderVehicleDto): string | null {
+    if (!this.order) return 'orders.legStateLocked';
+    if (vehicle.receivedFromOwner || this.deliveryFor(vehicle.vehicleId)?.deliveryReceivedFromMerchant) {
+      return 'orders.legDeliveryStarted';
+    }
+    return DELIVERY_LEG_STATES.includes(this.order.orderState) ? null : 'orders.legStateLocked';
+  }
+
+  /** Why the return trip of this vehicle can no longer change, or null when it can. */
+  returnLegLockKey(vehicle: OrderVehicleDto): string | null {
+    if (!this.order) return 'orders.legStateLocked';
+    if (vehicle.receivedFromCustomer) return 'orders.legReturnStarted';
+    return RETURN_LEG_STATES.includes(this.order.orderState) ? null : 'orders.legStateLocked';
   }
 
   canAssignVehicle(vehicle: OrderVehicleDto): boolean {
     if (!this.order || this.isCancelled) return false;
     if (vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Declined) return false;
-    const state = this.order.orderState;
-    if (state !== OrderState.Confirmed && state !== OrderState.DeliveryAssigned) return false;
-    const assignment = this.deliveryFor(vehicle.vehicleId);
-    if (assignment?.deliveryReceivedFromMerchant) return false;
-    return true;
+    if (vehicle.deliveryFailed) return false;
+    return this.deliveryLegLockKey(vehicle) === null || this.returnLegLockKey(vehicle) === null;
+  }
+
+  get canAssignAnyVehicle(): boolean {
+    return this.assignableVehicles.some(v => this.canAssignVehicle(v));
+  }
+
+  get hasAnyLegRider(): boolean {
+    return this.dispatch.legs.length > 0;
   }
 
   assignedVehicleCount(): number {
@@ -595,83 +687,272 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     );
   }
 
-  // ── Assign delivery ────────────────────────────────────────────────
-  onOpenAssignDelivery(vehicle: OrderVehicleDto): void {
-    if (!this.order || !this.canAssignVehicle(vehicle)) return;
-    this.assigningVehicleId = vehicle.vehicleId;
-    this.selectedAssignDeliveryId = this.deliveryFor(vehicle.vehicleId)?.deliveryId ?? null;
+  // ── Assign / reassign riders ───────────────────────────────────────
+  /** Opens the dialog for one vehicle, or for every vehicle that still has a changeable leg. */
+  onOpenAssignDelivery(vehicle?: OrderVehicleDto): void {
+    if (!this.order) return;
+    const vehicles = (vehicle ? [vehicle] : this.assignableVehicles).filter(v => this.canAssignVehicle(v));
+    if (!vehicles.length) return;
+
+    this.assignDrafts = vehicles.map(v => {
+      const delivery = this.deliveryFor(v.vehicleId);
+      const ret = this.returnFor(v.vehicleId);
+      return {
+        vehicle: v,
+        deliveryId: delivery?.deliveryId ?? null,
+        returnId: ret?.deliveryId ?? null,
+        originalDeliveryId: delivery?.deliveryId ?? null,
+        originalReturnId: ret?.deliveryId ?? null,
+        originalDeliveryName: delivery?.deliveryName || '',
+        originalReturnName: ret?.deliveryName || '',
+        deliveryLockKey: this.deliveryLegLockKey(v),
+        returnLockKey: this.returnLegLockKey(v)
+      };
+    });
+    this.riderCandidates = [];
+    this.assignError = '';
     this.showDeliveryModal = true;
-    this.isLoadingDeliveries = this.activeDeliveries.length === 0;
+    this.isLoadingDeliveries = true;
 
-    const finish = () => {
-      this.isLoadingDeliveries = false;
-    };
-
-    if (this.activeDeliveries.length > 0) {
-      finish();
-      return;
-    }
-
-    this.deliveryClient.getActive(this.order.cityId).subscribe({
+    this.dispatchService.getCandidatesForOrder(this.orderId).subscribe({
       next: (list) => {
-        this.activeDeliveries = list || [];
-        finish();
+        this.riderCandidates = list;
+        this.isLoadingDeliveries = false;
       },
       error: (error: any) => {
         this.showErrorMessage(
           error?.errorMessage || error?.error?.errorMessage || this.localeService.translate('orders.deliveriesLoadFailed')
         );
-        finish();
+        this.isLoadingDeliveries = false;
       }
     });
   }
 
-  get assigningVehicle(): OrderVehicleDto | undefined {
-    return this.order?.orderVehicles?.find(v => v.vehicleId === this.assigningVehicleId);
+  /** The rider who collects the cash (delivery trip) is refused at his debt limit on cash orders. */
+  get isCashOrder(): boolean {
+    return this.order?.paymentMethod === PaymentMethod.Cash;
+  }
+
+  private candidateById(deliveryId: number | null): RiderCandidate | undefined {
+    return deliveryId == null ? undefined : this.riderCandidates.find(c => c.deliveryId === deliveryId);
+  }
+
+  /**
+   * Inline warning under a picker whose newly picked rider is not online in a shift. Riders who
+   * already hold the leg are not warned about.
+   */
+  riderAvailabilityWarningKey(deliveryId: number | null, originalId: number | null): string | null {
+    if (deliveryId == null || deliveryId === originalId) return null;
+    switch (this.candidateById(deliveryId)?.status) {
+      case RiderAvailabilityStatus.InShiftOffline:
+        return 'orders.riderOfflineWarning';
+      case RiderAvailabilityStatus.OffShift:
+        return 'orders.riderOffShiftWarning';
+      default:
+        return null;
+    }
+  }
+
+  onDraftDeliveryChange(draft: AssignLegDraft, deliveryId: number): void {
+    this.assignError = '';
+    draft.deliveryId = deliveryId;
+    // A fresh vehicle gets the same rider on both trips, like the old single-rider flow.
+    if (!draft.returnLockKey && draft.originalReturnId == null && draft.returnId == null) {
+      draft.returnId = deliveryId;
+    }
+  }
+
+  onDraftReturnChange(draft: AssignLegDraft, deliveryId: number): void {
+    this.assignError = '';
+    draft.returnId = deliveryId;
+  }
+
+  canUseSameRiderForReturn(draft: AssignLegDraft): boolean {
+    return !draft.returnLockKey && draft.deliveryId != null && draft.returnId !== draft.deliveryId;
+  }
+
+  useSameRiderForReturn(draft: AssignLegDraft): void {
+    if (this.canUseSameRiderForReturn(draft)) {
+      this.assignError = '';
+      draft.returnId = draft.deliveryId;
+    }
+  }
+
+  /** Only the (vehicle, leg) pairs the admin actually changed. */
+  get pendingAssignments(): LegAssignmentItem[] {
+    const items: LegAssignmentItem[] = [];
+    for (const draft of this.assignDrafts) {
+      if (!draft.deliveryLockKey && draft.deliveryId != null && draft.deliveryId !== draft.originalDeliveryId) {
+        items.push({ vehicleId: draft.vehicle.vehicleId, deliveryId: draft.deliveryId, leg: DeliveryLeg.Delivery });
+      }
+      if (!draft.returnLockKey && draft.returnId != null && draft.returnId !== draft.originalReturnId) {
+        items.push({ vehicleId: draft.vehicle.vehicleId, deliveryId: draft.returnId, leg: DeliveryLeg.Return });
+      }
+    }
+    return items;
+  }
+
+  get assignDialogIsReassign(): boolean {
+    return this.assignDrafts.some(d => d.originalDeliveryId != null || d.originalReturnId != null);
+  }
+
+  /** Changed legs whose new rider is offline or off shift right now. */
+  private collectUnavailableAssignments(assignments: LegAssignmentItem[]): UnavailableAssignment[] {
+    const result: UnavailableAssignment[] = [];
+    for (const item of assignments) {
+      const rider = this.candidateById(item.deliveryId);
+      if (!rider || rider.status === RiderAvailabilityStatus.Available) continue;
+      const vehicle = this.assignDrafts.find(d => d.vehicle.vehicleId === item.vehicleId)?.vehicle;
+      result.push({
+        key: `${item.vehicleId}-${item.leg}`,
+        riderName: rider.fullName,
+        statusKey: riderStatusKey(rider.status),
+        legKey: item.leg === DeliveryLeg.Return ? 'orders.legReturn' : 'orders.legDelivery',
+        vehicleLabel: vehicle ? `${vehicle.vehicleName} · #${vehicle.vehicleCode}` : `#${item.vehicleId}`
+      });
+    }
+    return result;
   }
 
   onConfirmAssignDelivery(): void {
-    const deliveryId = Number(this.selectedAssignDeliveryId);
-    if (!this.order || !this.assigningVehicleId || !deliveryId) {
-      this.showErrorMessage(this.localeService.translate('orders.assignDeliveryRequired'));
+    const assignments = this.pendingAssignments;
+    if (!this.order || !assignments.length) {
+      this.showErrorMessage(this.localeService.translate('orders.assignNoChanges'));
       return;
     }
 
-    this.actionLoading = 'assignDelivery';
-    const command = new AssignDeliveryToOrderCommand();
-    command.orderId = this.orderId;
-    const item = new AssignDeliveryVehicleItem();
-    item.vehicleId = this.assigningVehicleId;
-    item.deliveryId = deliveryId;
-    command.assignments = [item];
+    const unavailable = this.collectUnavailableAssignments(assignments);
+    if (unavailable.length) {
+      this.unavailableAssignments = unavailable;
+      this.showUnavailableAssignConfirm = true;
+      return;
+    }
+    this.submitAssignments(assignments);
+  }
 
-    this.orderClient.assignDelivery(this.orderId, command).subscribe({
+  onConfirmUnavailableAssign(): void {
+    this.showUnavailableAssignConfirm = false;
+    this.unavailableAssignments = [];
+    this.submitAssignments(this.pendingAssignments);
+  }
+
+  onCancelUnavailableAssign(): void {
+    this.showUnavailableAssignConfirm = false;
+    this.unavailableAssignments = [];
+  }
+
+  trackUnavailable(_: number, item: UnavailableAssignment): string {
+    return item.key;
+  }
+
+  private submitAssignments(assignments: LegAssignmentItem[]): void {
+    if (!assignments.length) return;
+    this.assignError = '';
+    this.actionLoading = 'assignDelivery';
+    this.dispatchService.assignLegs(this.orderId, assignments).subscribe({
       next: () => {
-        this.showDeliveryModal = false;
-        this.assigningVehicleId = null;
-        this.selectedAssignDeliveryId = null;
-        this.showSuccessMessage(this.localeService.translate('orders.assignDeliverySuccess'));
+        this.onCloseDeliveryModal();
+        this.showSuccessMessage(this.localeService.translate('orders.assignRidersSuccess'));
         this.loadOrder();
         this.actionLoading = '';
       },
       error: (error: any) => {
-        this.showErrorMessage(
-          error?.errorMessage || error?.error?.errorMessage || this.localeService.translate('orders.assignDeliveryFailed')
-        );
+        const message: string =
+          error?.errorMessage || error?.error?.errorMessage || error?.result?.errorMessage || '';
+        this.assignError = this.assignErrorText(message);
         this.actionLoading = '';
+        // Debts moved since the dialog opened; refresh the chips so the blocked rider shows as such.
+        if (message.startsWith(CASH_DEBT_LIMIT_ERROR_PREFIX)) {
+          this.refreshRiderCandidates();
+        }
       }
+    });
+  }
+
+  /** The cash-debt refusal is in English from the backend; keep its rider list, translate the rest. */
+  private assignErrorText(message: string): string {
+    if (message.startsWith(CASH_DEBT_LIMIT_ERROR_PREFIX)) {
+      const colon = message.indexOf(':');
+      const riders = colon >= 0 ? message.slice(colon + 1).trim() : '';
+      return riders
+        ? this.localeService.translate('orders.assignCashDebtLimitError', { riders })
+        : this.localeService.translate('orders.assignCashDebtLimitErrorShort');
+    }
+    return message || this.localeService.translate('orders.assignDeliveryFailed');
+  }
+
+  private refreshRiderCandidates(): void {
+    this.dispatchService.getCandidatesForOrder(this.orderId).subscribe({
+      next: (list) => {
+        if (this.showDeliveryModal) this.riderCandidates = list;
+      },
+      error: () => {}
     });
   }
 
   onCloseDeliveryModal(): void {
     this.showDeliveryModal = false;
-    this.assigningVehicleId = null;
-    this.selectedAssignDeliveryId = null;
+    this.showUnavailableAssignConfirm = false;
+    this.unavailableAssignments = [];
+    this.assignError = '';
+    this.assignDrafts = [];
+    this.riderCandidates = [];
+  }
+
+  // ── Handover photos ────────────────────────────────────────────────
+  stepImages(vehicle: OrderVehicleDto, step: VehicleLifecycleStep): HandoverImage[] {
+    const handoverStep = STEP_BY_LIFECYCLE[step];
+    return this.dispatch.handoverImages
+      .filter(i => i.vehicleId === vehicle.vehicleId && i.step === handoverStep)
+      .sort((a, b) => a.position - b.position);
+  }
+
+  openGallery(vehicle: OrderVehicleDto, step: VehicleLifecycleStep, index = 0): void {
+    const images = this.stepImages(vehicle, step);
+    if (!images.length) return;
+    this.galleryImages = images;
+    this.galleryIndex = Math.min(index, images.length - 1);
+    this.galleryVehicle = vehicle;
+    this.galleryStep = STEP_BY_LIFECYCLE[step];
+  }
+
+  closeGallery(): void {
+    this.galleryImages = [];
+    this.galleryIndex = 0;
+    this.galleryVehicle = null;
+    this.galleryStep = null;
+  }
+
+  get galleryImage(): HandoverImage | null {
+    return this.galleryImages[this.galleryIndex] ?? null;
+  }
+
+  stepLabelKey(step: HandoverStep | null): string {
+    return step ? STEP_LABEL_KEYS[step] : '';
+  }
+
+  positionLabelKey(position: HandoverImagePosition): string {
+    return POSITION_LABEL_KEYS[position] || 'orders.cycleProofImage';
+  }
+
+  /** Name of the rider who took a photo, from the order's leg riders. */
+  photoTakenBy(image: HandoverImage | null): string {
+    if (!image?.deliveryId) return '';
+    return this.dispatch.legs.find(l => l.deliveryId === image.deliveryId)?.deliveryName || '';
+  }
+
+  // ── Delivery payouts ───────────────────────────────────────────────
+  payoutLeg(deliveryOrderPaymentDetailId: number): DeliveryPayoutLeg | undefined {
+    return this.dispatch.payoutLegs.find(p => p.deliveryOrderPaymentDetailId === deliveryOrderPaymentDetailId);
+  }
+
+  legLabelKey(leg: DeliveryLeg | undefined): string {
+    return leg === DeliveryLeg.Return ? 'orders.legReturn' : 'orders.legDelivery';
   }
 
   // ── Merchant handover ──────────────────────────────────────────────
-  get unreceivedDeliveryVehicles() {
-    return (this.order?.deliveryMenOrders || []).filter(d => !d.deliveryReceivedFromMerchant);
+  get unreceivedDeliveryVehicles(): OrderLegRider[] {
+    return this.dispatch.legs.filter(d => d.leg === DeliveryLeg.Delivery && !d.deliveryReceivedFromMerchant);
   }
 
   onOpenHandover(): void {
@@ -1093,7 +1374,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  deliveryAssignmentChip(assignment: DeliveryMenOrderDto): { labelKey: string; kind: 'ok' | 'warn' | 'soft' } {
+  deliveryAssignmentChip(assignment: OrderLegRider): { labelKey: string; kind: 'ok' | 'warn' | 'soft' } {
     const vehicle = this.order?.orderVehicles?.find(v => v.vehicleId === assignment.vehicleId);
     if (vehicle?.deliveredToOwner) {
       return { labelKey: 'orders.cycleReturnedToOwner', kind: 'ok' };

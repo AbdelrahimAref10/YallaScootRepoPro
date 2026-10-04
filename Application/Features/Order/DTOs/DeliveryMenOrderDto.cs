@@ -10,5 +10,6 @@ namespace Application.Features.Order.DTOs
         public string DeliveryName { get; set; } = string.Empty;
         public bool DeliveryReceivedFromMerchant { get; set; }
         public DateTime? ReceivedFromMerchantAt { get; set; }
+        public Domain.Enums.DeliveryLeg Leg { get; set; } = Domain.Enums.DeliveryLeg.Delivery;
     }
 }

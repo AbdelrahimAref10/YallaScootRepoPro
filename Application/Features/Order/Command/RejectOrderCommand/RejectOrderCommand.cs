@@ -79,7 +79,11 @@ namespace Application.Features.Order.Command.RejectOrderCommand
             await CancellationDebtHelper.RevertUnderPaymentFeesToPendingAsync(_context, order.OrderId, cancellationToken);
 
             var orderPayment = order.OrderPayments.FirstOrDefault();
-            if (orderPayment != null && orderPayment.PaymentMethodId == (int)PaymentMethod.PayPal)
+            var isPayPal = orderPayment != null && orderPayment.PaymentMethodId == (int)PaymentMethod.PayPal;
+            // Only a captured (Paid) PayPal payment has money to give back.
+            var payPalCaptured = isPayPal && orderPayment!.State == PaymentState.Paid;
+
+            if (payPalCaptured)
             {
                 var refundableAmount = order.OrderTotal - order.PreviousDebt;
                 if (refundableAmount > 0)
@@ -95,7 +99,12 @@ namespace Application.Features.Order.Command.RejectOrderCommand
                     _context.RefundablePaypalAmounts.Add(refundablePaypal);
                 }
 
-                orderPayment.MarkAsRefunded(_userSession.UserName ?? "System");
+                orderPayment!.MarkAsRefunded(_userSession.UserName ?? "System");
+            }
+            else if (isPayPal && orderPayment!.State == PaymentState.Pending)
+            {
+                // Never captured: close the payment so it cannot be captured on a cancelled order.
+                orderPayment.MarkAsFailed(_userSession.UserName ?? "System");
             }
 
             if (order.OrderState == OrderState.Confirmed
@@ -121,9 +130,11 @@ namespace Application.Features.Order.Command.RejectOrderCommand
             // Cash → MoneyRefunded=true; PayPal → false until admin confirms
             order.Cancel(_userSession.UserName ?? "System");
 
-            await _context.SaveChangesAsync(cancellationToken);
+            // Unpaid PayPal: nothing was collected, so nothing is owed back (same as cash).
+            if (isPayPal && !payPalCaptured)
+                order.MarkMoneyRefunded(_userSession.UserName ?? "System");
 
-            await SendOrderRejectedNotification(order, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _realtime.NotifyAsync(
                 order.OrderId,
@@ -135,45 +146,5 @@ namespace Application.Features.Order.Command.RejectOrderCommand
             return Result.Success(true);
         }
 
-        private async Task SendOrderRejectedNotification(Domain.Models.Order order, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var customer = await _context.Customers
-                    .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId, cancellationToken);
-
-                if (customer == null)
-                    return;
-
-                var firebaseTokens = new List<string>();
-                if (!string.IsNullOrWhiteSpace(customer.AndriodDevice))
-                    firebaseTokens.Add(customer.AndriodDevice);
-                if (!string.IsNullOrWhiteSpace(customer.IosDevice))
-                    firebaseTokens.Add(customer.IosDevice);
-
-                if (firebaseTokens.Count == 0)
-                    return;
-
-                var notificationBody = new NotificationBodyForMultipleDevices
-                {
-                    Title = "Order Cancelled",
-                    Body = $"Your order #{order.OrderCode} has been cancelled by the admin.",
-                    FireBaseTokens = firebaseTokens,
-                    PayLoad = new Dictionary<string, string>
-                    {
-                        { "orderId", order.OrderId.ToString() },
-                        { "orderCode", order.OrderCode },
-                        { "type", ((int)NotificationType.OrderCancelled).ToString() },
-                        { "action", "open_order_detail" }
-                    }
-                };
-
-                await _notificationService.SendNotificationAsyncToMultipleDevices(notificationBody);
-            }
-            catch
-            {
-                // Notification failures must not block rejection.
-            }
-        }
     }
 }

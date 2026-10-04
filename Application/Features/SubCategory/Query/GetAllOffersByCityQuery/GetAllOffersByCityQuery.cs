@@ -55,7 +55,8 @@ namespace Application.Features.SubCategory.Query.GetAllOffersByCityQuery
                     CategoryName = sc.Category.Name,
                     CityId = sc.Category.CityId,
                     CityName = sc.Category.City.Name,
-                    VehicleCount = sc.Vehicles.Count
+                    VehicleCount = sc.Vehicles.Count,
+                    Price = sc.Vehicles.Min(v => (decimal?)v.Price)
                 })
                 .ToListAsync(cancellationToken);
 

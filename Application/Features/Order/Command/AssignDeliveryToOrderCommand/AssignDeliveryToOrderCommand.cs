@@ -1,3 +1,5 @@
+using Application.Features.Customer.Common;
+using Application.Features.Delivery.Common;
 using Application.Features.Order.Services;
 using CSharpFunctionalExtensions;
 using Domain.Common;
@@ -17,8 +19,18 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
     {
         public int VehicleId { get; set; }
         public int DeliveryId { get; set; }
+
+        /// <summary>
+        /// Which trip this rider takes. Null keeps the old behaviour: the same rider gets both legs.
+        /// </summary>
+        public DeliveryLeg? Leg { get; set; }
     }
 
+    /// <summary>
+    /// Assigns or reassigns riders per vehicle and per leg. A leg can be reassigned until it starts:
+    /// the delivery leg until the vehicle is received from the owner, the return leg until it is
+    /// received from the customer. Rider commission is snapshotted from the city's leg percent.
+    /// </summary>
     public record AssignDeliveryToOrderCommand : IRequest<Result<bool>>
     {
         public int OrderId { get; set; }
@@ -27,18 +39,30 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
 
     public class AssignDeliveryToOrderCommandHandler : IRequestHandler<AssignDeliveryToOrderCommand, Result<bool>>
     {
+        private static readonly OrderState[] DeliveryLegStates =
+            { OrderState.Confirmed, OrderState.DeliveryAssigned, OrderState.OnWay };
+
+        private static readonly OrderState[] ReturnLegStates =
+            { OrderState.Confirmed, OrderState.DeliveryAssigned, OrderState.OnWay, OrderState.CustomerReceived };
+
         private readonly DatabaseContext _context;
         private readonly IUserSession _userSession;
         private readonly IOrderRealtimeNotifier _realtime;
+        private readonly IRiderNotifier _riderNotifier;
+        private readonly ICustomerNotifier _customerNotifier;
 
         public AssignDeliveryToOrderCommandHandler(
             DatabaseContext context,
             IUserSession userSession,
-            IOrderRealtimeNotifier realtime)
+            IOrderRealtimeNotifier realtime,
+            IRiderNotifier riderNotifier,
+            ICustomerNotifier customerNotifier)
         {
             _context = context;
             _userSession = userSession;
             _realtime = realtime;
+            _riderNotifier = riderNotifier;
+            _customerNotifier = customerNotifier;
         }
 
         public async Task<Result<bool>> Handle(AssignDeliveryToOrderCommand request, CancellationToken cancellationToken)
@@ -46,8 +70,26 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
             if (request.Assignments == null || request.Assignments.Count == 0)
                 return Result.Failure<bool>("At least one vehicle/delivery assignment is required");
 
-            if (request.Assignments.Select(a => a.VehicleId).Distinct().Count() != request.Assignments.Count)
-                return Result.Failure<bool>("Duplicate vehicle IDs are not allowed");
+            // Expand "no leg" into both legs.
+            var items = new List<(int VehicleId, int DeliveryId, DeliveryLeg Leg)>();
+            foreach (var a in request.Assignments)
+            {
+                if (a.Leg.HasValue)
+                {
+                    items.Add((a.VehicleId, a.DeliveryId, a.Leg.Value));
+                }
+                else
+                {
+                    items.Add((a.VehicleId, a.DeliveryId, DeliveryLeg.Delivery));
+                    items.Add((a.VehicleId, a.DeliveryId, DeliveryLeg.Return));
+                }
+            }
+
+            if (items.Any(i => !Enum.IsDefined(typeof(DeliveryLeg), i.Leg)))
+                return Result.Failure<bool>("Invalid leg");
+
+            if (items.Select(i => (i.VehicleId, i.Leg)).Distinct().Count() != items.Count)
+                return Result.Failure<bool>("Duplicate vehicle/leg assignments are not allowed");
 
             var order = await _context.Orders
                 .AsTracking()
@@ -57,20 +99,47 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
             if (order == null)
                 return Result.Failure<bool>($"Order with ID {request.OrderId} not found");
 
-            if (order.OrderState != OrderState.Confirmed && order.OrderState != OrderState.DeliveryAssigned)
-                return Result.Failure<bool>($"Cannot assign delivery in {order.OrderState} state. Order must be Confirmed");
+            foreach (var item in items)
+            {
+                var ov = order.OrderVehicles.FirstOrDefault(v => v.VehicleId == item.VehicleId);
+                if (ov == null)
+                    return Result.Failure<bool>("One or more vehicles are not assigned to this order");
+                if (ov.DeliveryFailed)
+                    return Result.Failure<bool>($"Vehicle {item.VehicleId} was cancelled on this order");
+            }
 
-            var orderVehicleIds = order.OrderVehicles.Select(ov => ov.VehicleId).ToHashSet();
-            var requestedVehicleIds = request.Assignments.Select(a => a.VehicleId).ToList();
+            var vehicleIds = items.Select(i => i.VehicleId).Distinct().ToList();
 
-            if (requestedVehicleIds.Any(id => !orderVehicleIds.Contains(id)))
-                return Result.Failure<bool>("One or more vehicles are not assigned to this order");
+            var existingAssignments = await _context.DeliveryMenOrders
+                .AsTracking()
+                .Where(d => d.OrderId == request.OrderId && vehicleIds.Contains(d.VehicleId))
+                .ToListAsync(cancellationToken);
 
-            var deliveryIds = request.Assignments.Select(a => a.DeliveryId).Distinct().ToList();
+            var existingPaymentDetails = await _context.DeliveryOrderPaymentDetails
+                .AsTracking()
+                .Where(d => d.OrderId == request.OrderId && vehicleIds.Contains(d.VehicleId))
+                .ToListAsync(cancellationToken);
+
+            // Only rows that actually change are validated and written. The old admin sends no leg (= both legs),
+            // so an unchanged leg must not make the whole request fail on state or "already started" checks.
+            items = items
+                .Where(i => !existingAssignments.Any(e => e.VehicleId == i.VehicleId && e.Leg == i.Leg && e.DeliveryId == i.DeliveryId))
+                .ToList();
+
+            if (items.Count == 0)
+                return Result.Success(true);
+
+            if (items.Any(i => i.Leg == DeliveryLeg.Delivery) && !DeliveryLegStates.Contains(order.OrderState))
+                return Result.Failure<bool>($"Cannot assign the delivery trip in {order.OrderState} state. Order must be Confirmed");
+
+            if (items.Any(i => i.Leg == DeliveryLeg.Return) && !ReturnLegStates.Contains(order.OrderState))
+                return Result.Failure<bool>($"Cannot assign the return trip in {order.OrderState} state");
+
+            var deliveryIds = items.Select(i => i.DeliveryId).Distinct().ToList();
             var deliveries = await _context.Deliveries
                 .AsNoTracking()
                 .Where(d => deliveryIds.Contains(d.DeliveryId) && d.IsActive && !d.IsDeleted)
-                .Select(d => new { d.DeliveryId, d.CityId })
+                .Select(d => new { d.DeliveryId, d.CityId, d.FullName, d.CashDebtLimit })
                 .ToListAsync(cancellationToken);
 
             if (deliveries.Count != deliveryIds.Count)
@@ -79,95 +148,107 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
             if (deliveries.Any(d => d.CityId != order.CityId))
                 return Result.Failure<bool>("All deliveries must belong to the same city as the order");
 
-            var createdBy = _userSession.UserName ?? "System";
-
-            var existingAssignments = await _context.DeliveryMenOrders
-                .AsTracking()
-                .Where(d => d.OrderId == request.OrderId && requestedVehicleIds.Contains(d.VehicleId))
-                .ToListAsync(cancellationToken);
-
-            var existingPaymentDetails = await _context.DeliveryOrderPaymentDetails
-                .AsTracking()
-                .Where(d => d.OrderId == request.OrderId && requestedVehicleIds.Contains(d.VehicleId))
-                .ToListAsync(cancellationToken);
-
-            foreach (var assignment in request.Assignments)
+            // The delivery-trip rider collects the cash; a rider at his debt limit must remit first.
+            if (order.PaymentMethodId == (int)PaymentMethod.Cash)
             {
-                var existing = existingAssignments.FirstOrDefault(d => d.VehicleId == assignment.VehicleId);
-                if (existing != null)
+                var cashRiderIds = items
+                    .Where(i => i.Leg == DeliveryLeg.Delivery)
+                    .Select(i => i.DeliveryId)
+                    .Distinct()
+                    .ToList();
+                var limited = deliveries.Where(d => cashRiderIds.Contains(d.DeliveryId) && d.CashDebtLimit.HasValue).ToList();
+                if (limited.Count > 0)
                 {
-                    if (existing.DeliveryReceivedFromMerchant)
-                    {
+                    var debts = await RiderCashDebt.ForRidersAsync(_context, limited.Select(d => d.DeliveryId).ToList(), cancellationToken);
+                    var over = limited.Where(d => RiderCashDebt.IsOverLimit(debts[d.DeliveryId], d.CashDebtLimit)).ToList();
+                    if (over.Count > 0)
                         return Result.Failure<bool>(
-                            $"Vehicle {assignment.VehicleId} already handed over to delivery and cannot be reassigned");
-                    }
-
-                    if (existing.DeliveryId != assignment.DeliveryId)
-                    {
-                        _context.DeliveryMenOrders.Remove(existing);
-                        await _context.DeliveryMenOrders.AddAsync(
-                            DeliveryMenOrder.Create(request.OrderId, assignment.VehicleId, assignment.DeliveryId, createdBy),
-                            cancellationToken);
-                    }
-                }
-                else
-                {
-                    await _context.DeliveryMenOrders.AddAsync(
-                        DeliveryMenOrder.Create(request.OrderId, assignment.VehicleId, assignment.DeliveryId, createdBy),
-                        cancellationToken);
-                }
-
-                var feeShare = order.OrderVehicles.First(ov => ov.VehicleId == assignment.VehicleId).DeliveryFee;
-
-                var paymentDetail = existingPaymentDetails.FirstOrDefault(d => d.VehicleId == assignment.VehicleId);
-                if (paymentDetail != null)
-                {
-                    if (paymentDetail.DeliveryId != assignment.DeliveryId)
-                    {
-                        _context.DeliveryOrderPaymentDetails.Remove(paymentDetail);
-                        await _context.DeliveryOrderPaymentDetails.AddAsync(
-                            DeliveryOrderPaymentDetail.Create(
-                                request.OrderId,
-                                assignment.DeliveryId,
-                                assignment.VehicleId,
-                                feeShare,
-                                createdBy),
-                            cancellationToken);
-                    }
-                }
-                else
-                {
-                    await _context.DeliveryOrderPaymentDetails.AddAsync(
-                        DeliveryOrderPaymentDetail.Create(
-                            request.OrderId,
-                            assignment.DeliveryId,
-                            assignment.VehicleId,
-                            feeShare,
-                            createdBy),
-                        cancellationToken);
+                            "Cash debt limit reached, the rider must remit collected cash before taking a cash order: "
+                            + string.Join(", ", over.Select(d => $"{d.FullName} ({debts[d.DeliveryId]:0.##} / {d.CashDebtLimit:0.##})")));
                 }
             }
 
-            var existingOther = await _context.DeliveryMenOrders
+            var city = await _context.Cities
                 .AsNoTracking()
-                .Where(d => d.OrderId == request.OrderId && !requestedVehicleIds.Contains(d.VehicleId))
+                .FirstOrDefaultAsync(c => c.CityId == order.CityId, cancellationToken);
+            if (city == null)
+                return Result.Failure<bool>("Order city not found");
+
+            var createdBy = _userSession.UserName ?? "System";
+
+            var assigned = new List<(int DeliveryId, DeliveryLeg Leg, int VehicleId)>();
+            var unassigned = new List<(int DeliveryId, DeliveryLeg Leg, int VehicleId)>();
+
+            foreach (var item in items)
+            {
+                var ov = order.OrderVehicles.First(v => v.VehicleId == item.VehicleId);
+                var started = item.Leg == DeliveryLeg.Delivery ? ov.ReceivedFromOwner : ov.ReceivedFromCustomer;
+
+                var existing = existingAssignments.FirstOrDefault(d => d.VehicleId == item.VehicleId && d.Leg == item.Leg);
+
+                if (started)
+                {
+                    return Result.Failure<bool>(item.Leg == DeliveryLeg.Delivery
+                        ? $"Vehicle {item.VehicleId} was already received from the owner; its delivery rider cannot change"
+                        : $"Vehicle {item.VehicleId} was already received from the customer; its return rider cannot change");
+                }
+
+                if (existing != null)
+                {
+                    unassigned.Add((existing.DeliveryId, item.Leg, item.VehicleId));
+                    _context.DeliveryMenOrders.Remove(existing);
+                }
+
+                await _context.DeliveryMenOrders.AddAsync(
+                    DeliveryMenOrder.Create(request.OrderId, item.VehicleId, item.DeliveryId, createdBy, item.Leg),
+                    cancellationToken);
+
+                var paymentDetail = existingPaymentDetails.FirstOrDefault(d => d.VehicleId == item.VehicleId && d.Leg == item.Leg);
+
+                // A reassigned leg keeps the percent it was first assigned with (orders from before
+                // the per-leg split carry 100/0), so the order never pays more or less than it did.
+                var percent = paymentDetail?.CommissionPercent ?? city.CommissionPercentFor(item.Leg);
+                var share = DeliveryOrderPaymentDetail.ComputeShare(ov.DeliveryFee, percent);
+                if (paymentDetail != null)
+                    _context.DeliveryOrderPaymentDetails.Remove(paymentDetail);
+
+                await _context.DeliveryOrderPaymentDetails.AddAsync(
+                    DeliveryOrderPaymentDetail.Create(
+                        request.OrderId,
+                        item.DeliveryId,
+                        item.VehicleId,
+                        share,
+                        createdBy,
+                        item.Leg,
+                        percent),
+                    cancellationToken);
+
+                assigned.Add((item.DeliveryId, item.Leg, item.VehicleId));
+            }
+
+            if (assigned.Count == 0)
+                return Result.Success(true);
+
+            // The order becomes DeliveryAssigned once every active vehicle has a delivery-trip rider.
+            var otherDeliveryLegVehicleIds = await _context.DeliveryMenOrders
+                .AsNoTracking()
+                .Where(d => d.OrderId == request.OrderId && d.Leg == DeliveryLeg.Delivery && !vehicleIds.Contains(d.VehicleId))
                 .Select(d => d.VehicleId)
                 .ToListAsync(cancellationToken);
 
-            var coveredVehicleIds = existingOther
-                .Concat(requestedVehicleIds)
-                .Distinct()
+            var covered = otherDeliveryLegVehicleIds
+                .Concat(items.Where(i => i.Leg == DeliveryLeg.Delivery).Select(i => i.VehicleId))
+                .Concat(existingAssignments.Where(e => e.Leg == DeliveryLeg.Delivery).Select(e => e.VehicleId))
                 .ToHashSet();
 
-            var requiredVehicleIds = order.OrderVehicles
-                .Where(ov => ov.MerchantResponseStatus != MerchantVehicleResponseStatus.Declined)
+            var required = order.OrderVehicles
+                .Where(ov => ov.MerchantResponseStatus != MerchantVehicleResponseStatus.Declined && !ov.DeliveryFailed)
                 .Select(ov => ov.VehicleId)
                 .ToHashSet();
 
-            var allVehiclesCovered = requiredVehicleIds.Count > 0
-                && requiredVehicleIds.All(id => coveredVehicleIds.Contains(id));
-
-            if (allVehiclesCovered)
+            if (order.OrderState == OrderState.Confirmed
+                && required.Count > 0
+                && required.All(id => covered.Contains(id)))
                 order.MarkDeliveryAssigned(createdBy);
 
             await _context.SaveChangesAsync(cancellationToken);
@@ -179,7 +260,78 @@ namespace Application.Features.Order.Command.AssignDeliveryToOrderCommand
                 NotificationType.OrderUpdated,
                 cancellationToken: cancellationToken);
 
+            foreach (var group in assigned.GroupBy(a => (a.DeliveryId, a.Leg)))
+            {
+                var count = group.Select(g => g.VehicleId).Distinct().Count();
+                var trip = group.Key.Leg == DeliveryLeg.Delivery ? "توصيل" : "استرجاع";
+                await _riderNotifier.NotifyAsync(
+                    group.Key.DeliveryId,
+                    $"اتعيّن لك {trip} — أوردر {order.OrderCode}",
+                    count == 1 ? $"سكوتر واحد ({trip})." : $"{count} سكوتر ({trip}).",
+                    group.Key.Leg == DeliveryLeg.Delivery ? "DeliveryLegAssigned" : "ReturnLegAssigned",
+                    order.OrderId,
+                    order.OrderCode,
+                    cancellationToken);
+            }
+
+            foreach (var riderId in unassigned.Select(u => u.DeliveryId).Distinct())
+            {
+                await _riderNotifier.NotifyAsync(
+                    riderId,
+                    $"اتشال منك مشوار — أوردر {order.OrderCode}",
+                    "الأدمن نقل المشوار ده لطيار تاني.",
+                    "LegUnassigned",
+                    order.OrderId,
+                    order.OrderCode,
+                    cancellationToken);
+            }
+
+            await NotifyCustomerAsync(order.OrderId, assigned, cancellationToken);
+
             return Result.Success(true);
+        }
+
+        /// <summary>One push per trip type: who brings the scooter, and who picks it up at the end.</summary>
+        private async Task NotifyCustomerAsync(
+            int orderId,
+            List<(int DeliveryId, DeliveryLeg Leg, int VehicleId)> assigned,
+            CancellationToken cancellationToken)
+        {
+            var riderIds = assigned.Select(a => a.DeliveryId).Distinct().ToList();
+            var names = await _context.Deliveries
+                .AsNoTracking()
+                .Where(d => riderIds.Contains(d.DeliveryId))
+                .ToDictionaryAsync(d => d.DeliveryId, d => d.FullName, cancellationToken);
+
+            foreach (var leg in assigned.GroupBy(a => a.Leg))
+            {
+                var riderNames = leg
+                    .Select(a => names.TryGetValue(a.DeliveryId, out var n) ? n : null)
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
+                    .Distinct()
+                    .ToList();
+
+                // Name only: the phone number shows on the order while that trip is under way.
+                var ar = string.Join(" و", riderNames);
+                var en = string.Join(" and ", riderNames);
+                var text = leg.Key == DeliveryLeg.Delivery
+                    ? new CustomerPushText(
+                        "تم تعيين مندوب التوصيل",
+                        riderNames.Count == 0 ? "اتعيّن مندوب يوصّلك طلبك #{code}." : $"{ar} هيوصّلك طلبك #{{code}}.",
+                        "Delivery rider assigned",
+                        riderNames.Count == 0 ? "A rider was assigned to deliver order #{code}." : $"{en} will deliver order #{{code}}.")
+                    : new CustomerPushText(
+                        "تم تعيين مندوب الاستلام",
+                        riderNames.Count == 0
+                            ? "اتعيّن مندوب ياخد المركبة منك في نهاية حجز طلبك #{code}."
+                            : $"{ar} هياخد المركبة منك في نهاية حجز طلبك #{{code}}.",
+                        "Pickup rider assigned",
+                        riderNames.Count == 0
+                            ? "A rider was assigned to pick up the vehicle at the end of order #{code}."
+                            : $"{en} will pick up the vehicle at the end of order #{{code}}.");
+
+                await _customerNotifier.NotifyOrderAsync(orderId, text, NotificationType.RiderAssigned, cancellationToken);
+            }
         }
     }
 }

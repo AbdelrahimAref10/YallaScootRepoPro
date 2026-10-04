@@ -38,15 +38,23 @@ namespace Infrastructure.Services
                     Data = notificationBody.PayLoad,
                     Android = new AndroidConfig
                     {
+                        Priority = Priority.High,
                         Notification = new AndroidNotification
                         {
-                            ChannelId = "1",
+                            ChannelId = notificationBody.AndroidChannelId ?? "1",
                             ClickAction = "FLUTTER_NOTIFICATION_CLICK",
-                            DefaultSound = true,
+                            DefaultSound = string.IsNullOrWhiteSpace(notificationBody.Sound),
+                            Sound = notificationBody.Sound,
                             Priority = NotificationPriority.HIGH,
                             EventTimestamp = _dateTimeProvider.Now
                         }
-                    }
+                    },
+                    Apns = string.IsNullOrWhiteSpace(notificationBody.Sound)
+                        ? null
+                        : new ApnsConfig
+                        {
+                            Aps = new Aps { Sound = $"{notificationBody.Sound}.caf" }
+                        }
                 };
 
                 var result = await FirebaseMessaging.DefaultInstance.SendAsync(message);

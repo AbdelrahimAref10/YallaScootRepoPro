@@ -143,8 +143,8 @@ namespace Application.Features.Auth.Command.RegisterCommand
 
             var response = new RegisterResponse
             {
-                UserId = user.Id,
-                InvitationCode = invitationCode
+                // The activation code is sent by SMS/email only; never echo it back.
+                UserId = user.Id
             };
 
             switch (appRole)

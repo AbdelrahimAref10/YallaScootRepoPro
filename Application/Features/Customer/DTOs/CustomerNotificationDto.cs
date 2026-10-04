@@ -2,10 +2,7 @@ using Domain.Enums;
 
 namespace Application.Features.Customer.DTOs
 {
-    /// <summary>
-    /// Customer-facing projection of notifications stored in VO_AdminNotification,
-    /// filtered by the customer's orders.
-    /// </summary>
+    /// <summary>A push sent to the customer (VO_CustomerNotification), in the language it was sent in.</summary>
     public class CustomerNotificationDto
     {
         public int CustomerNotificationId { get; set; }
@@ -15,6 +12,8 @@ namespace Application.Features.Customer.DTOs
         public int? OrderId { get; set; }
         public string? OrderCode { get; set; }
         public NotificationType NotificationType { get; set; }
+        public bool IsRead { get; set; }
+        public DateTime? ReadAt { get; set; }
         public DateTime CreatedDate { get; set; }
     }
 }

@@ -45,19 +45,11 @@ namespace Application.Features.Auth.Command.ResetPasswordCommand
             if (!user.ValidatePasswordResetCode(request.ResetCode, _dateTimeProvider))
                 return Result.Failure<MessageResponse>("Invalid or expired reset code. Please request a new code.");
 
-            var removeResult = await _userManager.RemovePasswordAsync(user);
-            if (!removeResult.Succeeded)
-            {
-                var errors = string.Join(", ", removeResult.Errors.Select(e => e.Description));
-                return Result.Failure<MessageResponse>($"Failed to reset password: {errors}");
-            }
-
-            var addResult = await _userManager.AddPasswordAsync(user, request.NewPassword);
-            if (!addResult.Succeeded)
-            {
-                var errors = string.Join(", ", addResult.Errors.Select(e => e.Description));
-                return Result.Failure<MessageResponse>($"Failed to reset password: {errors}");
-            }
+            // Validates first and writes the new hash in one update, so a rejected password
+            // leaves the old one in place instead of locking the user out.
+            var replaceResult = await Application.Common.PasswordPolicy.ReplacePasswordAsync(_userManager, user, request.NewPassword);
+            if (replaceResult.IsFailure)
+                return Result.Failure<MessageResponse>($"Failed to reset password: {replaceResult.Error}");
 
             user.ClearPasswordResetCode(_dateTimeProvider);
             await _userManager.UpdateAsync(user);

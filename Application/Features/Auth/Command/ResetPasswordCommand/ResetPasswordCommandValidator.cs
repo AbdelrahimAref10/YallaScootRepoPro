@@ -15,8 +15,9 @@ namespace Application.Features.Auth.Command.ResetPasswordCommand
             if (string.IsNullOrWhiteSpace(request.NewPassword))
                 return Task.FromResult(Result.Failure("New password is required"));
 
-            if (request.NewPassword.Length < 6)
-                return Task.FromResult(Result.Failure("Password must be at least 6 characters long"));
+            var passwordResult = Application.Common.PasswordPolicy.Validate(request.NewPassword);
+            if (passwordResult.IsFailure)
+                return Task.FromResult(passwordResult);
 
             return Task.FromResult(Result.Success());
         }

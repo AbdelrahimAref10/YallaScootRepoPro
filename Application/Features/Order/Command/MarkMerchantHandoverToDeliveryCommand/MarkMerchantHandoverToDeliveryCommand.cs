@@ -107,7 +107,7 @@ namespace Application.Features.Order.Command.MarkMerchantHandoverToDeliveryComma
 
                 var assignment = await _context.DeliveryMenOrders
                     .AsTracking()
-                    .FirstOrDefaultAsync(d => d.OrderId == request.OrderId && d.VehicleId == vehicleId, cancellationToken);
+                    .FirstOrDefaultAsync(d => d.OrderId == request.OrderId && d.VehicleId == vehicleId && d.Leg == DeliveryLeg.Delivery, cancellationToken);
                 assignment?.MarkReceivedFromMerchant(actor);
             }
 

@@ -1,14 +1,20 @@
 using Domain.Common;
+using Domain.Enums;
 
 namespace Domain.Models
 {
-    /// <summary>Per-vehicle delivery assignment; merchant marks handover via DeliveryReceivedFromMerchant.</summary>
+    /// <summary>
+    /// Per-vehicle, per-leg rider assignment. A vehicle has at most one row per <see cref="DeliveryLeg"/>,
+    /// so the delivery and the return can go to different riders.
+    /// Merchant marks handover via DeliveryReceivedFromMerchant (delivery leg only).
+    /// </summary>
     public class DeliveryMenOrder : IAuditable
     {
         public int DeliveryMenOrderId { get; private set; }
         public int OrderId { get; private set; }
         public int VehicleId { get; private set; }
         public int DeliveryId { get; private set; }
+        public DeliveryLeg Leg { get; private set; } = DeliveryLeg.Delivery;
         public bool DeliveryReceivedFromMerchant { get; private set; }
         public DateTime? ReceivedFromMerchantAt { get; private set; }
 
@@ -27,7 +33,8 @@ namespace Domain.Models
             int orderId,
             int vehicleId,
             int deliveryId,
-            string? createdBy = null)
+            string? createdBy = null,
+            DeliveryLeg leg = DeliveryLeg.Delivery)
         {
             if (orderId <= 0)
                 throw new ArgumentException("Order ID must be greater than zero", nameof(orderId));
@@ -41,6 +48,7 @@ namespace Domain.Models
                 OrderId = orderId,
                 VehicleId = vehicleId,
                 DeliveryId = deliveryId,
+                Leg = leg,
                 DeliveryReceivedFromMerchant = false,
                 CreatedBy = createdBy,
                 CreatedDate = DateTime.UtcNow,

@@ -23,6 +23,15 @@ namespace Domain.Models
         public string? AndriodDevice { get; private set; }
         public string? IosDevice { get; private set; }
 
+        /// <summary>"ar" or "en": the app language, used for push text. Null until the app reports it.</summary>
+        public string? PreferredLanguage { get; private set; }
+
+        /// <summary>
+        /// Set when the customer deleted their account. The row stays (orders reference it) but every
+        /// personal field is scrubbed by <see cref="DeleteAccount"/>.
+        /// </summary>
+        public bool IsDeleted { get; private set; }
+
         public int CityId { get; private set; }
         public int ZoneId { get; private set; }
         public City City { get; private set; } = null!;
@@ -243,12 +252,82 @@ namespace Domain.Models
             InvitationCodeExpiry = dateTimeProvider.Now.AddHours(24);
         }
 
+        /// <summary>Keeps "ar" or "en" (any "ar-EG" / "en-US" style value is reduced); anything else is ignored.</summary>
+        public void SetPreferredLanguage(string? language, string? modifiedBy = null)
+        {
+            var code = language?.Trim().ToLowerInvariant();
+            if (string.IsNullOrEmpty(code))
+                return;
+
+            code = code.Length >= 2 ? code[..2] : code;
+            if (code != "ar" && code != "en")
+                return;
+
+            PreferredLanguage = code;
+            LastModifiedBy = modifiedBy;
+            LastModifiedDate = DateTime.UtcNow;
+        }
+
         public void AddFireBaseDevices(string? androidDevice, string? iosDevice, string? modifiedBy = null)
         {
             if (!string.IsNullOrWhiteSpace(androidDevice))
                 AndriodDevice = androidDevice;
             if (!string.IsNullOrWhiteSpace(iosDevice))
                 IosDevice = iosDevice;
+            LastModifiedBy = modifiedBy;
+            LastModifiedDate = DateTime.UtcNow;
+        }
+
+        /// <summary>Removes this push token from the customer (either platform). True when something was cleared.</summary>
+        public bool RemoveFireBaseDevice(string? token, string? modifiedBy = null)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return false;
+
+            var changed = false;
+            if (AndriodDevice == token)
+            {
+                AndriodDevice = null;
+                changed = true;
+            }
+            if (IosDevice == token)
+            {
+                IosDevice = null;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                LastModifiedBy = modifiedBy;
+                LastModifiedDate = DateTime.UtcNow;
+            }
+
+            return changed;
+        }
+
+        /// <summary>
+        /// Self-service account deletion. The row is kept because orders, wallet entries and
+        /// notifications point at it; every personal field is replaced or cleared, the phone
+        /// number is freed so it can register again, and push stops.
+        /// </summary>
+        public void DeleteAccount(string? modifiedBy = null)
+        {
+            if (IsDeleted)
+                return;
+
+            IsDeleted = true;
+            State = CustomerState.InActive;
+            MobileNumber = $"deleted-{CustomerId}";
+            FullName = "Deleted user";
+            Gender = string.Empty;
+            Email = null;
+            PersonalImage = null;
+            CommercialRegisterImage = null;
+            AndriodDevice = null;
+            IosDevice = null;
+            PreferredLanguage = null;
+            InvitationCode = null;
+            InvitationCodeExpiry = null;
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }

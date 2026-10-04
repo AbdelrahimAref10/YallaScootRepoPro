@@ -60,10 +60,12 @@ namespace Application.Features.Customer.Command.UpdateCustomerProfileCommand
                 return Result.Failure("Invalid email format");
             }
 
-            // Validate password if provided (must be at least 8 characters)
-            if (!string.IsNullOrWhiteSpace(request.Password) && request.Password.Length < 8)
+            // Validate password if provided (same rules as the Identity options)
+            if (!string.IsNullOrWhiteSpace(request.Password))
             {
-                return Result.Failure("Password must be at least 8 characters long");
+                var passwordResult = Application.Common.PasswordPolicy.Validate(request.Password);
+                if (passwordResult.IsFailure)
+                    return passwordResult;
             }
 
             // Validate that customer exists

@@ -28,11 +28,9 @@ namespace Application.Features.Auth.Command.RegisterCommand
             if (string.IsNullOrWhiteSpace(request.FullName))
                 return Result.Failure("Full name is required");
 
-            if (string.IsNullOrWhiteSpace(request.Password))
-                return Result.Failure("Password is required");
-
-            if (request.Password.Length < 6)
-                return Result.Failure("Password must be at least 6 characters long");
+            var passwordResult = Application.Common.PasswordPolicy.Validate(request.Password);
+            if (passwordResult.IsFailure)
+                return passwordResult;
 
             if (!string.IsNullOrWhiteSpace(request.Email) && !IsValidEmail(request.Email))
                 return Result.Failure("Invalid email format");

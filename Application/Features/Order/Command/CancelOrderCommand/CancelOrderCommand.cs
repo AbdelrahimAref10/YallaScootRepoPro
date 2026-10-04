@@ -92,13 +92,23 @@ namespace Application.Features.Order.Command.CancelOrderCommand
             // Prior debt attached but not yet paid → release back to Pending
             await CancellationDebtHelper.RevertUnderPaymentFeesToPendingAsync(_context, order.OrderId, cancellationToken);
 
-            // Fee is on rental portion only (excludes previous debt)
-            var rentalTotal = order.GetRentalTotal();
-            var cancellationFee = OrderCalculationService.CalculateCancellationFee(
-                order.City,
-                order.CreatedDate,
-                rentalTotal,
-                _dateTimeProvider);
+            var orderPayment = order.OrderPayments.FirstOrDefault();
+            var isPayPal = orderPayment != null && orderPayment.PaymentMethodId == (int)PaymentMethod.PayPal;
+            // A PayPal order only holds the customer's money once the capture succeeded (Paid).
+            var payPalCaptured = isPayPal && orderPayment!.State == PaymentState.Paid;
+
+            // Fee is on rental portion only (excludes previous debt). An unpaid PayPal order is
+            // just dropped: no fee, nothing to refund.
+            decimal? cancellationFee = null;
+            if (!isPayPal || payPalCaptured)
+            {
+                var rentalTotal = order.GetRentalTotal();
+                cancellationFee = OrderCalculationService.CalculateCancellationFee(
+                    order.City,
+                    order.CreatedDate,
+                    rentalTotal,
+                    _dateTimeProvider);
+            }
 
             if (cancellationFee.HasValue && cancellationFee.Value > 0)
             {
@@ -114,8 +124,7 @@ namespace Application.Features.Order.Command.CancelOrderCommand
                 _context.CustomerWallets.Add(walletEntry);
             }
 
-            var orderPayment = order.OrderPayments.FirstOrDefault();
-            if (orderPayment != null && orderPayment.PaymentMethodId == (int)PaymentMethod.PayPal)
+            if (payPalCaptured)
             {
                 var refundableAmount = order.OrderTotal - order.PreviousDebt - (cancellationFee ?? 0);
 
@@ -133,7 +142,13 @@ namespace Application.Features.Order.Command.CancelOrderCommand
                     _context.RefundablePaypalAmounts.Add(refundablePaypal);
                 }
 
-                orderPayment.MarkAsRefunded(_userSession.UserName ?? "System");
+                orderPayment!.MarkAsRefunded(_userSession.UserName ?? "System");
+            }
+            else if (isPayPal && orderPayment!.State == PaymentState.Pending)
+            {
+                // Never captured: close the payment so the PayPal approval can no longer be
+                // captured against a cancelled order.
+                orderPayment.MarkAsFailed(_userSession.UserName ?? "System");
             }
 
             if (order.OrderState == OrderState.Confirmed
@@ -159,9 +174,11 @@ namespace Application.Features.Order.Command.CancelOrderCommand
             // Cash → MoneyRefunded=true; PayPal → false until admin confirms
             order.Cancel(_userSession.UserName ?? "System");
 
-            await _context.SaveChangesAsync(cancellationToken);
+            // Unpaid PayPal: nothing was collected, so nothing is owed back (same as cash).
+            if (isPayPal && !payPalCaptured)
+                order.MarkMoneyRefunded(_userSession.UserName ?? "System");
 
-            await SendOrderCancelledNotification(order, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _realtime.NotifyAsync(
                 order.OrderId,
@@ -173,45 +190,5 @@ namespace Application.Features.Order.Command.CancelOrderCommand
             return Result.Success(true);
         }
 
-        private async Task SendOrderCancelledNotification(Domain.Models.Order order, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var customer = await _context.Customers
-                    .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId, cancellationToken);
-
-                if (customer == null)
-                    return;
-
-                var firebaseTokens = new List<string>();
-                if (!string.IsNullOrWhiteSpace(customer.AndriodDevice))
-                    firebaseTokens.Add(customer.AndriodDevice);
-                if (!string.IsNullOrWhiteSpace(customer.IosDevice))
-                    firebaseTokens.Add(customer.IosDevice);
-
-                if (firebaseTokens.Count == 0)
-                    return;
-
-                var notificationBody = new NotificationBodyForMultipleDevices
-                {
-                    Title = "Order Cancelled",
-                    Body = $"Your order #{order.OrderCode} has been cancelled.",
-                    FireBaseTokens = firebaseTokens,
-                    PayLoad = new Dictionary<string, string>
-                    {
-                        { "orderId", order.OrderId.ToString() },
-                        { "orderCode", order.OrderCode },
-                        { "type", ((int)NotificationType.OrderCancelled).ToString() },
-                        { "action", "open_order_detail" }
-                    }
-                };
-
-                await _notificationService.SendNotificationAsyncToMultipleDevices(notificationBody);
-            }
-            catch (Exception)
-            {
-                // Notification failures should not affect order cancellation
-            }
-        }
     }
 }

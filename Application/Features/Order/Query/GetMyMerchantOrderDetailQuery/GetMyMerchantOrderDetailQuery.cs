@@ -117,7 +117,7 @@ namespace Application.Features.Order.Query.GetMyMerchantOrderDetailQuery
                 .AsNoTracking()
                 .Include(d => d.Delivery)
                 .Include(d => d.Vehicle)
-                .Where(d => d.OrderId == request.OrderId && myVehicleIds.Contains(d.VehicleId))
+                .Where(d => d.OrderId == request.OrderId && myVehicleIds.Contains(d.VehicleId) && d.Leg == DeliveryLeg.Delivery)
                 .ToListAsync(cancellationToken);
 
             var journals = await _context.OrderJournals

@@ -1,0 +1,165 @@
+.rp__panel {
+  max-height: 24rem;
+}
+
+.rp--up .rp__panel {
+  top: auto;
+  bottom: calc(100% + 0.4rem);
+}
+
+.rp__options {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.rp__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.rp__head .rp__name {
+  flex: 1 1 auto;
+}
+
+.rp__option {
+  align-items: flex-start;
+}
+
+.rp__dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-top: 0.35rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+}
+
+.ms__trigger-text .rp__dot {
+  margin-top: 0;
+}
+
+.rp__dot--ok {
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+}
+
+.rp__dot--warn {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+}
+
+.rp__dot--off {
+  background: var(--volt-text-muted);
+  opacity: 0.55;
+}
+
+.rp__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rp__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.rp__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.4rem;
+  min-height: 1.15rem;
+  border-radius: 999px;
+  background: var(--volt-surface-muted);
+  color: var(--volt-text-secondary);
+  border: 1px solid var(--volt-border);
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+
+.rp__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 550;
+  color: var(--volt-text-muted);
+}
+
+.rp__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.45rem;
+  min-height: 1.25rem;
+  border-radius: 999px;
+  background: var(--volt-surface-muted);
+  border: 1px solid var(--volt-border);
+  white-space: nowrap;
+}
+
+.rp__status--ok {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.rp__status--warn {
+  color: #b45309;
+  font-weight: 700;
+}
+
+.rp__status--off {
+  font-weight: 650;
+}
+
+.rp__mobile {
+  flex-shrink: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--volt-text-secondary);
+  direction: ltr;
+}
+
+.rp__debt {
+  font-variant-numeric: tabular-nums;
+}
+
+.rp__debt--over {
+  color: #b91c1c;
+  font-weight: 700;
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.rp__debt-block {
+  color: #fff;
+  font-weight: 750;
+  border-color: #dc2626;
+  background: #dc2626;
+}
+
+/* Over the cash debt limit on a cash delivery trip: shown, not pickable. */
+.rp__option--blocked {
+  cursor: not-allowed;
+  background: var(--volt-surface-muted);
+}
+
+.rp__option--blocked:hover {
+  background: var(--volt-surface-muted);
+}
+
+.rp__option--blocked .rp__dot,
+.rp__option--blocked .rp__head,
+.rp__option--blocked .rp__meta > :not(.rp__debt):not(.rp__debt-block) {
+  opacity: 0.5;
+}

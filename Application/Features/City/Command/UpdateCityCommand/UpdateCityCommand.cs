@@ -21,6 +21,10 @@ namespace Application.Features.City.Command.UpdateCityCommand
         public decimal? UrgentDelivery { get; set; } // Amount value
         public decimal? ServiceFees { get; set; } // Amount value
         public decimal? CancellationFees { get; set; } // Percentage value (e.g., 5.0 means 5%)
+        /// <summary>Rider commission for the delivery trip, % of the vehicle delivery fee. Null keeps the current value (default 20).</summary>
+        public decimal? DeliveryLegCommissionPercent { get; set; }
+        /// <summary>Rider commission for the return trip, % of the vehicle delivery fee. Null keeps the current value (default 20).</summary>
+        public decimal? ReturnLegCommissionPercent { get; set; }
         public List<TieredDiscountDto>? TieredDiscounts { get; set; }
     }
 
@@ -74,6 +78,21 @@ namespace Application.Features.City.Command.UpdateCityCommand
 
             if (request.ZoneGroupId.HasValue)
                 city.AssignZoneGroup(request.ZoneGroupId.Value, _userSession.UserName ?? "System");
+
+            if (request.DeliveryLegCommissionPercent.HasValue || request.ReturnLegCommissionPercent.HasValue)
+            {
+                try
+                {
+                    city.UpdateDeliveryCommission(
+                        request.DeliveryLegCommissionPercent ?? city.DeliveryLegCommissionPercent,
+                        request.ReturnLegCommissionPercent ?? city.ReturnLegCommissionPercent,
+                        _userSession.UserName ?? "System");
+                }
+                catch (ArgumentException ex)
+                {
+                    return Result.Failure<int>(ex.Message);
+                }
+            }
 
             // Handle tiered discounts: remove existing and add new ones
             // Use the tiered discounts already loaded from Include to avoid tracking conflicts

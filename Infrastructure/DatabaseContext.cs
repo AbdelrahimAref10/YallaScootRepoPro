@@ -63,6 +63,11 @@ namespace Infrastructure
         public DbSet<ZoneGroup> ZoneGroups { get; set; }
         public DbSet<Zone> Zones { get; set; }
         public DbSet<ZoneDeliveryRate> ZoneDeliveryRates { get; set; }
+        public DbSet<Shift> Shifts { get; set; }
+        public DbSet<DeliveryShift> DeliveryShifts { get; set; }
+        public DbSet<OrderVehicleHandoverImage> OrderVehicleHandoverImages { get; set; }
+        public DbSet<DeliveryNotification> DeliveryNotifications { get; set; }
+        public DbSet<CustomerNotification> CustomerNotifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

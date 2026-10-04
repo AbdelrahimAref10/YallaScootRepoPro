@@ -13,11 +13,21 @@ namespace Application.Features.Zone.Query.GetZonesByCityQuery
     {
         public int ZoneId { get; set; }
         public string Name { get; set; } = string.Empty;
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        /// <summary>From the caller's location; null when no location was sent.</summary>
+        public double? DistanceKm { get; set; }
     }
 
+    /// <summary>
+    /// Active zones of the city's zone group. With <see cref="Latitude"/> and <see cref="Longitude"/>
+    /// the list is nearest first (the first item is the caller's nearest zone); otherwise by name.
+    /// </summary>
     public record GetZonesByCityQuery : IRequest<Result<List<ZoneLookupDto>>>
     {
         public int CityId { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
     }
 
     public class GetZonesByCityQueryHandler : IRequestHandler<GetZonesByCityQuery, Result<List<ZoneLookupDto>>>
@@ -46,8 +56,30 @@ namespace Application.Features.Zone.Query.GetZonesByCityQuery
             var zones = await _context.Zones.AsNoTracking()
                 .Where(z => z.ZoneGroupId == city.ZoneGroupId.Value && z.IsActive)
                 .OrderBy(z => z.Name)
-                .Select(z => new ZoneLookupDto { ZoneId = z.ZoneId, Name = z.Name })
+                .Select(z => new ZoneLookupDto
+                {
+                    ZoneId = z.ZoneId,
+                    Name = z.Name,
+                    Latitude = z.Latitude,
+                    Longitude = z.Longitude
+                })
                 .ToListAsync(cancellationToken);
+
+            if (request.Latitude is double lat && request.Longitude is double lng
+                && lat is >= -90 and <= 90 && lng is >= -180 and <= 180)
+            {
+                // A zone saved without coordinates (0, 0) has no real distance: null, listed last.
+                foreach (var zone in zones)
+                    zone.DistanceKm = zone.Latitude == 0 && zone.Longitude == 0
+                        ? null
+                        : Math.Round(global::Domain.Models.Zone.DistanceKm(lat, lng, zone.Latitude, zone.Longitude), 2);
+
+                zones = zones
+                    .OrderBy(z => z.DistanceKm == null)
+                    .ThenBy(z => z.DistanceKm)
+                    .ThenBy(z => z.Name)
+                    .ToList();
+            }
 
             return Result.Success(zones);
         }

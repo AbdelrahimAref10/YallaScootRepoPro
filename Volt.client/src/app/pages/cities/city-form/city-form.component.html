@@ -134,6 +134,59 @@
       </div>
     </section>
 
+    <section class="entity-form__card">
+      <div class="entity-form__card-head">
+        <p class="entity-form__card-kicker">{{ 'cities.riderCommissionKicker' | t }}</p>
+        <h2 class="entity-form__card-title">{{ 'cities.riderCommission' | t }}</h2>
+        <p class="entity-form__card-text">{{ 'cities.riderCommissionSubtitle' | t }}</p>
+      </div>
+
+      <div class="entity-form__card-body">
+        <div class="entity-form__row">
+          <div class="entity-form__field">
+            <label class="entity-form__label">{{ 'cities.deliveryLegCommission' | t }}</label>
+            <input
+              type="number"
+              formControlName="deliveryLegCommissionPercent"
+              class="entity-form__input"
+              min="0"
+              max="100"
+              step="0.01"
+              placeholder="50"
+            />
+            <p *ngIf="cityForm.get('deliveryLegCommissionPercent')?.invalid && cityForm.get('deliveryLegCommissionPercent')?.touched" class="entity-form__error">
+              {{ 'cities.commissionRange' | t }}
+            </p>
+          </div>
+
+          <div class="entity-form__field">
+            <label class="entity-form__label">{{ 'cities.returnLegCommission' | t }}</label>
+            <input
+              type="number"
+              formControlName="returnLegCommissionPercent"
+              class="entity-form__input"
+              min="0"
+              max="100"
+              step="0.01"
+              placeholder="50"
+            />
+            <p *ngIf="cityForm.get('returnLegCommissionPercent')?.invalid && cityForm.get('returnLegCommissionPercent')?.touched" class="entity-form__error">
+              {{ 'cities.commissionRange' | t }}
+            </p>
+          </div>
+        </div>
+        <p
+          class="city-form__commission-total"
+          [class.city-form__commission-total--over]="cityForm.hasError('commissionOver100')"
+        >
+          {{ 'cities.commissionTotal' | t:{ total: commissionTotal } }}
+        </p>
+        <p *ngIf="cityForm.hasError('commissionOver100')" class="entity-form__error">
+          {{ 'cities.commissionSumTooHigh' | t }}
+        </p>
+      </div>
+    </section>
+
     <section class="entity-form__card city-form__zones-card">
       <div class="entity-form__card-head">
         <p class="entity-form__card-kicker">{{ 'cities.zoneGroupKicker' | t }}</p>

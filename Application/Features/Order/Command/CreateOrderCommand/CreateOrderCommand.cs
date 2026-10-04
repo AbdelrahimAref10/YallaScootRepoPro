@@ -1,3 +1,4 @@
+using Application.Features.Customer.Common;
 using Application.Features.Order.Common;
 using Application.Features.Order.DTOs;
 using Application.Features.Order.Services;
@@ -41,7 +42,7 @@ namespace Application.Features.Order.Command.CreateOrderCommand
         private readonly DatabaseContext _context;
         private readonly IUserSession _userSession;
         private readonly IPayPalService _payPalService;
-        private readonly INotificationService _notificationService;
+        private readonly ICustomerNotifier _customerNotifier;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IOrderRealtimeNotifier _realtime;
 
@@ -49,14 +50,14 @@ namespace Application.Features.Order.Command.CreateOrderCommand
             DatabaseContext context,
             IUserSession userSession,
             IPayPalService payPalService,
-            INotificationService notificationService,
+            ICustomerNotifier customerNotifier,
             IDateTimeProvider dateTimeProvider,
             IOrderRealtimeNotifier realtime)
         {
             _context = context;
             _userSession = userSession;
             _payPalService = payPalService;
-            _notificationService = notificationService;
+            _customerNotifier = customerNotifier;
             _dateTimeProvider = dateTimeProvider;
             _realtime = realtime;
         }
@@ -78,7 +79,7 @@ namespace Application.Features.Order.Command.CreateOrderCommand
             var customer = await _context.Customers
                 .FirstOrDefaultAsync(c => c.UserId == _userSession.UserId, cancellationToken);
 
-            if (customer == null)
+            if (customer == null || customer.IsDeleted)
             {
                 return Result.Failure<OrderDto>("Customer not found");
             }
@@ -244,6 +245,9 @@ namespace Application.Features.Order.Command.CreateOrderCommand
                     _context.OrderVehicles.Add(Domain.Models.OrderVehicle.Create(order.OrderId, vehicleId, fee, actor));
                 }
 
+                var reservations = new List<Domain.Models.ReservedVehiclesPerDays>();
+                var previousVehicleStatus = vehicles.ToDictionary(v => v.VehicleId, v => v.Status);
+
                 foreach (var vehicle in vehicles)
                 {
                     var currentDate = order.ReservationDateFrom.Date;
@@ -251,7 +255,7 @@ namespace Application.Features.Order.Command.CreateOrderCommand
 
                     while (currentDate <= endDate)
                     {
-                        _context.ReservedVehiclesPerDays.Add(Domain.Models.ReservedVehiclesPerDays.Create(
+                        var reservation = Domain.Models.ReservedVehiclesPerDays.Create(
                             vehicle.VehicleId,
                             order.SubCategoryId,
                             vehicle.VehicleCode,
@@ -259,7 +263,9 @@ namespace Application.Features.Order.Command.CreateOrderCommand
                             currentDate,
                             currentDate,
                             actor
-                        ));
+                        );
+                        reservations.Add(reservation);
+                        _context.ReservedVehiclesPerDays.Add(reservation);
                         currentDate = currentDate.AddDays(1);
                     }
 
@@ -280,7 +286,24 @@ namespace Application.Features.Order.Command.CreateOrderCommand
                     }
                     else
                     {
+                        // Nothing was charged. Keep the failed payment row for audit, but cancel the
+                        // order and give back what it held (vehicle days, vehicle status, prior
+                        // cancellation debt) so the customer can simply place the order again.
                         orderPayment.MarkAsFailed(actor);
+
+                        foreach (var reservation in reservations)
+                            reservation.Cancel(actor);
+
+                        foreach (var vehicle in vehicles)
+                            vehicle.UpdateStatus(previousVehicleStatus[vehicle.VehicleId], actor);
+
+                        foreach (var wallet in pendingCancellationFees)
+                            wallet.RevertToPending();
+
+                        order.Cancel(actor);
+                        // No money was collected, so there is nothing to refund (same as a cash cancel).
+                        order.MarkMoneyRefunded(actor);
+
                         await _context.SaveChangesAsync(cancellationToken);
                         return Result.Failure<OrderDto>($"Failed to create PayPal order: {createOrderResult.ErrorMessage ?? "Unknown error"}");
                     }
@@ -349,44 +372,15 @@ namespace Application.Features.Order.Command.CreateOrderCommand
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        private async Task SendOrderCreatedNotification(Domain.Models.Customer customer, Domain.Models.Order order, CancellationToken cancellationToken)
+        private Task SendOrderCreatedNotification(Domain.Models.Customer customer, Domain.Models.Order order, CancellationToken cancellationToken)
         {
-            try
-            {
-                var customerWithTokens = await _context.Customers
-                    .FirstOrDefaultAsync(c => c.CustomerId == customer.CustomerId, cancellationToken);
-
-                if (customerWithTokens == null)
-                    return;
-
-                var firebaseTokens = new List<string>();
-                if (!string.IsNullOrWhiteSpace(customerWithTokens.AndriodDevice))
-                    firebaseTokens.Add(customerWithTokens.AndriodDevice);
-                if (!string.IsNullOrWhiteSpace(customerWithTokens.IosDevice))
-                    firebaseTokens.Add(customerWithTokens.IosDevice);
-
-                if (firebaseTokens.Count == 0)
-                    return;
-
-                var notificationBody = new NotificationBodyForMultipleDevices
-                {
-                    Title = "Order Created",
-                    Body = $"Your order #{order.OrderCode} has been created and is pending.",
-                    FireBaseTokens = firebaseTokens,
-                    PayLoad = new Dictionary<string, string>
-                    {
-                        { "orderId", order.OrderId.ToString() },
-                        { "orderCode", order.OrderCode },
-                        { "type", ((int)NotificationType.OrderCreated).ToString() },
-                        { "action", "open_order_detail" }
-                    }
-                };
-
-                await _notificationService.SendNotificationAsyncToMultipleDevices(notificationBody);
-            }
-            catch (Exception)
-            {
-            }
+            return _customerNotifier.NotifyOrderAsync(
+                order.OrderId,
+                new CustomerPushText(
+                    "تم استلام طلبك", "طلبك #{code} وصلنا، وهنبلغك بكل خطوة فيه.",
+                    "Order placed", "We got your order #{code}. We will keep you posted on every step."),
+                NotificationType.OrderCreated,
+                cancellationToken);
         }
     }
 }

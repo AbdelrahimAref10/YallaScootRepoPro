@@ -129,6 +129,9 @@
                   <span class="cities__fees-chip cities__fees-chip--muted">
                     {{ 'cities.feeCancelShort' | t }}: {{ city.cancellationFees ?? 0 }}%
                   </span>
+                  <span class="cities__fees-chip" *ngIf="commissions.get(city.cityId) as c" [attr.title]="'cities.riderCommission' | t">
+                    {{ 'cities.legCommissionShort' | t:{ delivery: c.deliveryLegCommissionPercent, ret: c.returnLegCommissionPercent } }}
+                  </span>
                 </div>
               </td>
               <td>

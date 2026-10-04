@@ -49,6 +49,7 @@ namespace Application.Features.Order.DTOs
         public List<DeliveryMenOrderDto> DeliveryMenOrders { get; set; } = new();
         public List<DeliveryOrderPaymentDetailDto> DeliveryOrderPaymentDetails { get; set; } = new();
         public List<OrderJournalDto> OrderJournals { get; set; } = new();
+        public List<OrderVehicleHandoverImageDto> HandoverImages { get; set; } = new();
     }
 }
 

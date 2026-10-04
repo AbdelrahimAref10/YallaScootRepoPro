@@ -17,6 +17,19 @@ namespace Domain.Models
         public bool IsInvitationCodeUsed { get; private set; }
         public bool IsActive { get; private set; }
         public bool IsDeleted { get; private set; }
+
+        /// <summary>Rider's own availability toggle. Only meaningful while one of his shifts is running.</summary>
+        public bool IsOnline { get; private set; }
+        public DateTime? OnlineStatusChangedAt { get; private set; }
+        public string? AndriodDevice { get; private set; }
+        public string? IosDevice { get; private set; }
+
+        /// <summary>
+        /// Max cash (collected from customers, not yet remitted) the rider may hold. At or above it he
+        /// cannot be assigned cash orders. Null means no limit. Set by the admin per rider.
+        /// </summary>
+        public decimal? CashDebtLimit { get; private set; }
+
         public string? CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; }
         public string? LastModifiedBy { get; set; }
@@ -25,8 +38,49 @@ namespace Domain.Models
         public ApplicationUser User { get; private set; } = null!;
         public City City { get; private set; } = null!;
         public Zone Zone { get; private set; } = null!;
+        public ICollection<DeliveryShift> DeliveryShifts { get; private set; } = new List<DeliveryShift>();
 
         private Delivery() { }
+
+        public void SetOnline(bool isOnline, string? modifiedBy = null)
+        {
+            // Switching on always refreshes the timestamp: a toggle left on from a previous shift does not count.
+            if (IsOnline == isOnline && !isOnline)
+                return;
+
+            IsOnline = isOnline;
+            OnlineStatusChangedAt = DateTime.UtcNow;
+            LastModifiedBy = modifiedBy;
+            LastModifiedDate = DateTime.UtcNow;
+        }
+
+        public void SaveDeviceTokens(string? androidDevice, string? iosDevice)
+        {
+            if (!string.IsNullOrWhiteSpace(androidDevice))
+                AndriodDevice = androidDevice;
+            if (!string.IsNullOrWhiteSpace(iosDevice))
+                IosDevice = iosDevice;
+            LastModifiedDate = DateTime.UtcNow;
+        }
+
+        public void SetCashDebtLimit(decimal? limit, string? modifiedBy = null)
+        {
+            if (limit.HasValue && limit.Value < 0)
+                throw new ArgumentException("Cash debt limit cannot be negative", nameof(limit));
+
+            CashDebtLimit = limit;
+            LastModifiedBy = modifiedBy;
+            LastModifiedDate = DateTime.UtcNow;
+        }
+
+        public void ClearDeviceToken(string token)
+        {
+            if (AndriodDevice == token)
+                AndriodDevice = null;
+            if (IosDevice == token)
+                IosDevice = null;
+            LastModifiedDate = DateTime.UtcNow;
+        }
 
         public static Delivery Create(
             int userId,

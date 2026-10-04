@@ -48,6 +48,18 @@ namespace Infrastructure.MappingConfiguration
                 .HasColumnName("CancellationFees")
                 .HasColumnType("decimal(18,2)");
 
+            // No HasDefaultValue: EF would skip an explicit 0 on insert and store the column default.
+            // New cities get 50/50 from the entity initialisers; existing rows were filled by the migration.
+            builder.Property(c => c.DeliveryLegCommissionPercent)
+                .HasColumnName("DeliveryLegCommissionPercent")
+                .HasColumnType("decimal(5,2)")
+                .IsRequired();
+
+            builder.Property(c => c.ReturnLegCommissionPercent)
+                .HasColumnName("ReturnLegCommissionPercent")
+                .HasColumnType("decimal(5,2)")
+                .IsRequired();
+
             // Configure audit properties
             builder.Property(c => c.CreatedBy)
                 .HasColumnName("CreatedBy")

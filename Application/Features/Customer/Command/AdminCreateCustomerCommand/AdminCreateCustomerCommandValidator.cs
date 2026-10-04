@@ -41,11 +41,9 @@ namespace Application.Features.Customer.Command.AdminCreateCustomerCommand
             if (!string.IsNullOrWhiteSpace(request.Email) && !IsValidEmail(request.Email))
                 return Result.Failure("Invalid email format");
 
-            if (string.IsNullOrWhiteSpace(request.Password))
-                return Result.Failure("Password is required");
-
-            if (request.Password.Length < 6)
-                return Result.Failure("Password must be at least 6 characters long");
+            var passwordResult = Application.Common.PasswordPolicy.Validate(request.Password);
+            if (passwordResult.IsFailure)
+                return passwordResult;
 
             if (request.CityId <= 0)
                 return Result.Failure("Valid city is required");

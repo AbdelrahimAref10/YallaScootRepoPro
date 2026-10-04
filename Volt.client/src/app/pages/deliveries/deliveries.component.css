@@ -124,7 +124,7 @@
 }
 
 .deliveries__table thead th {
-  padding: 0.85rem 1.1rem;
+  padding: 0.85rem 0.7rem;
   text-align: center;
   font-size: 0.7rem;
   font-weight: 750;
@@ -136,7 +136,7 @@
 }
 
 .deliveries__table tbody td {
-  padding: 0.9rem 1.1rem;
+  padding: 0.9rem 0.7rem;
   vertical-align: middle;
   text-align: center;
   border-bottom: 1px solid var(--volt-border);
@@ -168,9 +168,9 @@
 
 .deliveries__row-actions {
   display: inline-flex;
-  gap: 0.65rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .deliveries__link {
@@ -181,6 +181,7 @@
   font-weight: 700;
   cursor: pointer;
   padding: 0;
+  white-space: nowrap;
 }
 
 .deliveries__link--danger {
@@ -189,5 +190,189 @@
 
 .deliveries__link:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.deliveries__presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+  text-align: start;
+}
+
+.deliveries__presence small {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 550;
+  color: var(--volt-text-muted);
+}
+
+.deliveries__presence-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.deliveries__presence-dot--ok { background: #16a34a; }
+.deliveries__presence-dot--warn { background: #f59e0b; }
+.deliveries__presence-dot--off { background: var(--volt-text-muted); opacity: 0.55; }
+
+/* Cash debt column */
+.deliveries__debt {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 0.6rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.deliveries__debt strong {
+  font-weight: 750;
+}
+
+.deliveries__debt strong small {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--volt-text-muted);
+}
+
+.deliveries__debt-limit {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--volt-text-muted);
+}
+
+.deliveries__debt--over {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: #b91c1c;
+}
+
+.deliveries__debt--over strong small,
+.deliveries__debt--over .deliveries__debt-limit {
+  color: #b91c1c;
+}
+
+/* Cash debt limit dialog */
+.dl-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(10, 17, 16, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.dl-modal__dialog {
+  width: min(26rem, 100%);
+  max-height: min(90vh, 40rem);
+  display: flex;
+  flex-direction: column;
+  border-radius: 1.25rem;
+  border: 1px solid var(--volt-border);
+  background: var(--volt-surface);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+
+.dl-modal__header,
+.dl-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 1.1rem 1.2rem;
+}
+
+.dl-modal__header {
+  border-bottom: 1px solid var(--volt-border);
+}
+
+.dl-modal__footer {
+  border-top: 1px solid var(--volt-border);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.dl-modal__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.dl-modal__subtitle {
+  margin: 0.3rem 0 0;
+  font-size: 0.82rem;
+  color: var(--volt-text-muted);
+}
+
+.dl-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: var(--volt-surface-muted);
+  color: var(--volt-text-secondary);
+  cursor: pointer;
+}
+
+.dl-modal__close svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.dl-modal__body {
+  padding: 1rem 1.2rem;
+  overflow: auto;
+  gap: 1rem;
+}
+
+.dl-modal__current {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--volt-border);
+  background: var(--volt-surface-muted);
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: var(--volt-text-secondary);
+}
+
+.dl-modal__current strong {
+  color: var(--volt-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dl-modal__current--over {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.dl-modal__current--over strong {
+  color: #b91c1c;
+}
+
+.dl-modal__remove {
+  margin-inline-end: auto;
+  color: #b91c1c;
+}
+
+.dl-modal__remove:disabled,
+.dl-modal__footer .deliveries__btn:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
 }

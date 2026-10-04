@@ -112,7 +112,6 @@ namespace Application.Features.Order.Command.UpdateOrderStateCommand
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            await SendOrderStateChangeNotification(order, request.NewState, cancellationToken);
             await SendAdminNotificationForStateChange(order, request.NewState);
 
             return Result.Success(new OrderDto
@@ -176,74 +175,6 @@ namespace Application.Features.Order.Command.UpdateOrderStateCommand
             }
 
             return Result.Success();
-        }
-
-        private async Task SendOrderStateChangeNotification(Domain.Models.Order order, OrderState newState, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var customer = await _context.Customers
-                    .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId, cancellationToken);
-
-                if (customer == null)
-                    return;
-
-                var firebaseTokens = new List<string>();
-                if (!string.IsNullOrWhiteSpace(customer.AndriodDevice))
-                    firebaseTokens.Add(customer.AndriodDevice);
-                if (!string.IsNullOrWhiteSpace(customer.IosDevice))
-                    firebaseTokens.Add(customer.IosDevice);
-
-                if (firebaseTokens.Count == 0)
-                    return;
-
-                string title;
-                string body;
-                NotificationType notificationType;
-
-                switch (newState)
-                {
-                    case OrderState.Confirmed:
-                        title = "Order Confirmed";
-                        body = $"Your order #{order.OrderCode} has been confirmed.";
-                        notificationType = NotificationType.OrderConfirmed;
-                        break;
-                    case OrderState.OnWay:
-                        title = "Order On The Way";
-                        body = $"Your order #{order.OrderCode} is on the way to your location.";
-                        notificationType = NotificationType.OrderOnWay;
-                        break;
-                    case OrderState.CustomerReceived:
-                        title = "Order Received";
-                        body = $"Your order #{order.OrderCode} has been delivered. Please confirm receipt.";
-                        notificationType = NotificationType.OrderCustomerReceived;
-                        break;
-                    case OrderState.Completed:
-                        title = "Order Completed";
-                        body = $"Your order #{order.OrderCode} has been completed successfully. Thank you!";
-                        notificationType = NotificationType.OrderCompleted;
-                        break;
-                    default:
-                        return;
-                }
-
-                await _notificationService.SendNotificationAsyncToMultipleDevices(new NotificationBodyForMultipleDevices
-                {
-                    Title = title,
-                    Body = body,
-                    FireBaseTokens = firebaseTokens,
-                    PayLoad = new Dictionary<string, string>
-                    {
-                        { "orderId", order.OrderId.ToString() },
-                        { "orderCode", order.OrderCode },
-                        { "type", ((int)notificationType).ToString() },
-                        { "action", "open_order_detail" }
-                    }
-                });
-            }
-            catch
-            {
-            }
         }
 
         private async Task SendAdminNotificationForStateChange(Domain.Models.Order order, OrderState newState)

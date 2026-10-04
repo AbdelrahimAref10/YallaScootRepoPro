@@ -95,6 +95,14 @@ namespace Application.Features.Order.Query.GetOrderByIdQuery
                 .ThenBy(j => j.OrderJournalId)
                 .ToListAsync(cancellationToken);
 
+            var handoverImages = await _context.OrderVehicleHandoverImages
+                .AsNoTracking()
+                .Where(i => i.OrderId == request.OrderId)
+                .OrderBy(i => i.VehicleId)
+                .ThenBy(i => i.Step)
+                .ThenBy(i => i.Position)
+                .ToListAsync(cancellationToken);
+
             var orderDetailDto = new OrderDetailDto
             {
                 OrderId = order.OrderId,
@@ -245,7 +253,8 @@ namespace Application.Features.Order.Query.GetOrderByIdQuery
                     DeliveryId = d.DeliveryId,
                     DeliveryName = d.Delivery.FullName,
                     DeliveryReceivedFromMerchant = d.DeliveryReceivedFromMerchant,
-                    ReceivedFromMerchantAt = d.ReceivedFromMerchantAt
+                    ReceivedFromMerchantAt = d.ReceivedFromMerchantAt,
+                    Leg = d.Leg
                 }).ToList(),
                 DeliveryOrderPaymentDetails = deliveryPaymentDetails.Select(d => new DeliveryOrderPaymentDetailDto
                 {
@@ -255,7 +264,9 @@ namespace Application.Features.Order.Query.GetOrderByIdQuery
                     DeliveryName = d.Delivery.FullName,
                     VehicleId = d.VehicleId,
                     VehicleCode = d.Vehicle.VehicleCode,
-                    DeliveryFeeShare = d.DeliveryFeeShare
+                    DeliveryFeeShare = d.DeliveryFeeShare,
+                    Leg = d.Leg,
+                    CommissionPercent = d.CommissionPercent
                 }).ToList(),
                 OrderJournals = journals.Select(j => new OrderJournalDto
                 {
@@ -273,6 +284,15 @@ namespace Application.Features.Order.Query.GetOrderByIdQuery
                     Note = j.Note,
                     CreatedBy = j.CreatedBy,
                     CreatedDate = j.CreatedDate
+                }).ToList(),
+                HandoverImages = handoverImages.Select(i => new OrderVehicleHandoverImageDto
+                {
+                    VehicleId = i.VehicleId,
+                    Step = i.Step,
+                    Position = i.Position,
+                    ImageUrl = i.ImageUrl,
+                    DeliveryId = i.DeliveryId,
+                    CreatedDate = i.CreatedDate
                 }).ToList()
             };
 

@@ -75,6 +75,11 @@ namespace Application.Features.Order.Command.PayPalPaymentCommands.CompletePayPa
                 return Result.Failure<CompletePayPalPaymentResponseDto>("Order not found or access denied");
             }
 
+            if (order.OrderState == OrderState.Cancelled)
+            {
+                return Result.Failure<CompletePayPalPaymentResponseDto>("Order is cancelled and can no longer be paid");
+            }
+
             // Verify payment method is PayPal
             var orderPayment = order.OrderPayments.FirstOrDefault();
             if (orderPayment == null || orderPayment.PaymentMethodId != (int)PaymentMethod.PayPal)

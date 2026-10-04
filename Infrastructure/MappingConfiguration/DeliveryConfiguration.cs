@@ -68,6 +68,26 @@ namespace Infrastructure.MappingConfiguration
                 .HasDefaultValue(false)
                 .IsRequired();
 
+            builder.Property(d => d.IsOnline)
+                .HasColumnName("IsOnline")
+                .HasDefaultValue(false)
+                .IsRequired();
+
+            builder.Property(d => d.OnlineStatusChangedAt)
+                .HasColumnName("OnlineStatusChangedAt");
+
+            builder.Property(d => d.AndriodDevice)
+                .HasColumnName("AndriodDevice")
+                .HasMaxLength(500);
+
+            builder.Property(d => d.IosDevice)
+                .HasColumnName("IosDevice")
+                .HasMaxLength(500);
+
+            builder.Property(d => d.CashDebtLimit)
+                .HasColumnName("CashDebtLimit")
+                .HasColumnType("decimal(18,2)");
+
             builder.Property(d => d.CreatedBy)
                 .HasColumnName("CreatedBy")
                 .HasMaxLength(256);
