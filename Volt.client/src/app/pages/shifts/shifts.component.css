@@ -306,6 +306,16 @@
   overflow: hidden;
 }
 
+.sh-modal__dialog:has(app-multi-select.ms-host--open),
+.sh-modal__body:has(app-multi-select.ms-host--open) {
+  overflow: visible;
+}
+
+.sh-modal__body:has(app-multi-select.ms-host--open) {
+  position: relative;
+  z-index: 2;
+}
+
 .sh-modal__header,
 .sh-modal__footer {
   display: flex;
@@ -320,6 +330,8 @@
 }
 
 .sh-modal__footer {
+  position: relative;
+  z-index: 1;
   border-top: 1px solid var(--volt-border);
   justify-content: flex-end;
 }
@@ -420,79 +432,8 @@
   color: #fff;
 }
 
-.sh-modal__search {
-  height: 2.6rem;
-}
-
-.sh-modal__riders {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  max-height: 16rem;
-  overflow: auto;
-}
-
-.sh-modal__rider {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--volt-border);
-  border-radius: 0.75rem;
-  background: var(--volt-surface);
-  cursor: pointer;
-}
-
-.sh-modal__rider--on {
-  border-color: color-mix(in srgb, var(--volt-accent) 40%, var(--volt-border));
-  background: var(--volt-accent-soft);
-}
-
-.sh-modal__rider input {
-  width: 1.05rem;
-  height: 1.05rem;
-  accent-color: var(--volt-accent);
-  flex-shrink: 0;
-}
-
-.sh-modal__rider-dot {
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-
-.sh-modal__rider-dot--ok { background: #16a34a; }
-.sh-modal__rider-dot--warn { background: #f59e0b; }
-.sh-modal__rider-dot--off { background: var(--volt-text-muted); opacity: 0.55; }
-
-.sh-modal__rider-copy {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.sh-modal__rider-copy strong {
-  font-size: 0.86rem;
-  font-weight: 750;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sh-modal__rider-copy small {
-  font-size: 0.72rem;
-  color: var(--volt-text-muted);
-}
-
-.sh-modal__rider-mobile {
-  flex-shrink: 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--volt-text-secondary);
-  font-variant-numeric: tabular-nums;
-  direction: ltr;
+.sh-modal__body app-multi-select {
+  width: 100%;
 }
 
 .sh-modal__muted {

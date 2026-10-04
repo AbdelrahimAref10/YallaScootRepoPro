@@ -1434,6 +1434,1218 @@ export class MerchantClient {
 @Injectable({
     providedIn: 'root'
 })
+export class DeliveryNotificationClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getMyNotifications(pageNumber?: number | undefined, pageSize?: number | undefined): Observable<PagedResultOfRiderNotificationDto> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryNotification?";
+        if (pageNumber === null)
+            throw new Error("The parameter 'pageNumber' cannot be null.");
+        else if (pageNumber !== undefined)
+            url_ += "PageNumber=" + encodeURIComponent("" + pageNumber) + "&";
+        if (pageSize === null)
+            throw new Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "PageSize=" + encodeURIComponent("" + pageSize) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMyNotifications(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMyNotifications(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PagedResultOfRiderNotificationDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PagedResultOfRiderNotificationDto>;
+        }));
+    }
+
+    protected processGetMyNotifications(response: HttpResponseBase): Observable<PagedResultOfRiderNotificationDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PagedResultOfRiderNotificationDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    unreadCount(): Observable<number> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryNotification/UnreadCount";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUnreadCount(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUnreadCount(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<number>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<number>;
+        }));
+    }
+
+    protected processUnreadCount(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    markAsRead(id: number): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryNotification/{id}/MarkAsRead";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processMarkAsRead(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processMarkAsRead(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processMarkAsRead(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    markAllAsRead(): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryNotification/MarkAllAsRead";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processMarkAllAsRead(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processMarkAllAsRead(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processMarkAllAsRead(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class DeliveryOrderClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getMyOrders(tab?: RiderOrderTab | undefined, pageNumber?: number | undefined, pageSize?: number | undefined): Observable<PagedResultOfRiderOrderSummaryDto> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryOrder?";
+        if (tab === null)
+            throw new Error("The parameter 'tab' cannot be null.");
+        else if (tab !== undefined)
+            url_ += "Tab=" + encodeURIComponent("" + tab) + "&";
+        if (pageNumber === null)
+            throw new Error("The parameter 'pageNumber' cannot be null.");
+        else if (pageNumber !== undefined)
+            url_ += "PageNumber=" + encodeURIComponent("" + pageNumber) + "&";
+        if (pageSize === null)
+            throw new Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "PageSize=" + encodeURIComponent("" + pageSize) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMyOrders(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMyOrders(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PagedResultOfRiderOrderSummaryDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PagedResultOfRiderOrderSummaryDto>;
+        }));
+    }
+
+    protected processGetMyOrders(response: HttpResponseBase): Observable<PagedResultOfRiderOrderSummaryDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PagedResultOfRiderOrderSummaryDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getMyOrder(orderId: number): Observable<RiderOrderDetailDto> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryOrder/{orderId}";
+        if (orderId === undefined || orderId === null)
+            throw new Error("The parameter 'orderId' must be defined.");
+        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMyOrder(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMyOrder(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<RiderOrderDetailDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<RiderOrderDetailDto>;
+        }));
+    }
+
+    protected processGetMyOrder(response: HttpResponseBase): Observable<RiderOrderDetailDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RiderOrderDetailDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    uploadImage(file?: FileParameter | null | undefined): Observable<UploadedImageDto> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryOrder/UploadImage";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = new FormData();
+        if (file !== null && file !== undefined)
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUploadImage(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUploadImage(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<UploadedImageDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<UploadedImageDto>;
+        }));
+    }
+
+    protected processUploadImage(response: HttpResponseBase): Observable<UploadedImageDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UploadedImageDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    receivedFromOwner(orderId: number, vehicleId: number, command: SubmitRiderHandoverCommand): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryOrder/{orderId}/vehicles/{vehicleId}/ReceivedFromOwner";
+        if (orderId === undefined || orderId === null)
+            throw new Error("The parameter 'orderId' must be defined.");
+        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
+        if (vehicleId === undefined || vehicleId === null)
+            throw new Error("The parameter 'vehicleId' must be defined.");
+        url_ = url_.replace("{vehicleId}", encodeURIComponent("" + vehicleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processReceivedFromOwner(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processReceivedFromOwner(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processReceivedFromOwner(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    deliveredToCustomer(orderId: number, vehicleId: number, command: SubmitRiderHandoverCommand): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryOrder/{orderId}/vehicles/{vehicleId}/DeliveredToCustomer";
+        if (orderId === undefined || orderId === null)
+            throw new Error("The parameter 'orderId' must be defined.");
+        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
+        if (vehicleId === undefined || vehicleId === null)
+            throw new Error("The parameter 'vehicleId' must be defined.");
+        url_ = url_.replace("{vehicleId}", encodeURIComponent("" + vehicleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDeliveredToCustomer(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDeliveredToCustomer(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processDeliveredToCustomer(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    receivedFromCustomer(orderId: number, vehicleId: number, command: SubmitRiderHandoverCommand): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryOrder/{orderId}/vehicles/{vehicleId}/ReceivedFromCustomer";
+        if (orderId === undefined || orderId === null)
+            throw new Error("The parameter 'orderId' must be defined.");
+        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
+        if (vehicleId === undefined || vehicleId === null)
+            throw new Error("The parameter 'vehicleId' must be defined.");
+        url_ = url_.replace("{vehicleId}", encodeURIComponent("" + vehicleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processReceivedFromCustomer(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processReceivedFromCustomer(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processReceivedFromCustomer(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    deliveredToOwner(orderId: number, vehicleId: number, command: SubmitRiderHandoverCommand): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryOrder/{orderId}/vehicles/{vehicleId}/DeliveredToOwner";
+        if (orderId === undefined || orderId === null)
+            throw new Error("The parameter 'orderId' must be defined.");
+        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
+        if (vehicleId === undefined || vehicleId === null)
+            throw new Error("The parameter 'vehicleId' must be defined.");
+        url_ = url_.replace("{vehicleId}", encodeURIComponent("" + vehicleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDeliveredToOwner(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDeliveredToOwner(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processDeliveredToOwner(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    notReceivedByCustomer(orderId: number, vehicleId: number, command: RiderNotReceivedByCustomerCommand): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryOrder/{orderId}/vehicles/{vehicleId}/NotReceivedByCustomer";
+        if (orderId === undefined || orderId === null)
+            throw new Error("The parameter 'orderId' must be defined.");
+        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
+        if (vehicleId === undefined || vehicleId === null)
+            throw new Error("The parameter 'vehicleId' must be defined.");
+        url_ = url_.replace("{vehicleId}", encodeURIComponent("" + vehicleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processNotReceivedByCustomer(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processNotReceivedByCustomer(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processNotReceivedByCustomer(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class DeliveryProfileClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    me(): Observable<RiderProfileDto> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryProfile/me";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processMe(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processMe(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<RiderProfileDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<RiderProfileDto>;
+        }));
+    }
+
+    protected processMe(response: HttpResponseBase): Observable<RiderProfileDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RiderProfileDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    saveDevice(command: SaveRiderDeviceCommand): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryProfile/Devices";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSaveDevice(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSaveDevice(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processSaveDevice(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    removeDevice(token?: string | undefined): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryProfile/Devices?";
+        if (token === null)
+            throw new Error("The parameter 'token' cannot be null.");
+        else if (token !== undefined)
+            url_ += "token=" + encodeURIComponent("" + token) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processRemoveDevice(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processRemoveDevice(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processRemoveDevice(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    shiftStatus(): Observable<RiderShiftStatusDto> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryProfile/Shift";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processShiftStatus(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processShiftStatus(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<RiderShiftStatusDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<RiderShiftStatusDto>;
+        }));
+    }
+
+    protected processShiftStatus(response: HttpResponseBase): Observable<RiderShiftStatusDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RiderShiftStatusDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    setOnline(command: SetRiderOnlineCommand): Observable<RiderShiftStatusDto> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryProfile/Online";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSetOnline(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSetOnline(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<RiderShiftStatusDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<RiderShiftStatusDto>;
+        }));
+    }
+
+    protected processSetOnline(response: HttpResponseBase): Observable<RiderShiftStatusDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RiderShiftStatusDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class DeliveryWalletClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    summary(): Observable<RiderWalletDto> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryWallet/Summary";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSummary(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSummary(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<RiderWalletDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<RiderWalletDto>;
+        }));
+    }
+
+    protected processSummary(response: HttpResponseBase): Observable<RiderWalletDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RiderWalletDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    journals(pageNumber?: number | undefined, pageSize?: number | undefined): Observable<PagedResultOfRiderJournalDto> {
+        let url_ = this.baseUrl + "/api/delivery/DeliveryWallet/Journals?";
+        if (pageNumber === null)
+            throw new Error("The parameter 'pageNumber' cannot be null.");
+        else if (pageNumber !== undefined)
+            url_ += "PageNumber=" + encodeURIComponent("" + pageNumber) + "&";
+        if (pageSize === null)
+            throw new Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "PageSize=" + encodeURIComponent("" + pageSize) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processJournals(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processJournals(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PagedResultOfRiderJournalDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PagedResultOfRiderJournalDto>;
+        }));
+    }
+
+    protected processJournals(response: HttpResponseBase): Observable<PagedResultOfRiderJournalDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PagedResultOfRiderJournalDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class CustomerCategoriesClient {
     private http: HttpClient;
     private baseUrl: string;
@@ -1582,12 +2794,16 @@ export class CustomerClient {
         return _observableOf(null as any);
     }
 
-    getZonesByCity(cityId?: number | undefined): Observable<ZoneLookupDto[]> {
+    getZonesByCity(cityId?: number | undefined, latitude?: number | null | undefined, longitude?: number | null | undefined): Observable<ZoneLookupDto[]> {
         let url_ = this.baseUrl + "/api/customer/Customer/GetZonesByCity?";
         if (cityId === null)
             throw new Error("The parameter 'cityId' cannot be null.");
         else if (cityId !== undefined)
             url_ += "cityId=" + encodeURIComponent("" + cityId) + "&";
+        if (latitude !== undefined && latitude !== null)
+            url_ += "latitude=" + encodeURIComponent("" + latitude) + "&";
+        if (longitude !== undefined && longitude !== null)
+            url_ += "longitude=" + encodeURIComponent("" + longitude) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -1758,6 +2974,177 @@ export class CustomerClient {
         return _observableOf(null as any);
     }
 
+    getUnreadNotificationsCount(): Observable<number> {
+        let url_ = this.baseUrl + "/api/customer/Customer/Notifications/UnreadCount";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetUnreadNotificationsCount(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetUnreadNotificationsCount(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<number>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<number>;
+        }));
+    }
+
+    protected processGetUnreadNotificationsCount(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    markNotificationRead(notificationId: number): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/customer/Customer/Notifications/{notificationId}/Read";
+        if (notificationId === undefined || notificationId === null)
+            throw new Error("The parameter 'notificationId' must be defined.");
+        url_ = url_.replace("{notificationId}", encodeURIComponent("" + notificationId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processMarkNotificationRead(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processMarkNotificationRead(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processMarkNotificationRead(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    markAllNotificationsRead(): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/customer/Customer/Notifications/ReadAll";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processMarkAllNotificationsRead(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processMarkAllNotificationsRead(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processMarkAllNotificationsRead(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
     getNotifications(skip?: number | null | undefined, take?: number | null | undefined): Observable<CustomerNotificationDto[]> {
         let url_ = this.baseUrl + "/api/customer/Customer/Notifications?";
         if (skip !== undefined && skip !== null)
@@ -1863,6 +3250,66 @@ export class CustomerClient {
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return _observableOf(null as any);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    removeDevice(token?: string | undefined): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/customer/Customer/Devices?";
+        if (token === null)
+            throw new Error("The parameter 'token' cannot be null.");
+        else if (token !== undefined)
+            url_ += "token=" + encodeURIComponent("" + token) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processRemoveDevice(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processRemoveDevice(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processRemoveDevice(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
             }));
         } else if (status === 400) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -2482,6 +3929,64 @@ export class CustomerOrderClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result200 = PagedResultOfOrderDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getMyOrder(orderId: number): Observable<OrderDto> {
+        let url_ = this.baseUrl + "/api/customer/CustomerOrder/{orderId}";
+        if (orderId === undefined || orderId === null)
+            throw new Error("The parameter 'orderId' must be defined.");
+        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMyOrder(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMyOrder(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<OrderDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<OrderDto>;
+        }));
+    }
+
+    protected processGetMyOrder(response: HttpResponseBase): Observable<OrderDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = OrderDto.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status === 400) {
@@ -4017,6 +5522,72 @@ export class AdminDeliveryClient {
         return _observableOf(null as any);
     }
 
+    getForAssign(orderId?: number | null | undefined, cityId?: number | null | undefined): Observable<DeliveryAssignCandidateDto[]> {
+        let url_ = this.baseUrl + "/api/admin/AdminDelivery/ForAssign?";
+        if (orderId !== undefined && orderId !== null)
+            url_ += "orderId=" + encodeURIComponent("" + orderId) + "&";
+        if (cityId !== undefined && cityId !== null)
+            url_ += "cityId=" + encodeURIComponent("" + cityId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetForAssign(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetForAssign(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<DeliveryAssignCandidateDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<DeliveryAssignCandidateDto[]>;
+        }));
+    }
+
+    protected processGetForAssign(response: HttpResponseBase): Observable<DeliveryAssignCandidateDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(DeliveryAssignCandidateDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
     getById(deliveryId: number): Observable<DeliveryDto> {
         let url_ = this.baseUrl + "/api/admin/AdminDelivery/{deliveryId}";
         if (deliveryId === undefined || deliveryId === null)
@@ -4168,6 +5739,69 @@ export class AdminDeliveryClient {
     }
 
     protected processDelete(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    setCashDebtLimit(deliveryId: number, command: SetDeliveryCashDebtLimitCommand): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/admin/AdminDelivery/{deliveryId}/CashDebtLimit";
+        if (deliveryId === undefined || deliveryId === null)
+            throw new Error("The parameter 'deliveryId' must be defined.");
+        url_ = url_.replace("{deliveryId}", encodeURIComponent("" + deliveryId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSetCashDebtLimit(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSetCashDebtLimit(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processSetCashDebtLimit(response: HttpResponseBase): Observable<boolean> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -10682,6 +12316,324 @@ export class RoleClient {
 @Injectable({
     providedIn: 'root'
 })
+export class ShiftClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getAll(cityId?: number | null | undefined): Observable<ShiftDto[]> {
+        let url_ = this.baseUrl + "/api/admin/Shift?";
+        if (cityId !== undefined && cityId !== null)
+            url_ += "cityId=" + encodeURIComponent("" + cityId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ShiftDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ShiftDto[]>;
+        }));
+    }
+
+    protected processGetAll(response: HttpResponseBase): Observable<ShiftDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(ShiftDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    create(command: SaveShiftCommand): Observable<number> {
+        let url_ = this.baseUrl + "/api/admin/Shift";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<number>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<number>;
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getById(shiftId: number): Observable<ShiftDto> {
+        let url_ = this.baseUrl + "/api/admin/Shift/{shiftId}";
+        if (shiftId === undefined || shiftId === null)
+            throw new Error("The parameter 'shiftId' must be defined.");
+        url_ = url_.replace("{shiftId}", encodeURIComponent("" + shiftId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetById(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetById(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ShiftDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ShiftDto>;
+        }));
+    }
+
+    protected processGetById(response: HttpResponseBase): Observable<ShiftDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ShiftDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    update(shiftId: number, command: SaveShiftCommand): Observable<number> {
+        let url_ = this.baseUrl + "/api/admin/Shift/{shiftId}";
+        if (shiftId === undefined || shiftId === null)
+            throw new Error("The parameter 'shiftId' must be defined.");
+        url_ = url_.replace("{shiftId}", encodeURIComponent("" + shiftId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<number>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<number>;
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    delete(shiftId: number): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/admin/Shift/{shiftId}";
+        if (shiftId === undefined || shiftId === null)
+            throw new Error("The parameter 'shiftId' must be defined.");
+        url_ = url_.replace("{shiftId}", encodeURIComponent("" + shiftId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class SubCategoryClient {
     private http: HttpClient;
     private baseUrl: string;
@@ -11831,6 +13783,7 @@ export enum NotificationType {
     OrderCancelled = 6,
     OrderMerchantPending = 7,
     OrderUpdated = 8,
+    RiderAssigned = 9,
 }
 
 export class ProblemDetail {
@@ -12839,6 +14792,7 @@ export class SubCategoryDto {
     cityId!: number;
     cityName!: string;
     vehicleCount!: number;
+    price!: number | null;
 
     init(_data?: any) {
         if (_data) {
@@ -12853,6 +14807,7 @@ export class SubCategoryDto {
             this.cityId = _data["cityId"] !== undefined ? _data["cityId"] : <any>null;
             this.cityName = _data["cityName"] !== undefined ? _data["cityName"] : <any>null;
             this.vehicleCount = _data["vehicleCount"] !== undefined ? _data["vehicleCount"] : <any>null;
+            this.price = _data["price"] !== undefined ? _data["price"] : <any>null;
         }
     }
 
@@ -12876,6 +14831,7 @@ export class SubCategoryDto {
         data["cityId"] = this.cityId !== undefined ? this.cityId : <any>null;
         data["cityName"] = this.cityName !== undefined ? this.cityName : <any>null;
         data["vehicleCount"] = this.vehicleCount !== undefined ? this.vehicleCount : <any>null;
+        data["price"] = this.price !== undefined ? this.price : <any>null;
         return data;
     }
 }
@@ -13191,6 +15147,1123 @@ export class MerchantLookupDto {
     }
 }
 
+export class PagedResultOfRiderNotificationDto {
+    items!: RiderNotificationDto[];
+    totalCount!: number;
+    pageNumber!: number;
+    pageSize!: number;
+    totalPages!: number;
+    hasPreviousPage!: boolean;
+    hasNextPage!: boolean;
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(RiderNotificationDto.fromJS(item));
+            }
+            else {
+                this.items = <any>null;
+            }
+            this.totalCount = _data["totalCount"] !== undefined ? _data["totalCount"] : <any>null;
+            this.pageNumber = _data["pageNumber"] !== undefined ? _data["pageNumber"] : <any>null;
+            this.pageSize = _data["pageSize"] !== undefined ? _data["pageSize"] : <any>null;
+            this.totalPages = _data["totalPages"] !== undefined ? _data["totalPages"] : <any>null;
+            this.hasPreviousPage = _data["hasPreviousPage"] !== undefined ? _data["hasPreviousPage"] : <any>null;
+            this.hasNextPage = _data["hasNextPage"] !== undefined ? _data["hasNextPage"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): PagedResultOfRiderNotificationDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PagedResultOfRiderNotificationDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        data["totalCount"] = this.totalCount !== undefined ? this.totalCount : <any>null;
+        data["pageNumber"] = this.pageNumber !== undefined ? this.pageNumber : <any>null;
+        data["pageSize"] = this.pageSize !== undefined ? this.pageSize : <any>null;
+        data["totalPages"] = this.totalPages !== undefined ? this.totalPages : <any>null;
+        data["hasPreviousPage"] = this.hasPreviousPage !== undefined ? this.hasPreviousPage : <any>null;
+        data["hasNextPage"] = this.hasNextPage !== undefined ? this.hasNextPage : <any>null;
+        return data;
+    }
+}
+
+export class RiderNotificationDto {
+    id!: number;
+    title!: string;
+    body!: string;
+    orderId!: number | null;
+    isRead!: boolean;
+    createdDate!: Date;
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
+            this.title = _data["title"] !== undefined ? _data["title"] : <any>null;
+            this.body = _data["body"] !== undefined ? _data["body"] : <any>null;
+            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
+            this.isRead = _data["isRead"] !== undefined ? _data["isRead"] : <any>null;
+            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderNotificationDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderNotificationDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id !== undefined ? this.id : <any>null;
+        data["title"] = this.title !== undefined ? this.title : <any>null;
+        data["body"] = this.body !== undefined ? this.body : <any>null;
+        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
+        data["isRead"] = this.isRead !== undefined ? this.isRead : <any>null;
+        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
+        return data;
+    }
+}
+
+export class PagedResultOfRiderOrderSummaryDto {
+    items!: RiderOrderSummaryDto[];
+    totalCount!: number;
+    pageNumber!: number;
+    pageSize!: number;
+    totalPages!: number;
+    hasPreviousPage!: boolean;
+    hasNextPage!: boolean;
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(RiderOrderSummaryDto.fromJS(item));
+            }
+            else {
+                this.items = <any>null;
+            }
+            this.totalCount = _data["totalCount"] !== undefined ? _data["totalCount"] : <any>null;
+            this.pageNumber = _data["pageNumber"] !== undefined ? _data["pageNumber"] : <any>null;
+            this.pageSize = _data["pageSize"] !== undefined ? _data["pageSize"] : <any>null;
+            this.totalPages = _data["totalPages"] !== undefined ? _data["totalPages"] : <any>null;
+            this.hasPreviousPage = _data["hasPreviousPage"] !== undefined ? _data["hasPreviousPage"] : <any>null;
+            this.hasNextPage = _data["hasNextPage"] !== undefined ? _data["hasNextPage"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): PagedResultOfRiderOrderSummaryDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PagedResultOfRiderOrderSummaryDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        data["totalCount"] = this.totalCount !== undefined ? this.totalCount : <any>null;
+        data["pageNumber"] = this.pageNumber !== undefined ? this.pageNumber : <any>null;
+        data["pageSize"] = this.pageSize !== undefined ? this.pageSize : <any>null;
+        data["totalPages"] = this.totalPages !== undefined ? this.totalPages : <any>null;
+        data["hasPreviousPage"] = this.hasPreviousPage !== undefined ? this.hasPreviousPage : <any>null;
+        data["hasNextPage"] = this.hasNextPage !== undefined ? this.hasNextPage : <any>null;
+        return data;
+    }
+}
+
+export class RiderOrderSummaryDto {
+    orderId!: number;
+    orderCode!: string;
+    orderState!: OrderState;
+    isUrgent!: boolean;
+    customerName!: string;
+    hotelName!: string;
+    destinationZoneName!: string;
+    reservationDateFrom!: Date;
+    reservationDateTo!: Date;
+    myVehiclesCount!: number;
+    nextAction!: string;
+    collectFromCustomer!: number;
+    isPaidOnline!: boolean;
+    myDeliveryFeeShare!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
+            this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
+            this.orderState = _data["orderState"] !== undefined ? _data["orderState"] : <any>null;
+            this.isUrgent = _data["isUrgent"] !== undefined ? _data["isUrgent"] : <any>null;
+            this.customerName = _data["customerName"] !== undefined ? _data["customerName"] : <any>null;
+            this.hotelName = _data["hotelName"] !== undefined ? _data["hotelName"] : <any>null;
+            this.destinationZoneName = _data["destinationZoneName"] !== undefined ? _data["destinationZoneName"] : <any>null;
+            this.reservationDateFrom = _data["reservationDateFrom"] ? new Date(_data["reservationDateFrom"].toString()) : <any>null;
+            this.reservationDateTo = _data["reservationDateTo"] ? new Date(_data["reservationDateTo"].toString()) : <any>null;
+            this.myVehiclesCount = _data["myVehiclesCount"] !== undefined ? _data["myVehiclesCount"] : <any>null;
+            this.nextAction = _data["nextAction"] !== undefined ? _data["nextAction"] : <any>null;
+            this.collectFromCustomer = _data["collectFromCustomer"] !== undefined ? _data["collectFromCustomer"] : <any>null;
+            this.isPaidOnline = _data["isPaidOnline"] !== undefined ? _data["isPaidOnline"] : <any>null;
+            this.myDeliveryFeeShare = _data["myDeliveryFeeShare"] !== undefined ? _data["myDeliveryFeeShare"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderOrderSummaryDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderOrderSummaryDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
+        data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
+        data["orderState"] = this.orderState !== undefined ? this.orderState : <any>null;
+        data["isUrgent"] = this.isUrgent !== undefined ? this.isUrgent : <any>null;
+        data["customerName"] = this.customerName !== undefined ? this.customerName : <any>null;
+        data["hotelName"] = this.hotelName !== undefined ? this.hotelName : <any>null;
+        data["destinationZoneName"] = this.destinationZoneName !== undefined ? this.destinationZoneName : <any>null;
+        data["reservationDateFrom"] = this.reservationDateFrom ? this.reservationDateFrom.toISOString() : <any>null;
+        data["reservationDateTo"] = this.reservationDateTo ? this.reservationDateTo.toISOString() : <any>null;
+        data["myVehiclesCount"] = this.myVehiclesCount !== undefined ? this.myVehiclesCount : <any>null;
+        data["nextAction"] = this.nextAction !== undefined ? this.nextAction : <any>null;
+        data["collectFromCustomer"] = this.collectFromCustomer !== undefined ? this.collectFromCustomer : <any>null;
+        data["isPaidOnline"] = this.isPaidOnline !== undefined ? this.isPaidOnline : <any>null;
+        data["myDeliveryFeeShare"] = this.myDeliveryFeeShare !== undefined ? this.myDeliveryFeeShare : <any>null;
+        return data;
+    }
+}
+
+export enum RiderOrderTab {
+    Pickup = 1,
+    Return = 2,
+    Completed = 3,
+}
+
+export class RiderOrderDetailDto {
+    orderId!: number;
+    orderCode!: string;
+    orderState!: OrderState;
+    isUrgent!: boolean;
+    notes!: string | null;
+    customer!: RiderCustomerDto;
+    reservationDateFrom!: Date;
+    reservationDateTo!: Date;
+    vehicles!: RiderVehicleDto[];
+    money!: RiderOrderMoneyDto;
+
+    init(_data?: any) {
+        if (_data) {
+            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
+            this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
+            this.orderState = _data["orderState"] !== undefined ? _data["orderState"] : <any>null;
+            this.isUrgent = _data["isUrgent"] !== undefined ? _data["isUrgent"] : <any>null;
+            this.notes = _data["notes"] !== undefined ? _data["notes"] : <any>null;
+            this.customer = _data["customer"] ? RiderCustomerDto.fromJS(_data["customer"]) : <any>null;
+            this.reservationDateFrom = _data["reservationDateFrom"] ? new Date(_data["reservationDateFrom"].toString()) : <any>null;
+            this.reservationDateTo = _data["reservationDateTo"] ? new Date(_data["reservationDateTo"].toString()) : <any>null;
+            if (Array.isArray(_data["vehicles"])) {
+                this.vehicles = [] as any;
+                for (let item of _data["vehicles"])
+                    this.vehicles!.push(RiderVehicleDto.fromJS(item));
+            }
+            else {
+                this.vehicles = <any>null;
+            }
+            this.money = _data["money"] ? RiderOrderMoneyDto.fromJS(_data["money"]) : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderOrderDetailDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderOrderDetailDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
+        data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
+        data["orderState"] = this.orderState !== undefined ? this.orderState : <any>null;
+        data["isUrgent"] = this.isUrgent !== undefined ? this.isUrgent : <any>null;
+        data["notes"] = this.notes !== undefined ? this.notes : <any>null;
+        data["customer"] = this.customer ? this.customer.toJSON() : <any>null;
+        data["reservationDateFrom"] = this.reservationDateFrom ? this.reservationDateFrom.toISOString() : <any>null;
+        data["reservationDateTo"] = this.reservationDateTo ? this.reservationDateTo.toISOString() : <any>null;
+        if (Array.isArray(this.vehicles)) {
+            data["vehicles"] = [];
+            for (let item of this.vehicles)
+                data["vehicles"].push(item.toJSON());
+        }
+        data["money"] = this.money ? this.money.toJSON() : <any>null;
+        return data;
+    }
+}
+
+export class RiderCustomerDto {
+    name!: string;
+    mobileNumber!: string;
+    hotelName!: string;
+    hotelAddress!: string;
+    hotelPhone!: string | null;
+    destinationZoneName!: string;
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.mobileNumber = _data["mobileNumber"] !== undefined ? _data["mobileNumber"] : <any>null;
+            this.hotelName = _data["hotelName"] !== undefined ? _data["hotelName"] : <any>null;
+            this.hotelAddress = _data["hotelAddress"] !== undefined ? _data["hotelAddress"] : <any>null;
+            this.hotelPhone = _data["hotelPhone"] !== undefined ? _data["hotelPhone"] : <any>null;
+            this.destinationZoneName = _data["destinationZoneName"] !== undefined ? _data["destinationZoneName"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderCustomerDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderCustomerDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["mobileNumber"] = this.mobileNumber !== undefined ? this.mobileNumber : <any>null;
+        data["hotelName"] = this.hotelName !== undefined ? this.hotelName : <any>null;
+        data["hotelAddress"] = this.hotelAddress !== undefined ? this.hotelAddress : <any>null;
+        data["hotelPhone"] = this.hotelPhone !== undefined ? this.hotelPhone : <any>null;
+        data["destinationZoneName"] = this.destinationZoneName !== undefined ? this.destinationZoneName : <any>null;
+        return data;
+    }
+}
+
+export class RiderVehicleDto {
+    vehicleId!: number;
+    vehicleCode!: string;
+    vehicleName!: string;
+    model!: string;
+    color!: string;
+    imageUrl!: string | null;
+    merchant!: RiderMerchantDto;
+    legs!: RiderLegsDto;
+    steps!: RiderStepsDto;
+    nextAction!: string;
+    nextStepMoney!: RiderStepMoneyDto;
+    deliveryFailed!: boolean;
+    deliveryFailureReason!: string | null;
+
+    init(_data?: any) {
+        if (_data) {
+            this.vehicleId = _data["vehicleId"] !== undefined ? _data["vehicleId"] : <any>null;
+            this.vehicleCode = _data["vehicleCode"] !== undefined ? _data["vehicleCode"] : <any>null;
+            this.vehicleName = _data["vehicleName"] !== undefined ? _data["vehicleName"] : <any>null;
+            this.model = _data["model"] !== undefined ? _data["model"] : <any>null;
+            this.color = _data["color"] !== undefined ? _data["color"] : <any>null;
+            this.imageUrl = _data["imageUrl"] !== undefined ? _data["imageUrl"] : <any>null;
+            this.merchant = _data["merchant"] ? RiderMerchantDto.fromJS(_data["merchant"]) : <any>null;
+            this.legs = _data["legs"] ? RiderLegsDto.fromJS(_data["legs"]) : <any>null;
+            this.steps = _data["steps"] ? RiderStepsDto.fromJS(_data["steps"]) : <any>null;
+            this.nextAction = _data["nextAction"] !== undefined ? _data["nextAction"] : <any>null;
+            this.nextStepMoney = _data["nextStepMoney"] ? RiderStepMoneyDto.fromJS(_data["nextStepMoney"]) : <any>null;
+            this.deliveryFailed = _data["deliveryFailed"] !== undefined ? _data["deliveryFailed"] : <any>null;
+            this.deliveryFailureReason = _data["deliveryFailureReason"] !== undefined ? _data["deliveryFailureReason"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderVehicleDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderVehicleDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["vehicleId"] = this.vehicleId !== undefined ? this.vehicleId : <any>null;
+        data["vehicleCode"] = this.vehicleCode !== undefined ? this.vehicleCode : <any>null;
+        data["vehicleName"] = this.vehicleName !== undefined ? this.vehicleName : <any>null;
+        data["model"] = this.model !== undefined ? this.model : <any>null;
+        data["color"] = this.color !== undefined ? this.color : <any>null;
+        data["imageUrl"] = this.imageUrl !== undefined ? this.imageUrl : <any>null;
+        data["merchant"] = this.merchant ? this.merchant.toJSON() : <any>null;
+        data["legs"] = this.legs ? this.legs.toJSON() : <any>null;
+        data["steps"] = this.steps ? this.steps.toJSON() : <any>null;
+        data["nextAction"] = this.nextAction !== undefined ? this.nextAction : <any>null;
+        data["nextStepMoney"] = this.nextStepMoney ? this.nextStepMoney.toJSON() : <any>null;
+        data["deliveryFailed"] = this.deliveryFailed !== undefined ? this.deliveryFailed : <any>null;
+        data["deliveryFailureReason"] = this.deliveryFailureReason !== undefined ? this.deliveryFailureReason : <any>null;
+        return data;
+    }
+}
+
+export class RiderMerchantDto {
+    merchantId!: number;
+    merchantName!: string;
+    mobileNumber!: string;
+    zoneName!: string;
+    address!: string;
+
+    init(_data?: any) {
+        if (_data) {
+            this.merchantId = _data["merchantId"] !== undefined ? _data["merchantId"] : <any>null;
+            this.merchantName = _data["merchantName"] !== undefined ? _data["merchantName"] : <any>null;
+            this.mobileNumber = _data["mobileNumber"] !== undefined ? _data["mobileNumber"] : <any>null;
+            this.zoneName = _data["zoneName"] !== undefined ? _data["zoneName"] : <any>null;
+            this.address = _data["address"] !== undefined ? _data["address"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderMerchantDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderMerchantDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["merchantId"] = this.merchantId !== undefined ? this.merchantId : <any>null;
+        data["merchantName"] = this.merchantName !== undefined ? this.merchantName : <any>null;
+        data["mobileNumber"] = this.mobileNumber !== undefined ? this.mobileNumber : <any>null;
+        data["zoneName"] = this.zoneName !== undefined ? this.zoneName : <any>null;
+        data["address"] = this.address !== undefined ? this.address : <any>null;
+        return data;
+    }
+}
+
+export class RiderLegsDto {
+    delivery!: RiderLegDto | null;
+    return!: RiderLegDto | null;
+
+    init(_data?: any) {
+        if (_data) {
+            this.delivery = _data["delivery"] ? RiderLegDto.fromJS(_data["delivery"]) : <any>null;
+            this.return = _data["return"] ? RiderLegDto.fromJS(_data["return"]) : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderLegsDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderLegsDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["delivery"] = this.delivery ? this.delivery.toJSON() : <any>null;
+        data["return"] = this.return ? this.return.toJSON() : <any>null;
+        return data;
+    }
+}
+
+export class RiderLegDto {
+    deliveryId!: number;
+    deliveryName!: string;
+    isMine!: boolean;
+
+    init(_data?: any) {
+        if (_data) {
+            this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
+            this.deliveryName = _data["deliveryName"] !== undefined ? _data["deliveryName"] : <any>null;
+            this.isMine = _data["isMine"] !== undefined ? _data["isMine"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderLegDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderLegDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
+        data["deliveryName"] = this.deliveryName !== undefined ? this.deliveryName : <any>null;
+        data["isMine"] = this.isMine !== undefined ? this.isMine : <any>null;
+        return data;
+    }
+}
+
+export class RiderStepsDto {
+    receivedFromOwner!: RiderStepDto;
+    deliveredToCustomer!: RiderStepDto;
+    receivedFromCustomer!: RiderStepDto;
+    deliveredToOwner!: RiderStepDto;
+
+    init(_data?: any) {
+        if (_data) {
+            this.receivedFromOwner = _data["receivedFromOwner"] ? RiderStepDto.fromJS(_data["receivedFromOwner"]) : <any>null;
+            this.deliveredToCustomer = _data["deliveredToCustomer"] ? RiderStepDto.fromJS(_data["deliveredToCustomer"]) : <any>null;
+            this.receivedFromCustomer = _data["receivedFromCustomer"] ? RiderStepDto.fromJS(_data["receivedFromCustomer"]) : <any>null;
+            this.deliveredToOwner = _data["deliveredToOwner"] ? RiderStepDto.fromJS(_data["deliveredToOwner"]) : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderStepsDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderStepsDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["receivedFromOwner"] = this.receivedFromOwner ? this.receivedFromOwner.toJSON() : <any>null;
+        data["deliveredToCustomer"] = this.deliveredToCustomer ? this.deliveredToCustomer.toJSON() : <any>null;
+        data["receivedFromCustomer"] = this.receivedFromCustomer ? this.receivedFromCustomer.toJSON() : <any>null;
+        data["deliveredToOwner"] = this.deliveredToOwner ? this.deliveredToOwner.toJSON() : <any>null;
+        return data;
+    }
+}
+
+export class RiderStepDto {
+    done!: boolean;
+    at!: Date | null;
+    images!: string[];
+    byDeliveryName!: string | null;
+
+    init(_data?: any) {
+        if (_data) {
+            this.done = _data["done"] !== undefined ? _data["done"] : <any>null;
+            this.at = _data["at"] ? new Date(_data["at"].toString()) : <any>null;
+            if (Array.isArray(_data["images"])) {
+                this.images = [] as any;
+                for (let item of _data["images"])
+                    this.images!.push(item);
+            }
+            else {
+                this.images = <any>null;
+            }
+            this.byDeliveryName = _data["byDeliveryName"] !== undefined ? _data["byDeliveryName"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderStepDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderStepDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["done"] = this.done !== undefined ? this.done : <any>null;
+        data["at"] = this.at ? this.at.toISOString() : <any>null;
+        if (Array.isArray(this.images)) {
+            data["images"] = [];
+            for (let item of this.images)
+                data["images"].push(item);
+        }
+        data["byDeliveryName"] = this.byDeliveryName !== undefined ? this.byDeliveryName : <any>null;
+        return data;
+    }
+}
+
+export class RiderStepMoneyDto {
+    type!: string;
+    amount!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.type = _data["type"] !== undefined ? _data["type"] : <any>null;
+            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderStepMoneyDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderStepMoneyDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["type"] = this.type !== undefined ? this.type : <any>null;
+        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
+        return data;
+    }
+}
+
+export class RiderOrderMoneyDto {
+    paymentMethod!: number;
+    isPaidOnline!: boolean;
+    currencyCode!: string;
+    collectFromCustomer!: number;
+    collectFromCustomerBreakdown!: RiderCollectBreakdownDto;
+    myDeliveryFeeShare!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.paymentMethod = _data["paymentMethod"] !== undefined ? _data["paymentMethod"] : <any>null;
+            this.isPaidOnline = _data["isPaidOnline"] !== undefined ? _data["isPaidOnline"] : <any>null;
+            this.currencyCode = _data["currencyCode"] !== undefined ? _data["currencyCode"] : <any>null;
+            this.collectFromCustomer = _data["collectFromCustomer"] !== undefined ? _data["collectFromCustomer"] : <any>null;
+            this.collectFromCustomerBreakdown = _data["collectFromCustomerBreakdown"] ? RiderCollectBreakdownDto.fromJS(_data["collectFromCustomerBreakdown"]) : <any>null;
+            this.myDeliveryFeeShare = _data["myDeliveryFeeShare"] !== undefined ? _data["myDeliveryFeeShare"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderOrderMoneyDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderOrderMoneyDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["paymentMethod"] = this.paymentMethod !== undefined ? this.paymentMethod : <any>null;
+        data["isPaidOnline"] = this.isPaidOnline !== undefined ? this.isPaidOnline : <any>null;
+        data["currencyCode"] = this.currencyCode !== undefined ? this.currencyCode : <any>null;
+        data["collectFromCustomer"] = this.collectFromCustomer !== undefined ? this.collectFromCustomer : <any>null;
+        data["collectFromCustomerBreakdown"] = this.collectFromCustomerBreakdown ? this.collectFromCustomerBreakdown.toJSON() : <any>null;
+        data["myDeliveryFeeShare"] = this.myDeliveryFeeShare !== undefined ? this.myDeliveryFeeShare : <any>null;
+        return data;
+    }
+}
+
+export class RiderCollectBreakdownDto {
+    rental!: number;
+    deliveryFees!: number;
+    serviceFees!: number;
+    urgentFees!: number;
+    tieredDiscount!: number;
+    previousDebt!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.rental = _data["rental"] !== undefined ? _data["rental"] : <any>null;
+            this.deliveryFees = _data["deliveryFees"] !== undefined ? _data["deliveryFees"] : <any>null;
+            this.serviceFees = _data["serviceFees"] !== undefined ? _data["serviceFees"] : <any>null;
+            this.urgentFees = _data["urgentFees"] !== undefined ? _data["urgentFees"] : <any>null;
+            this.tieredDiscount = _data["tieredDiscount"] !== undefined ? _data["tieredDiscount"] : <any>null;
+            this.previousDebt = _data["previousDebt"] !== undefined ? _data["previousDebt"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderCollectBreakdownDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderCollectBreakdownDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["rental"] = this.rental !== undefined ? this.rental : <any>null;
+        data["deliveryFees"] = this.deliveryFees !== undefined ? this.deliveryFees : <any>null;
+        data["serviceFees"] = this.serviceFees !== undefined ? this.serviceFees : <any>null;
+        data["urgentFees"] = this.urgentFees !== undefined ? this.urgentFees : <any>null;
+        data["tieredDiscount"] = this.tieredDiscount !== undefined ? this.tieredDiscount : <any>null;
+        data["previousDebt"] = this.previousDebt !== undefined ? this.previousDebt : <any>null;
+        return data;
+    }
+}
+
+export class UploadedImageDto {
+    url!: string;
+
+    init(_data?: any) {
+        if (_data) {
+            this.url = _data["url"] !== undefined ? _data["url"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): UploadedImageDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UploadedImageDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["url"] = this.url !== undefined ? this.url : <any>null;
+        return data;
+    }
+}
+
+export class SubmitRiderHandoverCommand {
+    orderId!: number;
+    vehicleId!: number;
+    step!: HandoverStep;
+    images!: RiderHandoverImage[];
+    amountConfirmed!: number;
+    note!: string | null;
+
+    init(_data?: any) {
+        if (_data) {
+            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
+            this.vehicleId = _data["vehicleId"] !== undefined ? _data["vehicleId"] : <any>null;
+            this.step = _data["step"] !== undefined ? _data["step"] : <any>null;
+            if (Array.isArray(_data["images"])) {
+                this.images = [] as any;
+                for (let item of _data["images"])
+                    this.images!.push(RiderHandoverImage.fromJS(item));
+            }
+            else {
+                this.images = <any>null;
+            }
+            this.amountConfirmed = _data["amountConfirmed"] !== undefined ? _data["amountConfirmed"] : <any>null;
+            this.note = _data["note"] !== undefined ? _data["note"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): SubmitRiderHandoverCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new SubmitRiderHandoverCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
+        data["vehicleId"] = this.vehicleId !== undefined ? this.vehicleId : <any>null;
+        data["step"] = this.step !== undefined ? this.step : <any>null;
+        if (Array.isArray(this.images)) {
+            data["images"] = [];
+            for (let item of this.images)
+                data["images"].push(item.toJSON());
+        }
+        data["amountConfirmed"] = this.amountConfirmed !== undefined ? this.amountConfirmed : <any>null;
+        data["note"] = this.note !== undefined ? this.note : <any>null;
+        return data;
+    }
+}
+
+export enum HandoverStep {
+    ReceivedFromOwner = 1,
+    DeliveredToCustomer = 2,
+    ReceivedFromCustomer = 3,
+    DeliveredToOwner = 4,
+}
+
+export class RiderHandoverImage {
+    position!: HandoverImagePosition;
+    url!: string;
+
+    init(_data?: any) {
+        if (_data) {
+            this.position = _data["position"] !== undefined ? _data["position"] : <any>null;
+            this.url = _data["url"] !== undefined ? _data["url"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderHandoverImage {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderHandoverImage();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["position"] = this.position !== undefined ? this.position : <any>null;
+        data["url"] = this.url !== undefined ? this.url : <any>null;
+        return data;
+    }
+}
+
+export enum HandoverImagePosition {
+    Front = 1,
+    Back = 2,
+    Left = 3,
+    Right = 4,
+}
+
+export class RiderNotReceivedByCustomerCommand {
+    orderId!: number;
+    vehicleId!: number;
+    reason!: string;
+    faultParty!: FaultParty;
+
+    init(_data?: any) {
+        if (_data) {
+            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
+            this.vehicleId = _data["vehicleId"] !== undefined ? _data["vehicleId"] : <any>null;
+            this.reason = _data["reason"] !== undefined ? _data["reason"] : <any>null;
+            this.faultParty = _data["faultParty"] !== undefined ? _data["faultParty"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderNotReceivedByCustomerCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderNotReceivedByCustomerCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
+        data["vehicleId"] = this.vehicleId !== undefined ? this.vehicleId : <any>null;
+        data["reason"] = this.reason !== undefined ? this.reason : <any>null;
+        data["faultParty"] = this.faultParty !== undefined ? this.faultParty : <any>null;
+        return data;
+    }
+}
+
+export class RiderProfileDto {
+    deliveryId!: number;
+    fullName!: string;
+    userName!: string;
+    mobileNumber!: string;
+    email!: string | null;
+    personalImage!: string | null;
+    cityId!: number;
+    cityName!: string;
+    zoneId!: number;
+    zoneName!: string;
+
+    init(_data?: any) {
+        if (_data) {
+            this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
+            this.fullName = _data["fullName"] !== undefined ? _data["fullName"] : <any>null;
+            this.userName = _data["userName"] !== undefined ? _data["userName"] : <any>null;
+            this.mobileNumber = _data["mobileNumber"] !== undefined ? _data["mobileNumber"] : <any>null;
+            this.email = _data["email"] !== undefined ? _data["email"] : <any>null;
+            this.personalImage = _data["personalImage"] !== undefined ? _data["personalImage"] : <any>null;
+            this.cityId = _data["cityId"] !== undefined ? _data["cityId"] : <any>null;
+            this.cityName = _data["cityName"] !== undefined ? _data["cityName"] : <any>null;
+            this.zoneId = _data["zoneId"] !== undefined ? _data["zoneId"] : <any>null;
+            this.zoneName = _data["zoneName"] !== undefined ? _data["zoneName"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderProfileDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderProfileDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
+        data["fullName"] = this.fullName !== undefined ? this.fullName : <any>null;
+        data["userName"] = this.userName !== undefined ? this.userName : <any>null;
+        data["mobileNumber"] = this.mobileNumber !== undefined ? this.mobileNumber : <any>null;
+        data["email"] = this.email !== undefined ? this.email : <any>null;
+        data["personalImage"] = this.personalImage !== undefined ? this.personalImage : <any>null;
+        data["cityId"] = this.cityId !== undefined ? this.cityId : <any>null;
+        data["cityName"] = this.cityName !== undefined ? this.cityName : <any>null;
+        data["zoneId"] = this.zoneId !== undefined ? this.zoneId : <any>null;
+        data["zoneName"] = this.zoneName !== undefined ? this.zoneName : <any>null;
+        return data;
+    }
+}
+
+export class SaveRiderDeviceCommand {
+    andriodDevice!: string | null;
+    iosDevice!: string | null;
+
+    init(_data?: any) {
+        if (_data) {
+            this.andriodDevice = _data["andriodDevice"] !== undefined ? _data["andriodDevice"] : <any>null;
+            this.iosDevice = _data["iosDevice"] !== undefined ? _data["iosDevice"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): SaveRiderDeviceCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new SaveRiderDeviceCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["andriodDevice"] = this.andriodDevice !== undefined ? this.andriodDevice : <any>null;
+        data["iosDevice"] = this.iosDevice !== undefined ? this.iosDevice : <any>null;
+        return data;
+    }
+}
+
+export class RiderShiftStatusDto {
+    isOnline!: boolean;
+    onlineToggle!: boolean;
+    isInShift!: boolean;
+    canGoOnline!: boolean;
+    currentShift!: RiderShiftDto | null;
+    currentShiftEndsAt!: Date | null;
+    nextShift!: RiderShiftDto | null;
+    nextShiftStartsAt!: Date | null;
+    shifts!: RiderShiftDto[];
+
+    init(_data?: any) {
+        if (_data) {
+            this.isOnline = _data["isOnline"] !== undefined ? _data["isOnline"] : <any>null;
+            this.onlineToggle = _data["onlineToggle"] !== undefined ? _data["onlineToggle"] : <any>null;
+            this.isInShift = _data["isInShift"] !== undefined ? _data["isInShift"] : <any>null;
+            this.canGoOnline = _data["canGoOnline"] !== undefined ? _data["canGoOnline"] : <any>null;
+            this.currentShift = _data["currentShift"] ? RiderShiftDto.fromJS(_data["currentShift"]) : <any>null;
+            this.currentShiftEndsAt = _data["currentShiftEndsAt"] ? new Date(_data["currentShiftEndsAt"].toString()) : <any>null;
+            this.nextShift = _data["nextShift"] ? RiderShiftDto.fromJS(_data["nextShift"]) : <any>null;
+            this.nextShiftStartsAt = _data["nextShiftStartsAt"] ? new Date(_data["nextShiftStartsAt"].toString()) : <any>null;
+            if (Array.isArray(_data["shifts"])) {
+                this.shifts = [] as any;
+                for (let item of _data["shifts"])
+                    this.shifts!.push(RiderShiftDto.fromJS(item));
+            }
+            else {
+                this.shifts = <any>null;
+            }
+        }
+    }
+
+    static fromJS(data: any): RiderShiftStatusDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderShiftStatusDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["isOnline"] = this.isOnline !== undefined ? this.isOnline : <any>null;
+        data["onlineToggle"] = this.onlineToggle !== undefined ? this.onlineToggle : <any>null;
+        data["isInShift"] = this.isInShift !== undefined ? this.isInShift : <any>null;
+        data["canGoOnline"] = this.canGoOnline !== undefined ? this.canGoOnline : <any>null;
+        data["currentShift"] = this.currentShift ? this.currentShift.toJSON() : <any>null;
+        data["currentShiftEndsAt"] = this.currentShiftEndsAt ? this.currentShiftEndsAt.toISOString() : <any>null;
+        data["nextShift"] = this.nextShift ? this.nextShift.toJSON() : <any>null;
+        data["nextShiftStartsAt"] = this.nextShiftStartsAt ? this.nextShiftStartsAt.toISOString() : <any>null;
+        if (Array.isArray(this.shifts)) {
+            data["shifts"] = [];
+            for (let item of this.shifts)
+                data["shifts"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export class RiderShiftDto {
+    shiftId!: number;
+    name!: string;
+    startTime!: string;
+    endTime!: string;
+    daysOfWeekMask!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.shiftId = _data["shiftId"] !== undefined ? _data["shiftId"] : <any>null;
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.startTime = _data["startTime"] !== undefined ? _data["startTime"] : <any>null;
+            this.endTime = _data["endTime"] !== undefined ? _data["endTime"] : <any>null;
+            this.daysOfWeekMask = _data["daysOfWeekMask"] !== undefined ? _data["daysOfWeekMask"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderShiftDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderShiftDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["shiftId"] = this.shiftId !== undefined ? this.shiftId : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["startTime"] = this.startTime !== undefined ? this.startTime : <any>null;
+        data["endTime"] = this.endTime !== undefined ? this.endTime : <any>null;
+        data["daysOfWeekMask"] = this.daysOfWeekMask !== undefined ? this.daysOfWeekMask : <any>null;
+        return data;
+    }
+}
+
+export class SetRiderOnlineCommand {
+    isOnline!: boolean;
+
+    init(_data?: any) {
+        if (_data) {
+            this.isOnline = _data["isOnline"] !== undefined ? _data["isOnline"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): SetRiderOnlineCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new SetRiderOnlineCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["isOnline"] = this.isOnline !== undefined ? this.isOnline : <any>null;
+        return data;
+    }
+}
+
+export class RiderWalletDto {
+    cashCollected!: number;
+    cashRemitted!: number;
+    cashDebt!: number;
+    cashDebtLimit!: number | null;
+    isOverCashDebtLimit!: boolean;
+    commissionEarned!: number;
+    commissionPaid!: number;
+    deductions!: number;
+    commissionDue!: number;
+    balance!: number;
+    currencyCode!: string;
+
+    init(_data?: any) {
+        if (_data) {
+            this.cashCollected = _data["cashCollected"] !== undefined ? _data["cashCollected"] : <any>null;
+            this.cashRemitted = _data["cashRemitted"] !== undefined ? _data["cashRemitted"] : <any>null;
+            this.cashDebt = _data["cashDebt"] !== undefined ? _data["cashDebt"] : <any>null;
+            this.cashDebtLimit = _data["cashDebtLimit"] !== undefined ? _data["cashDebtLimit"] : <any>null;
+            this.isOverCashDebtLimit = _data["isOverCashDebtLimit"] !== undefined ? _data["isOverCashDebtLimit"] : <any>null;
+            this.commissionEarned = _data["commissionEarned"] !== undefined ? _data["commissionEarned"] : <any>null;
+            this.commissionPaid = _data["commissionPaid"] !== undefined ? _data["commissionPaid"] : <any>null;
+            this.deductions = _data["deductions"] !== undefined ? _data["deductions"] : <any>null;
+            this.commissionDue = _data["commissionDue"] !== undefined ? _data["commissionDue"] : <any>null;
+            this.balance = _data["balance"] !== undefined ? _data["balance"] : <any>null;
+            this.currencyCode = _data["currencyCode"] !== undefined ? _data["currencyCode"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderWalletDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderWalletDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["cashCollected"] = this.cashCollected !== undefined ? this.cashCollected : <any>null;
+        data["cashRemitted"] = this.cashRemitted !== undefined ? this.cashRemitted : <any>null;
+        data["cashDebt"] = this.cashDebt !== undefined ? this.cashDebt : <any>null;
+        data["cashDebtLimit"] = this.cashDebtLimit !== undefined ? this.cashDebtLimit : <any>null;
+        data["isOverCashDebtLimit"] = this.isOverCashDebtLimit !== undefined ? this.isOverCashDebtLimit : <any>null;
+        data["commissionEarned"] = this.commissionEarned !== undefined ? this.commissionEarned : <any>null;
+        data["commissionPaid"] = this.commissionPaid !== undefined ? this.commissionPaid : <any>null;
+        data["deductions"] = this.deductions !== undefined ? this.deductions : <any>null;
+        data["commissionDue"] = this.commissionDue !== undefined ? this.commissionDue : <any>null;
+        data["balance"] = this.balance !== undefined ? this.balance : <any>null;
+        data["currencyCode"] = this.currencyCode !== undefined ? this.currencyCode : <any>null;
+        return data;
+    }
+}
+
+export class PagedResultOfRiderJournalDto {
+    items!: RiderJournalDto[];
+    totalCount!: number;
+    pageNumber!: number;
+    pageSize!: number;
+    totalPages!: number;
+    hasPreviousPage!: boolean;
+    hasNextPage!: boolean;
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(RiderJournalDto.fromJS(item));
+            }
+            else {
+                this.items = <any>null;
+            }
+            this.totalCount = _data["totalCount"] !== undefined ? _data["totalCount"] : <any>null;
+            this.pageNumber = _data["pageNumber"] !== undefined ? _data["pageNumber"] : <any>null;
+            this.pageSize = _data["pageSize"] !== undefined ? _data["pageSize"] : <any>null;
+            this.totalPages = _data["totalPages"] !== undefined ? _data["totalPages"] : <any>null;
+            this.hasPreviousPage = _data["hasPreviousPage"] !== undefined ? _data["hasPreviousPage"] : <any>null;
+            this.hasNextPage = _data["hasNextPage"] !== undefined ? _data["hasNextPage"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): PagedResultOfRiderJournalDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PagedResultOfRiderJournalDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        data["totalCount"] = this.totalCount !== undefined ? this.totalCount : <any>null;
+        data["pageNumber"] = this.pageNumber !== undefined ? this.pageNumber : <any>null;
+        data["pageSize"] = this.pageSize !== undefined ? this.pageSize : <any>null;
+        data["totalPages"] = this.totalPages !== undefined ? this.totalPages : <any>null;
+        data["hasPreviousPage"] = this.hasPreviousPage !== undefined ? this.hasPreviousPage : <any>null;
+        data["hasNextPage"] = this.hasNextPage !== undefined ? this.hasNextPage : <any>null;
+        return data;
+    }
+}
+
+export class RiderJournalDto {
+    id!: number;
+    orderId!: number | null;
+    orderCode!: string | null;
+    entryKind!: OrderJournalEntryKind;
+    amount!: number;
+    note!: string | null;
+    createdDate!: Date;
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
+            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
+            this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
+            this.entryKind = _data["entryKind"] !== undefined ? _data["entryKind"] : <any>null;
+            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
+            this.note = _data["note"] !== undefined ? _data["note"] : <any>null;
+            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RiderJournalDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderJournalDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id !== undefined ? this.id : <any>null;
+        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
+        data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
+        data["entryKind"] = this.entryKind !== undefined ? this.entryKind : <any>null;
+        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
+        data["note"] = this.note !== undefined ? this.note : <any>null;
+        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
+        return data;
+    }
+}
+
 export class CategoryDto {
     categoryId!: number;
     name!: string;
@@ -13264,11 +16337,17 @@ export class CityLookupDto {
 export class ZoneLookupDto {
     zoneId!: number;
     name!: string;
+    latitude!: number;
+    longitude!: number;
+    distanceKm!: number | null;
 
     init(_data?: any) {
         if (_data) {
             this.zoneId = _data["zoneId"] !== undefined ? _data["zoneId"] : <any>null;
             this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.latitude = _data["latitude"] !== undefined ? _data["latitude"] : <any>null;
+            this.longitude = _data["longitude"] !== undefined ? _data["longitude"] : <any>null;
+            this.distanceKm = _data["distanceKm"] !== undefined ? _data["distanceKm"] : <any>null;
         }
     }
 
@@ -13283,6 +16362,9 @@ export class ZoneLookupDto {
         data = typeof data === 'object' ? data : {};
         data["zoneId"] = this.zoneId !== undefined ? this.zoneId : <any>null;
         data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["latitude"] = this.latitude !== undefined ? this.latitude : <any>null;
+        data["longitude"] = this.longitude !== undefined ? this.longitude : <any>null;
+        data["distanceKm"] = this.distanceKm !== undefined ? this.distanceKm : <any>null;
         return data;
     }
 }
@@ -13437,6 +16519,8 @@ export class CustomerNotificationDto {
     orderId!: number | null;
     orderCode!: string | null;
     notificationType!: NotificationType;
+    isRead!: boolean;
+    readAt!: Date | null;
     createdDate!: Date;
 
     init(_data?: any) {
@@ -13448,6 +16532,8 @@ export class CustomerNotificationDto {
             this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
             this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
             this.notificationType = _data["notificationType"] !== undefined ? _data["notificationType"] : <any>null;
+            this.isRead = _data["isRead"] !== undefined ? _data["isRead"] : <any>null;
+            this.readAt = _data["readAt"] ? new Date(_data["readAt"].toString()) : <any>null;
             this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
         }
     }
@@ -13468,6 +16554,8 @@ export class CustomerNotificationDto {
         data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
         data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
         data["notificationType"] = this.notificationType !== undefined ? this.notificationType : <any>null;
+        data["isRead"] = this.isRead !== undefined ? this.isRead : <any>null;
+        data["readAt"] = this.readAt ? this.readAt.toISOString() : <any>null;
         data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
         return data;
     }
@@ -13476,11 +16564,13 @@ export class CustomerNotificationDto {
 export class DeliveryDeviceTokensDto {
     andriodDevice!: string | null;
     iosDevice!: string | null;
+    language!: string | null;
 
     init(_data?: any) {
         if (_data) {
             this.andriodDevice = _data["andriodDevice"] !== undefined ? _data["andriodDevice"] : <any>null;
             this.iosDevice = _data["iosDevice"] !== undefined ? _data["iosDevice"] : <any>null;
+            this.language = _data["language"] !== undefined ? _data["language"] : <any>null;
         }
     }
 
@@ -13495,6 +16585,7 @@ export class DeliveryDeviceTokensDto {
         data = typeof data === 'object' ? data : {};
         data["andriodDevice"] = this.andriodDevice !== undefined ? this.andriodDevice : <any>null;
         data["iosDevice"] = this.iosDevice !== undefined ? this.iosDevice : <any>null;
+        data["language"] = this.language !== undefined ? this.language : <any>null;
         return data;
     }
 }
@@ -13862,6 +16953,8 @@ export class OrderDto {
     createdDate!: Date;
     payPalApproveLink!: string | null;
     payPalOrderId!: string | null;
+    riders!: CustomerOrderRiderDto[] | null;
+    priceBreakdown!: OrderPriceBreakdownDto | null;
 
     init(_data?: any) {
         if (_data) {
@@ -13891,6 +16984,15 @@ export class OrderDto {
             this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
             this.payPalApproveLink = _data["payPalApproveLink"] !== undefined ? _data["payPalApproveLink"] : <any>null;
             this.payPalOrderId = _data["payPalOrderId"] !== undefined ? _data["payPalOrderId"] : <any>null;
+            if (Array.isArray(_data["riders"])) {
+                this.riders = [] as any;
+                for (let item of _data["riders"])
+                    this.riders!.push(CustomerOrderRiderDto.fromJS(item));
+            }
+            else {
+                this.riders = <any>null;
+            }
+            this.priceBreakdown = _data["priceBreakdown"] ? OrderPriceBreakdownDto.fromJS(_data["priceBreakdown"]) : <any>null;
         }
     }
 
@@ -13929,6 +17031,12 @@ export class OrderDto {
         data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
         data["payPalApproveLink"] = this.payPalApproveLink !== undefined ? this.payPalApproveLink : <any>null;
         data["payPalOrderId"] = this.payPalOrderId !== undefined ? this.payPalOrderId : <any>null;
+        if (Array.isArray(this.riders)) {
+            data["riders"] = [];
+            for (let item of this.riders)
+                data["riders"].push(item.toJSON());
+        }
+        data["priceBreakdown"] = this.priceBreakdown ? this.priceBreakdown.toJSON() : <any>null;
         return data;
     }
 }
@@ -13936,6 +17044,93 @@ export class OrderDto {
 export enum PaymentMethod {
     Cash = 0,
     PayPal = 1,
+}
+
+export class CustomerOrderRiderDto {
+    vehicleId!: number;
+    vehicleName!: string;
+    vehicleCode!: string;
+    leg!: DeliveryLeg;
+    riderName!: string;
+    canCall!: boolean;
+    riderMobileNumber!: string | null;
+
+    init(_data?: any) {
+        if (_data) {
+            this.vehicleId = _data["vehicleId"] !== undefined ? _data["vehicleId"] : <any>null;
+            this.vehicleName = _data["vehicleName"] !== undefined ? _data["vehicleName"] : <any>null;
+            this.vehicleCode = _data["vehicleCode"] !== undefined ? _data["vehicleCode"] : <any>null;
+            this.leg = _data["leg"] !== undefined ? _data["leg"] : <any>null;
+            this.riderName = _data["riderName"] !== undefined ? _data["riderName"] : <any>null;
+            this.canCall = _data["canCall"] !== undefined ? _data["canCall"] : <any>null;
+            this.riderMobileNumber = _data["riderMobileNumber"] !== undefined ? _data["riderMobileNumber"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): CustomerOrderRiderDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CustomerOrderRiderDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["vehicleId"] = this.vehicleId !== undefined ? this.vehicleId : <any>null;
+        data["vehicleName"] = this.vehicleName !== undefined ? this.vehicleName : <any>null;
+        data["vehicleCode"] = this.vehicleCode !== undefined ? this.vehicleCode : <any>null;
+        data["leg"] = this.leg !== undefined ? this.leg : <any>null;
+        data["riderName"] = this.riderName !== undefined ? this.riderName : <any>null;
+        data["canCall"] = this.canCall !== undefined ? this.canCall : <any>null;
+        data["riderMobileNumber"] = this.riderMobileNumber !== undefined ? this.riderMobileNumber : <any>null;
+        return data;
+    }
+}
+
+export enum DeliveryLeg {
+    Delivery = 1,
+    Return = 2,
+}
+
+export class OrderPriceBreakdownDto {
+    subTotal!: number;
+    serviceFees!: number;
+    deliveryFees!: number;
+    urgentFees!: number;
+    discount!: number;
+    previousDebt!: number;
+    total!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.subTotal = _data["subTotal"] !== undefined ? _data["subTotal"] : <any>null;
+            this.serviceFees = _data["serviceFees"] !== undefined ? _data["serviceFees"] : <any>null;
+            this.deliveryFees = _data["deliveryFees"] !== undefined ? _data["deliveryFees"] : <any>null;
+            this.urgentFees = _data["urgentFees"] !== undefined ? _data["urgentFees"] : <any>null;
+            this.discount = _data["discount"] !== undefined ? _data["discount"] : <any>null;
+            this.previousDebt = _data["previousDebt"] !== undefined ? _data["previousDebt"] : <any>null;
+            this.total = _data["total"] !== undefined ? _data["total"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): OrderPriceBreakdownDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new OrderPriceBreakdownDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["subTotal"] = this.subTotal !== undefined ? this.subTotal : <any>null;
+        data["serviceFees"] = this.serviceFees !== undefined ? this.serviceFees : <any>null;
+        data["deliveryFees"] = this.deliveryFees !== undefined ? this.deliveryFees : <any>null;
+        data["urgentFees"] = this.urgentFees !== undefined ? this.urgentFees : <any>null;
+        data["discount"] = this.discount !== undefined ? this.discount : <any>null;
+        data["previousDebt"] = this.previousDebt !== undefined ? this.previousDebt : <any>null;
+        data["total"] = this.total !== undefined ? this.total : <any>null;
+        return data;
+    }
 }
 
 export class CreateOrderCommand {
@@ -14222,7 +17417,6 @@ export class RegisterResponse {
     customerId!: number | null;
     merchantId!: number | null;
     deliveryId!: number | null;
-    invitationCode!: string;
     message!: string;
 
     init(_data?: any) {
@@ -14231,7 +17425,6 @@ export class RegisterResponse {
             this.customerId = _data["customerId"] !== undefined ? _data["customerId"] : <any>null;
             this.merchantId = _data["merchantId"] !== undefined ? _data["merchantId"] : <any>null;
             this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
-            this.invitationCode = _data["invitationCode"] !== undefined ? _data["invitationCode"] : <any>null;
             this.message = _data["message"] !== undefined ? _data["message"] : <any>null;
         }
     }
@@ -14249,7 +17442,6 @@ export class RegisterResponse {
         data["customerId"] = this.customerId !== undefined ? this.customerId : <any>null;
         data["merchantId"] = this.merchantId !== undefined ? this.merchantId : <any>null;
         data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
-        data["invitationCode"] = this.invitationCode !== undefined ? this.invitationCode : <any>null;
         data["message"] = this.message !== undefined ? this.message : <any>null;
         return data;
     }
@@ -14707,6 +17899,8 @@ export class DeliveryDto {
     isActive!: boolean;
     isDeleted!: boolean;
     createdDate!: Date;
+    cashDebt!: number;
+    cashDebtLimit!: number | null;
 
     init(_data?: any) {
         if (_data) {
@@ -14723,6 +17917,8 @@ export class DeliveryDto {
             this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
             this.isDeleted = _data["isDeleted"] !== undefined ? _data["isDeleted"] : <any>null;
             this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
+            this.cashDebt = _data["cashDebt"] !== undefined ? _data["cashDebt"] : <any>null;
+            this.cashDebtLimit = _data["cashDebtLimit"] !== undefined ? _data["cashDebtLimit"] : <any>null;
         }
     }
 
@@ -14748,8 +17944,78 @@ export class DeliveryDto {
         data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
         data["isDeleted"] = this.isDeleted !== undefined ? this.isDeleted : <any>null;
         data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
+        data["cashDebt"] = this.cashDebt !== undefined ? this.cashDebt : <any>null;
+        data["cashDebtLimit"] = this.cashDebtLimit !== undefined ? this.cashDebtLimit : <any>null;
         return data;
     }
+}
+
+export class DeliveryAssignCandidateDto {
+    deliveryId!: number;
+    fullName!: string;
+    mobileNumber!: string;
+    zoneId!: number;
+    zoneName!: string;
+    status!: RiderAvailabilityStatus;
+    isOnline!: boolean;
+    isInShift!: boolean;
+    currentShiftName!: string | null;
+    currentShiftEndsAt!: Date | null;
+    activeLegsCount!: number;
+    cashDebt!: number;
+    cashDebtLimit!: number | null;
+    isOverCashDebtLimit!: boolean;
+
+    init(_data?: any) {
+        if (_data) {
+            this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
+            this.fullName = _data["fullName"] !== undefined ? _data["fullName"] : <any>null;
+            this.mobileNumber = _data["mobileNumber"] !== undefined ? _data["mobileNumber"] : <any>null;
+            this.zoneId = _data["zoneId"] !== undefined ? _data["zoneId"] : <any>null;
+            this.zoneName = _data["zoneName"] !== undefined ? _data["zoneName"] : <any>null;
+            this.status = _data["status"] !== undefined ? _data["status"] : <any>null;
+            this.isOnline = _data["isOnline"] !== undefined ? _data["isOnline"] : <any>null;
+            this.isInShift = _data["isInShift"] !== undefined ? _data["isInShift"] : <any>null;
+            this.currentShiftName = _data["currentShiftName"] !== undefined ? _data["currentShiftName"] : <any>null;
+            this.currentShiftEndsAt = _data["currentShiftEndsAt"] ? new Date(_data["currentShiftEndsAt"].toString()) : <any>null;
+            this.activeLegsCount = _data["activeLegsCount"] !== undefined ? _data["activeLegsCount"] : <any>null;
+            this.cashDebt = _data["cashDebt"] !== undefined ? _data["cashDebt"] : <any>null;
+            this.cashDebtLimit = _data["cashDebtLimit"] !== undefined ? _data["cashDebtLimit"] : <any>null;
+            this.isOverCashDebtLimit = _data["isOverCashDebtLimit"] !== undefined ? _data["isOverCashDebtLimit"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DeliveryAssignCandidateDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DeliveryAssignCandidateDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
+        data["fullName"] = this.fullName !== undefined ? this.fullName : <any>null;
+        data["mobileNumber"] = this.mobileNumber !== undefined ? this.mobileNumber : <any>null;
+        data["zoneId"] = this.zoneId !== undefined ? this.zoneId : <any>null;
+        data["zoneName"] = this.zoneName !== undefined ? this.zoneName : <any>null;
+        data["status"] = this.status !== undefined ? this.status : <any>null;
+        data["isOnline"] = this.isOnline !== undefined ? this.isOnline : <any>null;
+        data["isInShift"] = this.isInShift !== undefined ? this.isInShift : <any>null;
+        data["currentShiftName"] = this.currentShiftName !== undefined ? this.currentShiftName : <any>null;
+        data["currentShiftEndsAt"] = this.currentShiftEndsAt ? this.currentShiftEndsAt.toISOString() : <any>null;
+        data["activeLegsCount"] = this.activeLegsCount !== undefined ? this.activeLegsCount : <any>null;
+        data["cashDebt"] = this.cashDebt !== undefined ? this.cashDebt : <any>null;
+        data["cashDebtLimit"] = this.cashDebtLimit !== undefined ? this.cashDebtLimit : <any>null;
+        data["isOverCashDebtLimit"] = this.isOverCashDebtLimit !== undefined ? this.isOverCashDebtLimit : <any>null;
+        return data;
+    }
+}
+
+export enum RiderAvailabilityStatus {
+    Available = 1,
+    InShiftOffline = 2,
+    OffShift = 3,
 }
 
 export class AdminCreateDeliveryCommand {
@@ -14842,6 +18108,32 @@ export class AdminUpdateDeliveryCommand {
         data["personalImage"] = this.personalImage !== undefined ? this.personalImage : <any>null;
         data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
         data["password"] = this.password !== undefined ? this.password : <any>null;
+        return data;
+    }
+}
+
+export class SetDeliveryCashDebtLimitCommand {
+    deliveryId!: number;
+    cashDebtLimit!: number | null;
+
+    init(_data?: any) {
+        if (_data) {
+            this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
+            this.cashDebtLimit = _data["cashDebtLimit"] !== undefined ? _data["cashDebtLimit"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): SetDeliveryCashDebtLimitCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new SetDeliveryCashDebtLimitCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
+        data["cashDebtLimit"] = this.cashDebtLimit !== undefined ? this.cashDebtLimit : <any>null;
         return data;
     }
 }
@@ -15849,6 +19141,7 @@ export class OrderDetailDto {
     deliveryMenOrders!: DeliveryMenOrderDto[];
     deliveryOrderPaymentDetails!: DeliveryOrderPaymentDetailDto[];
     orderJournals!: OrderJournalDto[];
+    handoverImages!: OrderVehicleHandoverImageDto[];
 
     init(_data?: any) {
         if (_data) {
@@ -15944,6 +19237,14 @@ export class OrderDetailDto {
             else {
                 this.orderJournals = <any>null;
             }
+            if (Array.isArray(_data["handoverImages"])) {
+                this.handoverImages = [] as any;
+                for (let item of _data["handoverImages"])
+                    this.handoverImages!.push(OrderVehicleHandoverImageDto.fromJS(item));
+            }
+            else {
+                this.handoverImages = <any>null;
+            }
         }
     }
 
@@ -16026,6 +19327,11 @@ export class OrderDetailDto {
             data["orderJournals"] = [];
             for (let item of this.orderJournals)
                 data["orderJournals"].push(item.toJSON());
+        }
+        if (Array.isArray(this.handoverImages)) {
+            data["handoverImages"] = [];
+            for (let item of this.handoverImages)
+                data["handoverImages"].push(item.toJSON());
         }
         return data;
     }
@@ -16388,6 +19694,7 @@ export class DeliveryMenOrderDto {
     deliveryName!: string;
     deliveryReceivedFromMerchant!: boolean;
     receivedFromMerchantAt!: Date | null;
+    leg!: DeliveryLeg;
 
     init(_data?: any) {
         if (_data) {
@@ -16399,6 +19706,7 @@ export class DeliveryMenOrderDto {
             this.deliveryName = _data["deliveryName"] !== undefined ? _data["deliveryName"] : <any>null;
             this.deliveryReceivedFromMerchant = _data["deliveryReceivedFromMerchant"] !== undefined ? _data["deliveryReceivedFromMerchant"] : <any>null;
             this.receivedFromMerchantAt = _data["receivedFromMerchantAt"] ? new Date(_data["receivedFromMerchantAt"].toString()) : <any>null;
+            this.leg = _data["leg"] !== undefined ? _data["leg"] : <any>null;
         }
     }
 
@@ -16419,6 +19727,7 @@ export class DeliveryMenOrderDto {
         data["deliveryName"] = this.deliveryName !== undefined ? this.deliveryName : <any>null;
         data["deliveryReceivedFromMerchant"] = this.deliveryReceivedFromMerchant !== undefined ? this.deliveryReceivedFromMerchant : <any>null;
         data["receivedFromMerchantAt"] = this.receivedFromMerchantAt ? this.receivedFromMerchantAt.toISOString() : <any>null;
+        data["leg"] = this.leg !== undefined ? this.leg : <any>null;
         return data;
     }
 }
@@ -16431,6 +19740,8 @@ export class DeliveryOrderPaymentDetailDto {
     vehicleId!: number;
     vehicleCode!: string;
     deliveryFeeShare!: number;
+    leg!: DeliveryLeg;
+    commissionPercent!: number;
 
     init(_data?: any) {
         if (_data) {
@@ -16441,6 +19752,8 @@ export class DeliveryOrderPaymentDetailDto {
             this.vehicleId = _data["vehicleId"] !== undefined ? _data["vehicleId"] : <any>null;
             this.vehicleCode = _data["vehicleCode"] !== undefined ? _data["vehicleCode"] : <any>null;
             this.deliveryFeeShare = _data["deliveryFeeShare"] !== undefined ? _data["deliveryFeeShare"] : <any>null;
+            this.leg = _data["leg"] !== undefined ? _data["leg"] : <any>null;
+            this.commissionPercent = _data["commissionPercent"] !== undefined ? _data["commissionPercent"] : <any>null;
         }
     }
 
@@ -16460,6 +19773,46 @@ export class DeliveryOrderPaymentDetailDto {
         data["vehicleId"] = this.vehicleId !== undefined ? this.vehicleId : <any>null;
         data["vehicleCode"] = this.vehicleCode !== undefined ? this.vehicleCode : <any>null;
         data["deliveryFeeShare"] = this.deliveryFeeShare !== undefined ? this.deliveryFeeShare : <any>null;
+        data["leg"] = this.leg !== undefined ? this.leg : <any>null;
+        data["commissionPercent"] = this.commissionPercent !== undefined ? this.commissionPercent : <any>null;
+        return data;
+    }
+}
+
+export class OrderVehicleHandoverImageDto {
+    vehicleId!: number;
+    step!: HandoverStep;
+    position!: HandoverImagePosition;
+    imageUrl!: string;
+    deliveryId!: number | null;
+    createdDate!: Date;
+
+    init(_data?: any) {
+        if (_data) {
+            this.vehicleId = _data["vehicleId"] !== undefined ? _data["vehicleId"] : <any>null;
+            this.step = _data["step"] !== undefined ? _data["step"] : <any>null;
+            this.position = _data["position"] !== undefined ? _data["position"] : <any>null;
+            this.imageUrl = _data["imageUrl"] !== undefined ? _data["imageUrl"] : <any>null;
+            this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
+            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
+        }
+    }
+
+    static fromJS(data: any): OrderVehicleHandoverImageDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new OrderVehicleHandoverImageDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["vehicleId"] = this.vehicleId !== undefined ? this.vehicleId : <any>null;
+        data["step"] = this.step !== undefined ? this.step : <any>null;
+        data["position"] = this.position !== undefined ? this.position : <any>null;
+        data["imageUrl"] = this.imageUrl !== undefined ? this.imageUrl : <any>null;
+        data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
+        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
         return data;
     }
 }
@@ -17157,11 +20510,13 @@ export class AssignDeliveryToOrderCommand {
 export class AssignDeliveryVehicleItem {
     vehicleId!: number;
     deliveryId!: number;
+    leg!: DeliveryLeg | null;
 
     init(_data?: any) {
         if (_data) {
             this.vehicleId = _data["vehicleId"] !== undefined ? _data["vehicleId"] : <any>null;
             this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
+            this.leg = _data["leg"] !== undefined ? _data["leg"] : <any>null;
         }
     }
 
@@ -17176,6 +20531,7 @@ export class AssignDeliveryVehicleItem {
         data = typeof data === 'object' ? data : {};
         data["vehicleId"] = this.vehicleId !== undefined ? this.vehicleId : <any>null;
         data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
+        data["leg"] = this.leg !== undefined ? this.leg : <any>null;
         return data;
     }
 }
@@ -18837,6 +22193,8 @@ export class CityDto {
     urgentDelivery!: number | null;
     serviceFees!: number | null;
     cancellationFees!: number | null;
+    deliveryLegCommissionPercent!: number;
+    returnLegCommissionPercent!: number;
     tieredDiscounts!: TieredDiscountDto[];
 
     init(_data?: any) {
@@ -18852,6 +22210,8 @@ export class CityDto {
             this.urgentDelivery = _data["urgentDelivery"] !== undefined ? _data["urgentDelivery"] : <any>null;
             this.serviceFees = _data["serviceFees"] !== undefined ? _data["serviceFees"] : <any>null;
             this.cancellationFees = _data["cancellationFees"] !== undefined ? _data["cancellationFees"] : <any>null;
+            this.deliveryLegCommissionPercent = _data["deliveryLegCommissionPercent"] !== undefined ? _data["deliveryLegCommissionPercent"] : <any>null;
+            this.returnLegCommissionPercent = _data["returnLegCommissionPercent"] !== undefined ? _data["returnLegCommissionPercent"] : <any>null;
             if (Array.isArray(_data["tieredDiscounts"])) {
                 this.tieredDiscounts = [] as any;
                 for (let item of _data["tieredDiscounts"])
@@ -18883,6 +22243,8 @@ export class CityDto {
         data["urgentDelivery"] = this.urgentDelivery !== undefined ? this.urgentDelivery : <any>null;
         data["serviceFees"] = this.serviceFees !== undefined ? this.serviceFees : <any>null;
         data["cancellationFees"] = this.cancellationFees !== undefined ? this.cancellationFees : <any>null;
+        data["deliveryLegCommissionPercent"] = this.deliveryLegCommissionPercent !== undefined ? this.deliveryLegCommissionPercent : <any>null;
+        data["returnLegCommissionPercent"] = this.returnLegCommissionPercent !== undefined ? this.returnLegCommissionPercent : <any>null;
         if (Array.isArray(this.tieredDiscounts)) {
             data["tieredDiscounts"] = [];
             for (let item of this.tieredDiscounts)
@@ -19060,6 +22422,8 @@ export class AddCityCommand {
     urgentDelivery!: number | null;
     serviceFees!: number | null;
     cancellationFees!: number | null;
+    deliveryLegCommissionPercent!: number | null;
+    returnLegCommissionPercent!: number | null;
     tieredDiscounts!: TieredDiscountDto[] | null;
 
     init(_data?: any) {
@@ -19070,6 +22434,8 @@ export class AddCityCommand {
             this.urgentDelivery = _data["urgentDelivery"] !== undefined ? _data["urgentDelivery"] : <any>null;
             this.serviceFees = _data["serviceFees"] !== undefined ? _data["serviceFees"] : <any>null;
             this.cancellationFees = _data["cancellationFees"] !== undefined ? _data["cancellationFees"] : <any>null;
+            this.deliveryLegCommissionPercent = _data["deliveryLegCommissionPercent"] !== undefined ? _data["deliveryLegCommissionPercent"] : <any>null;
+            this.returnLegCommissionPercent = _data["returnLegCommissionPercent"] !== undefined ? _data["returnLegCommissionPercent"] : <any>null;
             if (Array.isArray(_data["tieredDiscounts"])) {
                 this.tieredDiscounts = [] as any;
                 for (let item of _data["tieredDiscounts"])
@@ -19096,6 +22462,8 @@ export class AddCityCommand {
         data["urgentDelivery"] = this.urgentDelivery !== undefined ? this.urgentDelivery : <any>null;
         data["serviceFees"] = this.serviceFees !== undefined ? this.serviceFees : <any>null;
         data["cancellationFees"] = this.cancellationFees !== undefined ? this.cancellationFees : <any>null;
+        data["deliveryLegCommissionPercent"] = this.deliveryLegCommissionPercent !== undefined ? this.deliveryLegCommissionPercent : <any>null;
+        data["returnLegCommissionPercent"] = this.returnLegCommissionPercent !== undefined ? this.returnLegCommissionPercent : <any>null;
         if (Array.isArray(this.tieredDiscounts)) {
             data["tieredDiscounts"] = [];
             for (let item of this.tieredDiscounts)
@@ -19113,6 +22481,8 @@ export class UpdateCityCommand {
     urgentDelivery!: number | null;
     serviceFees!: number | null;
     cancellationFees!: number | null;
+    deliveryLegCommissionPercent!: number | null;
+    returnLegCommissionPercent!: number | null;
     tieredDiscounts!: TieredDiscountDto[] | null;
 
     init(_data?: any) {
@@ -19124,6 +22494,8 @@ export class UpdateCityCommand {
             this.urgentDelivery = _data["urgentDelivery"] !== undefined ? _data["urgentDelivery"] : <any>null;
             this.serviceFees = _data["serviceFees"] !== undefined ? _data["serviceFees"] : <any>null;
             this.cancellationFees = _data["cancellationFees"] !== undefined ? _data["cancellationFees"] : <any>null;
+            this.deliveryLegCommissionPercent = _data["deliveryLegCommissionPercent"] !== undefined ? _data["deliveryLegCommissionPercent"] : <any>null;
+            this.returnLegCommissionPercent = _data["returnLegCommissionPercent"] !== undefined ? _data["returnLegCommissionPercent"] : <any>null;
             if (Array.isArray(_data["tieredDiscounts"])) {
                 this.tieredDiscounts = [] as any;
                 for (let item of _data["tieredDiscounts"])
@@ -19151,6 +22523,8 @@ export class UpdateCityCommand {
         data["urgentDelivery"] = this.urgentDelivery !== undefined ? this.urgentDelivery : <any>null;
         data["serviceFees"] = this.serviceFees !== undefined ? this.serviceFees : <any>null;
         data["cancellationFees"] = this.cancellationFees !== undefined ? this.cancellationFees : <any>null;
+        data["deliveryLegCommissionPercent"] = this.deliveryLegCommissionPercent !== undefined ? this.deliveryLegCommissionPercent : <any>null;
+        data["returnLegCommissionPercent"] = this.returnLegCommissionPercent !== undefined ? this.returnLegCommissionPercent : <any>null;
         if (Array.isArray(this.tieredDiscounts)) {
             data["tieredDiscounts"] = [];
             for (let item of this.tieredDiscounts)
@@ -19289,6 +22663,154 @@ export class RemoveRoleFromUserCommand {
         data = typeof data === 'object' ? data : {};
         data["userId"] = this.userId !== undefined ? this.userId : <any>null;
         data["roleId"] = this.roleId !== undefined ? this.roleId : <any>null;
+        return data;
+    }
+}
+
+export class ShiftDto {
+    shiftId!: number;
+    cityId!: number;
+    cityName!: string;
+    name!: string;
+    startTime!: string;
+    endTime!: string;
+    daysOfWeekMask!: number;
+    isActive!: boolean;
+    isRunningNow!: boolean;
+    riders!: ShiftRiderDto[];
+
+    init(_data?: any) {
+        if (_data) {
+            this.shiftId = _data["shiftId"] !== undefined ? _data["shiftId"] : <any>null;
+            this.cityId = _data["cityId"] !== undefined ? _data["cityId"] : <any>null;
+            this.cityName = _data["cityName"] !== undefined ? _data["cityName"] : <any>null;
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.startTime = _data["startTime"] !== undefined ? _data["startTime"] : <any>null;
+            this.endTime = _data["endTime"] !== undefined ? _data["endTime"] : <any>null;
+            this.daysOfWeekMask = _data["daysOfWeekMask"] !== undefined ? _data["daysOfWeekMask"] : <any>null;
+            this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
+            this.isRunningNow = _data["isRunningNow"] !== undefined ? _data["isRunningNow"] : <any>null;
+            if (Array.isArray(_data["riders"])) {
+                this.riders = [] as any;
+                for (let item of _data["riders"])
+                    this.riders!.push(ShiftRiderDto.fromJS(item));
+            }
+            else {
+                this.riders = <any>null;
+            }
+        }
+    }
+
+    static fromJS(data: any): ShiftDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ShiftDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["shiftId"] = this.shiftId !== undefined ? this.shiftId : <any>null;
+        data["cityId"] = this.cityId !== undefined ? this.cityId : <any>null;
+        data["cityName"] = this.cityName !== undefined ? this.cityName : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["startTime"] = this.startTime !== undefined ? this.startTime : <any>null;
+        data["endTime"] = this.endTime !== undefined ? this.endTime : <any>null;
+        data["daysOfWeekMask"] = this.daysOfWeekMask !== undefined ? this.daysOfWeekMask : <any>null;
+        data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
+        data["isRunningNow"] = this.isRunningNow !== undefined ? this.isRunningNow : <any>null;
+        if (Array.isArray(this.riders)) {
+            data["riders"] = [];
+            for (let item of this.riders)
+                data["riders"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export class ShiftRiderDto {
+    deliveryId!: number;
+    fullName!: string;
+    mobileNumber!: string;
+    isOnline!: boolean;
+
+    init(_data?: any) {
+        if (_data) {
+            this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
+            this.fullName = _data["fullName"] !== undefined ? _data["fullName"] : <any>null;
+            this.mobileNumber = _data["mobileNumber"] !== undefined ? _data["mobileNumber"] : <any>null;
+            this.isOnline = _data["isOnline"] !== undefined ? _data["isOnline"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): ShiftRiderDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ShiftRiderDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
+        data["fullName"] = this.fullName !== undefined ? this.fullName : <any>null;
+        data["mobileNumber"] = this.mobileNumber !== undefined ? this.mobileNumber : <any>null;
+        data["isOnline"] = this.isOnline !== undefined ? this.isOnline : <any>null;
+        return data;
+    }
+}
+
+export class SaveShiftCommand {
+    shiftId!: number;
+    cityId!: number;
+    name!: string;
+    startTime!: string;
+    endTime!: string;
+    daysOfWeekMask!: number;
+    isActive!: boolean;
+    deliveryIds!: number[];
+
+    init(_data?: any) {
+        if (_data) {
+            this.shiftId = _data["shiftId"] !== undefined ? _data["shiftId"] : <any>null;
+            this.cityId = _data["cityId"] !== undefined ? _data["cityId"] : <any>null;
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.startTime = _data["startTime"] !== undefined ? _data["startTime"] : <any>null;
+            this.endTime = _data["endTime"] !== undefined ? _data["endTime"] : <any>null;
+            this.daysOfWeekMask = _data["daysOfWeekMask"] !== undefined ? _data["daysOfWeekMask"] : <any>null;
+            this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
+            if (Array.isArray(_data["deliveryIds"])) {
+                this.deliveryIds = [] as any;
+                for (let item of _data["deliveryIds"])
+                    this.deliveryIds!.push(item);
+            }
+            else {
+                this.deliveryIds = <any>null;
+            }
+        }
+    }
+
+    static fromJS(data: any): SaveShiftCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new SaveShiftCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["shiftId"] = this.shiftId !== undefined ? this.shiftId : <any>null;
+        data["cityId"] = this.cityId !== undefined ? this.cityId : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["startTime"] = this.startTime !== undefined ? this.startTime : <any>null;
+        data["endTime"] = this.endTime !== undefined ? this.endTime : <any>null;
+        data["daysOfWeekMask"] = this.daysOfWeekMask !== undefined ? this.daysOfWeekMask : <any>null;
+        data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
+        if (Array.isArray(this.deliveryIds)) {
+            data["deliveryIds"] = [];
+            for (let item of this.deliveryIds)
+                data["deliveryIds"].push(item);
+        }
         return data;
     }
 }
@@ -19592,6 +23114,11 @@ export class UpdateVehicleCommand {
         data["imageUrl"] = this.imageUrl !== undefined ? this.imageUrl : <any>null;
         return data;
     }
+}
+
+export interface FileParameter {
+    data: any;
+    fileName: string;
 }
 
 export interface FileResponse {

@@ -202,33 +202,20 @@
         <p *ngIf="!form.cityId" class="sh-modal__muted">{{ 'shifts.pickCityFirst' | t }}</p>
         <p *ngIf="form.cityId && isLoadingRiders" class="sh-modal__muted">{{ 'common.loading' | t }}</p>
 
-        <ng-container *ngIf="form.cityId && !isLoadingRiders">
-          <input
-            *ngIf="riderRows.length > 6"
-            type="search"
-            class="entity-form__input sh-modal__search"
-            [(ngModel)]="riderSearch"
-            [placeholder]="'shifts.searchRiders' | t"
-          />
-          <div class="sh-modal__riders">
-            <label
-              *ngFor="let r of filteredRiderRows"
-              class="sh-modal__rider"
-              [class.sh-modal__rider--on]="isRiderSelected(r.deliveryId)"
-            >
-              <input type="checkbox" [checked]="isRiderSelected(r.deliveryId)" (change)="toggleRider(r.deliveryId)" />
-              <span class="sh-modal__rider-dot" [ngClass]="'sh-modal__rider-dot--' + r.tone" aria-hidden="true"></span>
-              <span class="sh-modal__rider-copy">
-                <strong>{{ r.fullName }}</strong>
-                <small>
-                  {{ r.statusKey | t }}<ng-container *ngIf="r.shiftName"> · {{ r.shiftName }}</ng-container><ng-container *ngIf="r.zoneName"> · {{ r.zoneName }}</ng-container>
-                </small>
-              </span>
-              <span class="sh-modal__rider-mobile">{{ r.mobileNumber }}</span>
-            </label>
-            <p *ngIf="!filteredRiderRows.length" class="sh-modal__muted">{{ 'riders.noRiders' | t }}</p>
-          </div>
-        </ng-container>
+        <app-multi-select
+          *ngIf="form.cityId && !isLoadingRiders"
+          [multiple]="true"
+          [searchable]="true"
+          layout="table"
+          [options]="riderOptions"
+          [values]="form.deliveryIds"
+          (valuesChange)="onRidersChange($event)"
+          [placeholder]="'shifts.riders' | t"
+          [searchPlaceholder]="'shifts.searchRiders' | t"
+          [emptyText]="'riders.noRiders' | t"
+          [primaryColumnLabel]="'common.name' | t"
+          [secondaryColumnLabel]="'common.mobile' | t"
+        ></app-multi-select>
       </div>
 
       <p *ngIf="formError" class="entity-form__error" role="alert">{{ formError }}</p>

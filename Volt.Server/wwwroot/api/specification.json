@@ -1019,6 +1019,887 @@
         }
       }
     },
+    "/api/delivery/DeliveryNotification": {
+      "get": {
+        "tags": [
+          "Delivery / DeliveryNotification"
+        ],
+        "operationId": "DeliveryNotification_GetMyNotifications",
+        "parameters": [
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfRiderNotificationDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryNotification/UnreadCount": {
+      "get": {
+        "tags": [
+          "Delivery / DeliveryNotification"
+        ],
+        "operationId": "DeliveryNotification_UnreadCount",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryNotification/{id}/MarkAsRead": {
+      "post": {
+        "tags": [
+          "Delivery / DeliveryNotification"
+        ],
+        "operationId": "DeliveryNotification_MarkAsRead",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryNotification/MarkAllAsRead": {
+      "post": {
+        "tags": [
+          "Delivery / DeliveryNotification"
+        ],
+        "operationId": "DeliveryNotification_MarkAllAsRead",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryOrder": {
+      "get": {
+        "tags": [
+          "Delivery / DeliveryOrder"
+        ],
+        "operationId": "DeliveryOrder_GetMyOrders",
+        "parameters": [
+          {
+            "name": "Tab",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/RiderOrderTab"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 3
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfRiderOrderSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryOrder/{orderId}": {
+      "get": {
+        "tags": [
+          "Delivery / DeliveryOrder"
+        ],
+        "operationId": "DeliveryOrder_GetMyOrder",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderOrderDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryOrder/UploadImage": {
+      "post": {
+        "tags": [
+          "Delivery / DeliveryOrder"
+        ],
+        "operationId": "DeliveryOrder_UploadImage",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadedImageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryOrder/{orderId}/vehicles/{vehicleId}/ReceivedFromOwner": {
+      "post": {
+        "tags": [
+          "Delivery / DeliveryOrder"
+        ],
+        "operationId": "DeliveryOrder_ReceivedFromOwner",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRiderHandoverCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 3
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryOrder/{orderId}/vehicles/{vehicleId}/DeliveredToCustomer": {
+      "post": {
+        "tags": [
+          "Delivery / DeliveryOrder"
+        ],
+        "operationId": "DeliveryOrder_DeliveredToCustomer",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRiderHandoverCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 3
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryOrder/{orderId}/vehicles/{vehicleId}/ReceivedFromCustomer": {
+      "post": {
+        "tags": [
+          "Delivery / DeliveryOrder"
+        ],
+        "operationId": "DeliveryOrder_ReceivedFromCustomer",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRiderHandoverCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 3
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryOrder/{orderId}/vehicles/{vehicleId}/DeliveredToOwner": {
+      "post": {
+        "tags": [
+          "Delivery / DeliveryOrder"
+        ],
+        "operationId": "DeliveryOrder_DeliveredToOwner",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRiderHandoverCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 3
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryOrder/{orderId}/vehicles/{vehicleId}/NotReceivedByCustomer": {
+      "post": {
+        "tags": [
+          "Delivery / DeliveryOrder"
+        ],
+        "operationId": "DeliveryOrder_NotReceivedByCustomer",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiderNotReceivedByCustomerCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 3
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryProfile/me": {
+      "get": {
+        "tags": [
+          "Delivery / DeliveryProfile"
+        ],
+        "operationId": "DeliveryProfile_Me",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderProfileDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryProfile/Devices": {
+      "post": {
+        "tags": [
+          "Delivery / DeliveryProfile"
+        ],
+        "operationId": "DeliveryProfile_SaveDevice",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveRiderDeviceCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Delivery / DeliveryProfile"
+        ],
+        "operationId": "DeliveryProfile_RemoveDevice",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryProfile/Shift": {
+      "get": {
+        "tags": [
+          "Delivery / DeliveryProfile"
+        ],
+        "operationId": "DeliveryProfile_ShiftStatus",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderShiftStatusDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryProfile/Online": {
+      "post": {
+        "tags": [
+          "Delivery / DeliveryProfile"
+        ],
+        "operationId": "DeliveryProfile_SetOnline",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetRiderOnlineCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderShiftStatusDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryWallet/Summary": {
+      "get": {
+        "tags": [
+          "Delivery / DeliveryWallet"
+        ],
+        "operationId": "DeliveryWallet_Summary",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderWalletDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delivery/DeliveryWallet/Journals": {
+      "get": {
+        "tags": [
+          "Delivery / DeliveryWallet"
+        ],
+        "operationId": "DeliveryWallet_Journals",
+        "parameters": [
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfRiderJournalDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/customer/CustomerCategories/GetAllActiveCategories": {
       "get": {
         "tags": [
@@ -1100,6 +1981,26 @@
               "format": "int32"
             },
             "x-position": 1
+          },
+          {
+            "name": "latitude",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double",
+              "nullable": true
+            },
+            "x-position": 2
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double",
+              "nullable": true
+            },
+            "x-position": 3
           }
         ],
         "responses": {
@@ -1172,6 +2073,109 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomerDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customer/Customer/Notifications/UnreadCount": {
+      "get": {
+        "tags": [
+          "Customer / Customer"
+        ],
+        "operationId": "Customer_GetUnreadNotificationsCount",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customer/Customer/Notifications/{notificationId}/Read": {
+      "post": {
+        "tags": [
+          "Customer / Customer"
+        ],
+        "operationId": "Customer_MarkNotificationRead",
+        "parameters": [
+          {
+            "name": "notificationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customer/Customer/Notifications/ReadAll": {
+      "post": {
+        "tags": [
+          "Customer / Customer"
+        ],
+        "operationId": "Customer_MarkAllNotificationsRead",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
                 }
               }
             }
@@ -1265,6 +2269,46 @@
         "responses": {
           "200": {
             "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customer/Customer/Devices": {
+      "delete": {
+        "tags": [
+          "Customer / Customer"
+        ],
+        "operationId": "Customer_RemoveDevice",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
           },
           "400": {
             "description": "",
@@ -1678,6 +2722,48 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PagedResultOfOrderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customer/CustomerOrder/{orderId}": {
+      "get": {
+        "tags": [
+          "Customer / CustomerOrder"
+        ],
+        "operationId": "CustomerOrder_GetMyOrder",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
                 }
               }
             }
@@ -2758,6 +3844,61 @@
         }
       }
     },
+    "/api/admin/AdminDelivery/ForAssign": {
+      "get": {
+        "tags": [
+          "Admin / AdminDelivery"
+        ],
+        "operationId": "AdminDelivery_GetForAssign",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            },
+            "x-position": 1
+          },
+          {
+            "name": "cityId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryAssignCandidateDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/AdminDelivery/{deliveryId}": {
       "get": {
         "tags": [
@@ -2868,6 +4009,60 @@
             "x-position": 1
           }
         ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/AdminDelivery/{deliveryId}/CashDebtLimit": {
+      "put": {
+        "tags": [
+          "Admin / AdminDelivery"
+        ],
+        "operationId": "AdminDelivery_SetCashDebtLimit",
+        "parameters": [
+          {
+            "name": "deliveryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetDeliveryCashDebtLimitCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
         "responses": {
           "200": {
             "description": "",
@@ -8651,6 +9846,227 @@
         }
       }
     },
+    "/api/admin/Shift": {
+      "get": {
+        "tags": [
+          "Admin / Shift"
+        ],
+        "operationId": "Shift_GetAll",
+        "parameters": [
+          {
+            "name": "cityId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShiftDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin / Shift"
+        ],
+        "operationId": "Shift_Create",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveShiftCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/Shift/{shiftId}": {
+      "get": {
+        "tags": [
+          "Admin / Shift"
+        ],
+        "operationId": "Shift_GetById",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin / Shift"
+        ],
+        "operationId": "Shift_Update",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveShiftCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin / Shift"
+        ],
+        "operationId": "Shift_Delete",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/SubCategory": {
       "get": {
         "tags": [
@@ -9660,7 +11076,8 @@
           "OrderCompleted",
           "OrderCancelled",
           "OrderMerchantPending",
-          "OrderUpdated"
+          "OrderUpdated",
+          "RiderAssigned"
         ],
         "enum": [
           1,
@@ -9670,7 +11087,8 @@
           5,
           6,
           7,
-          8
+          8,
+          9
         ]
       },
       "ProblemDetail": {
@@ -10594,6 +12012,11 @@
           "vehicleCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
           }
         }
       },
@@ -10855,6 +12278,816 @@
           }
         }
       },
+      "PagedResultOfRiderNotificationDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiderNotificationDto"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RiderNotificationDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isRead": {
+            "type": "boolean"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PagedResultOfRiderOrderSummaryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiderOrderSummaryDto"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RiderOrderSummaryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderCode": {
+            "type": "string"
+          },
+          "orderState": {
+            "$ref": "#/components/schemas/OrderState"
+          },
+          "isUrgent": {
+            "type": "boolean"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "hotelName": {
+            "type": "string"
+          },
+          "destinationZoneName": {
+            "type": "string"
+          },
+          "reservationDateFrom": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reservationDateTo": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "myVehiclesCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nextAction": {
+            "type": "string"
+          },
+          "collectFromCustomer": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "isPaidOnline": {
+            "type": "boolean"
+          },
+          "myDeliveryFeeShare": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "RiderOrderTab": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Pickup",
+          "Return",
+          "Completed"
+        ],
+        "enum": [
+          1,
+          2,
+          3
+        ]
+      },
+      "RiderOrderDetailDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderCode": {
+            "type": "string"
+          },
+          "orderState": {
+            "$ref": "#/components/schemas/OrderState"
+          },
+          "isUrgent": {
+            "type": "boolean"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/RiderCustomerDto"
+          },
+          "reservationDateFrom": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reservationDateTo": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "vehicles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiderVehicleDto"
+            }
+          },
+          "money": {
+            "$ref": "#/components/schemas/RiderOrderMoneyDto"
+          }
+        }
+      },
+      "RiderCustomerDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "mobileNumber": {
+            "type": "string"
+          },
+          "hotelName": {
+            "type": "string"
+          },
+          "hotelAddress": {
+            "type": "string"
+          },
+          "hotelPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "destinationZoneName": {
+            "type": "string"
+          }
+        }
+      },
+      "RiderVehicleDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "vehicleId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "vehicleCode": {
+            "type": "string"
+          },
+          "vehicleName": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "merchant": {
+            "$ref": "#/components/schemas/RiderMerchantDto"
+          },
+          "legs": {
+            "$ref": "#/components/schemas/RiderLegsDto"
+          },
+          "steps": {
+            "$ref": "#/components/schemas/RiderStepsDto"
+          },
+          "nextAction": {
+            "type": "string"
+          },
+          "nextStepMoney": {
+            "$ref": "#/components/schemas/RiderStepMoneyDto"
+          },
+          "deliveryFailed": {
+            "type": "boolean"
+          },
+          "deliveryFailureReason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RiderMerchantDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "merchantId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "merchantName": {
+            "type": "string"
+          },
+          "mobileNumber": {
+            "type": "string"
+          },
+          "zoneName": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          }
+        }
+      },
+      "RiderLegsDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "delivery": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RiderLegDto"
+              }
+            ]
+          },
+          "return": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RiderLegDto"
+              }
+            ]
+          }
+        }
+      },
+      "RiderLegDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "deliveryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deliveryName": {
+            "type": "string"
+          },
+          "isMine": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RiderStepsDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "receivedFromOwner": {
+            "$ref": "#/components/schemas/RiderStepDto"
+          },
+          "deliveredToCustomer": {
+            "$ref": "#/components/schemas/RiderStepDto"
+          },
+          "receivedFromCustomer": {
+            "$ref": "#/components/schemas/RiderStepDto"
+          },
+          "deliveredToOwner": {
+            "$ref": "#/components/schemas/RiderStepDto"
+          }
+        }
+      },
+      "RiderStepDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "done": {
+            "type": "boolean"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "byDeliveryName": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RiderStepMoneyDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "RiderOrderMoneyDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "paymentMethod": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isPaidOnline": {
+            "type": "boolean"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "collectFromCustomer": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "collectFromCustomerBreakdown": {
+            "$ref": "#/components/schemas/RiderCollectBreakdownDto"
+          },
+          "myDeliveryFeeShare": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "RiderCollectBreakdownDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "rental": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "deliveryFees": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "serviceFees": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "urgentFees": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "tieredDiscount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "previousDebt": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "UploadedImageDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "SubmitRiderHandoverCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "vehicleId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "step": {
+            "$ref": "#/components/schemas/HandoverStep"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiderHandoverImage"
+            }
+          },
+          "amountConfirmed": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "HandoverStep": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "ReceivedFromOwner",
+          "DeliveredToCustomer",
+          "ReceivedFromCustomer",
+          "DeliveredToOwner"
+        ],
+        "enum": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "RiderHandoverImage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "position": {
+            "$ref": "#/components/schemas/HandoverImagePosition"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "HandoverImagePosition": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Front",
+          "Back",
+          "Left",
+          "Right"
+        ],
+        "enum": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "RiderNotReceivedByCustomerCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "vehicleId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "faultParty": {
+            "$ref": "#/components/schemas/FaultParty"
+          }
+        }
+      },
+      "RiderProfileDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "deliveryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "mobileNumber": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "personalImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "cityId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cityName": {
+            "type": "string"
+          },
+          "zoneId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "zoneName": {
+            "type": "string"
+          }
+        }
+      },
+      "SaveRiderDeviceCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "andriodDevice": {
+            "type": "string",
+            "nullable": true
+          },
+          "iosDevice": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RiderShiftStatusDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "isOnline": {
+            "type": "boolean"
+          },
+          "onlineToggle": {
+            "type": "boolean"
+          },
+          "isInShift": {
+            "type": "boolean"
+          },
+          "canGoOnline": {
+            "type": "boolean"
+          },
+          "currentShift": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RiderShiftDto"
+              }
+            ]
+          },
+          "currentShiftEndsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "nextShift": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RiderShiftDto"
+              }
+            ]
+          },
+          "nextShiftStartsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "shifts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiderShiftDto"
+            }
+          }
+        }
+      },
+      "RiderShiftDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "shiftId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "daysOfWeekMask": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "SetRiderOnlineCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "isOnline": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RiderWalletDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cashCollected": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "cashRemitted": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "cashDebt": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "cashDebtLimit": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "isOverCashDebtLimit": {
+            "type": "boolean"
+          },
+          "commissionEarned": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "commissionPaid": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "deductions": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "commissionDue": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "balance": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "currencyCode": {
+            "type": "string"
+          }
+        }
+      },
+      "PagedResultOfRiderJournalDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiderJournalDto"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RiderJournalDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "orderCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "entryKind": {
+            "$ref": "#/components/schemas/OrderJournalEntryKind"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "CategoryDto": {
         "type": "object",
         "additionalProperties": false,
@@ -10912,6 +13145,19 @@
           },
           "name": {
             "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "distanceKm": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
           }
         }
       },
@@ -11094,6 +13340,14 @@
           "notificationType": {
             "$ref": "#/components/schemas/NotificationType"
           },
+          "isRead": {
+            "type": "boolean"
+          },
+          "readAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "createdDate": {
             "type": "string",
             "format": "date-time"
@@ -11109,6 +13363,10 @@
             "nullable": true
           },
           "iosDevice": {
+            "type": "string",
+            "nullable": true
+          },
+          "language": {
             "type": "string",
             "nullable": true
           }
@@ -11435,6 +13693,21 @@
           "payPalOrderId": {
             "type": "string",
             "nullable": true
+          },
+          "riders": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/CustomerOrderRiderDto"
+            }
+          },
+          "priceBreakdown": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/OrderPriceBreakdownDto"
+              }
+            ]
           }
         }
       },
@@ -11449,6 +13722,81 @@
           0,
           1
         ]
+      },
+      "CustomerOrderRiderDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "vehicleId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "vehicleName": {
+            "type": "string"
+          },
+          "vehicleCode": {
+            "type": "string"
+          },
+          "leg": {
+            "$ref": "#/components/schemas/DeliveryLeg"
+          },
+          "riderName": {
+            "type": "string"
+          },
+          "canCall": {
+            "type": "boolean"
+          },
+          "riderMobileNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "DeliveryLeg": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Delivery",
+          "Return"
+        ],
+        "enum": [
+          1,
+          2
+        ]
+      },
+      "OrderPriceBreakdownDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "subTotal": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "serviceFees": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "deliveryFees": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "urgentFees": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "discount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "previousDebt": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
       },
       "CreateOrderCommand": {
         "type": "object",
@@ -11675,9 +14023,6 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
-          },
-          "invitationCode": {
-            "type": "string"
           },
           "message": {
             "type": "string"
@@ -12029,8 +14374,88 @@
           "createdDate": {
             "type": "string",
             "format": "date-time"
+          },
+          "cashDebt": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "cashDebtLimit": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
           }
         }
+      },
+      "DeliveryAssignCandidateDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "deliveryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "mobileNumber": {
+            "type": "string"
+          },
+          "zoneId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "zoneName": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RiderAvailabilityStatus"
+          },
+          "isOnline": {
+            "type": "boolean"
+          },
+          "isInShift": {
+            "type": "boolean"
+          },
+          "currentShiftName": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentShiftEndsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "activeLegsCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cashDebt": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "cashDebtLimit": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "isOverCashDebtLimit": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RiderAvailabilityStatus": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Available",
+          "InShiftOffline",
+          "OffShift"
+        ],
+        "enum": [
+          1,
+          2,
+          3
+        ]
       },
       "AdminCreateDeliveryCommand": {
         "type": "object",
@@ -12102,6 +14527,21 @@
           },
           "password": {
             "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "SetDeliveryCashDebtLimitCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "deliveryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cashDebtLimit": {
+            "type": "number",
+            "format": "decimal",
             "nullable": true
           }
         }
@@ -12992,6 +15432,12 @@
             "items": {
               "$ref": "#/components/schemas/OrderJournalDto"
             }
+          },
+          "handoverImages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderVehicleHandoverImageDto"
+            }
           }
         }
       },
@@ -13361,6 +15807,9 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "leg": {
+            "$ref": "#/components/schemas/DeliveryLeg"
           }
         }
       },
@@ -13393,6 +15842,41 @@
           "deliveryFeeShare": {
             "type": "number",
             "format": "decimal"
+          },
+          "leg": {
+            "$ref": "#/components/schemas/DeliveryLeg"
+          },
+          "commissionPercent": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "OrderVehicleHandoverImageDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "vehicleId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "step": {
+            "$ref": "#/components/schemas/HandoverStep"
+          },
+          "position": {
+            "$ref": "#/components/schemas/HandoverImagePosition"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "deliveryId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -13937,6 +16421,14 @@
           "deliveryId": {
             "type": "integer",
             "format": "int32"
+          },
+          "leg": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DeliveryLeg"
+              }
+            ]
           }
         }
       },
@@ -15261,6 +17753,14 @@
             "format": "decimal",
             "nullable": true
           },
+          "deliveryLegCommissionPercent": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "returnLegCommissionPercent": {
+            "type": "number",
+            "format": "decimal"
+          },
           "tieredDiscounts": {
             "type": "array",
             "items": {
@@ -15383,6 +17883,16 @@
             "format": "decimal",
             "nullable": true
           },
+          "deliveryLegCommissionPercent": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "returnLegCommissionPercent": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
           "tieredDiscounts": {
             "type": "array",
             "nullable": true,
@@ -15423,6 +17933,16 @@
             "nullable": true
           },
           "cancellationFees": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "deliveryLegCommissionPercent": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "returnLegCommissionPercent": {
             "type": "number",
             "format": "decimal",
             "nullable": true
@@ -15504,6 +18024,104 @@
           "roleId": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "ShiftDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "shiftId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cityId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cityName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "daysOfWeekMask": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isRunningNow": {
+            "type": "boolean"
+          },
+          "riders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShiftRiderDto"
+            }
+          }
+        }
+      },
+      "ShiftRiderDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "deliveryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "mobileNumber": {
+            "type": "string"
+          },
+          "isOnline": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SaveShiftCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "shiftId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cityId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "daysOfWeekMask": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "deliveryIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         }
       },

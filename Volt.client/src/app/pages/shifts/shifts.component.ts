@@ -16,7 +16,6 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
-import { riderStatusKey, riderStatusTone } from '../../shared/components/rider-picker/rider-picker.component';
 
 interface DayChip {
   bit: number;
@@ -50,10 +49,6 @@ interface RiderRow {
   deliveryId: number;
   fullName: string;
   mobileNumber: string;
-  zoneName: string;
-  tone: 'ok' | 'warn' | 'off';
-  statusKey: string;
-  shiftName: string | null;
 }
 
 @Component({
@@ -85,7 +80,6 @@ export class ShiftsComponent implements OnInit {
   isSaving = false;
   riderCandidates: RiderCandidate[] = [];
   isLoadingRiders = false;
-  riderSearch = '';
 
   // Delete
   showConfirmDialog = false;
@@ -99,26 +93,20 @@ export class ShiftsComponent implements OnInit {
   /** City riders for the modal: candidates first, plus current riders no longer listed (e.g. deactivated). */
   get riderRows(): RiderRow[] {
     const rows: RiderRow[] = this.riderCandidates.map(c => ({
-      deliveryId: c.deliveryId,
+      deliveryId: Number(c.deliveryId),
       fullName: c.fullName,
-      mobileNumber: c.mobileNumber,
-      zoneName: c.zoneName,
-      tone: riderStatusTone(c.status),
-      statusKey: riderStatusKey(c.status),
-      shiftName: c.currentShiftName
+      mobileNumber: c.mobileNumber
     }));
     const known = new Set(rows.map(r => r.deliveryId));
     if (this.editingShift && this.editingShift.cityId === this.form.cityId) {
       for (const r of this.editingShift.riders) {
-        if (!known.has(r.deliveryId)) {
+        const deliveryId = Number(r.deliveryId);
+        if (Number.isFinite(deliveryId) && !known.has(deliveryId)) {
+          known.add(deliveryId);
           rows.push({
-            deliveryId: r.deliveryId,
+            deliveryId,
             fullName: r.fullName,
-            mobileNumber: r.mobileNumber,
-            zoneName: '',
-            tone: r.isOnline ? 'ok' : 'off',
-            statusKey: r.isOnline ? 'riders.statusAvailable' : 'riders.statusOffShift',
-            shiftName: null
+            mobileNumber: r.mobileNumber
           });
         }
       }
@@ -126,14 +114,12 @@ export class ShiftsComponent implements OnInit {
     return rows;
   }
 
-  get filteredRiderRows(): RiderRow[] {
-    const q = this.riderSearch.trim().toLowerCase();
-    if (!q) return this.riderRows;
-    return this.riderRows.filter(r =>
-      r.fullName.toLowerCase().includes(q)
-      || (r.mobileNumber || '').toLowerCase().includes(q)
-      || (r.zoneName || '').toLowerCase().includes(q)
-    );
+  get riderOptions(): MultiSelectOption[] {
+    return this.riderRows.map(r => ({
+      value: r.deliveryId,
+      label: r.fullName,
+      description: r.mobileNumber || '—'
+    }));
   }
 
   get formCrossesMidnight(): boolean {
@@ -208,7 +194,7 @@ export class ShiftsComponent implements OnInit {
       endTime: shift.endTime,
       daysOfWeekMask: shift.daysOfWeekMask,
       isActive: shift.isActive,
-      deliveryIds: shift.riders.map(r => r.deliveryId)
+      deliveryIds: shift.riders.map(r => Number(r.deliveryId)).filter(id => Number.isFinite(id))
     };
     this.openModal();
   }
@@ -230,14 +216,10 @@ export class ShiftsComponent implements OnInit {
     this.form.daysOfWeekMask = this.isEveryDay(this.form.daysOfWeekMask) ? 0 : SHIFT_ALL_DAYS;
   }
 
-  isRiderSelected(deliveryId: number): boolean {
-    return this.form.deliveryIds.includes(deliveryId);
-  }
-
-  toggleRider(deliveryId: number): void {
-    this.form.deliveryIds = this.isRiderSelected(deliveryId)
-      ? this.form.deliveryIds.filter(id => id !== deliveryId)
-      : [...this.form.deliveryIds, deliveryId];
+  onRidersChange(values: Array<string | number | boolean>): void {
+    this.form.deliveryIds = (values || [])
+      .map(v => Number(v))
+      .filter(id => Number.isFinite(id) && id > 0);
   }
 
   onSave(): void {
@@ -295,7 +277,6 @@ export class ShiftsComponent implements OnInit {
     this.editingShift = null;
     this.formError = '';
     this.riderCandidates = [];
-    this.riderSearch = '';
   }
 
   // ── Delete ────────────────────────────────────────────────────────
@@ -331,7 +312,6 @@ export class ShiftsComponent implements OnInit {
   // ── Helpers ───────────────────────────────────────────────────────
   private openModal(): void {
     this.formError = '';
-    this.riderSearch = '';
     this.showModal = true;
     this.loadRiders();
   }

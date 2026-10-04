@@ -360,6 +360,7 @@ export class RiderDispatchService {
         map(list =>
           (list || []).map(c => ({
             ...c,
+            deliveryId: toNumber(c.deliveryId, 0),
             status: toNumber(c.status, RiderAvailabilityStatus.OffShift) as RiderAvailabilityStatus,
             activeLegsCount: toNumber(c.activeLegsCount, 0),
             ...readCashDebt(c),
