@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { Subscription, filter } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { AdminNotificationService, AdminNotification } from '../../core/services/admin-notification.service';
 import {
@@ -14,6 +14,29 @@ import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lan
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 export type DashboardNotificationSource = 'admin' | 'merchant';
+
+/** First route segment under /main or /merchant → nav label key for the breadcrumb. */
+const SECTION_LABELS: Record<string, string> = {
+  dashboard: 'nav.dashboard',
+  home: 'merchant.nav.home',
+  orders: 'nav.orders',
+  shifts: 'nav.shifts',
+  merchants: 'nav.merchants',
+  deliveries: 'nav.deliveries',
+  customers: 'nav.customers',
+  vehicles: 'nav.vehicles',
+  categories: 'nav.categories',
+  subcategories: 'nav.subcategories',
+  cities: 'nav.cities',
+  settlements: 'nav.settlements',
+  journals: 'nav.journals',
+  reports: 'nav.reports',
+  users: 'nav.systemUsers',
+  roles: 'nav.roles',
+  support: 'nav.support',
+  profile: 'nav.profile',
+  payments: 'merchant.nav.payments'
+};
 
 @Component({
   selector: 'app-dashboard-header',
@@ -43,9 +66,14 @@ export class DashboardHeaderComponent implements OnInit, OnDestroy {
 
   notifications: Notification[] = [];
   unreadCount = 0;
+  /** Breadcrumb: section label key and an optional detail step (new / edit / record). */
+  sectionKey: string | null = null;
+  detailKey: string | null = null;
+  readonly today = new Date();
   private subscriptions = new Subscription();
 
   constructor(
+    private router: Router,
     private authService: AuthService,
     private adminNotificationService: AdminNotificationService,
     private merchantNotificationService: MerchantNotificationService
@@ -62,7 +90,34 @@ export class DashboardHeaderComponent implements OnInit, OnDestroy {
     return this.notificationSource === 'merchant';
   }
 
+  get consoleKey(): string {
+    return this.isMerchantMode ? 'header.merchantConsole' : 'header.adminConsole';
+  }
+
+  private updateBreadcrumb(url: string): void {
+    const parts = url.split('?')[0].split('#')[0].split('/').filter(Boolean);
+    const section = parts[1];
+    this.sectionKey = section ? SECTION_LABELS[section] ?? null : null;
+    const rest = parts.slice(2);
+    if (!rest.length) {
+      this.detailKey = null;
+    } else if (rest.includes('new')) {
+      this.detailKey = 'header.crumbNew';
+    } else if (rest.includes('edit')) {
+      this.detailKey = 'header.crumbEdit';
+    } else {
+      this.detailKey = 'header.crumbDetails';
+    }
+  }
+
   ngOnInit(): void {
+    this.updateBreadcrumb(this.router.url);
+    this.subscriptions.add(
+      this.router.events
+        .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+        .subscribe(e => this.updateBreadcrumb(e.urlAfterRedirects))
+    );
+
     if (!this.showNotifications) {
       return;
     }

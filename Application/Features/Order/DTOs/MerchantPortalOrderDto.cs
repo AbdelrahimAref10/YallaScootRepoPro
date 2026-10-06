@@ -25,6 +25,8 @@ namespace Application.Features.Order.DTOs
         public decimal MyNetTotal { get; set; }
         public decimal MyRentalTotal { get; set; }
         public decimal MyServiceFeeTotal { get; set; }
+        /// <summary>Company commission on this merchant's rental (snapshotted at Confirmed).</summary>
+        public decimal MyCompanyCommissionTotal { get; set; }
 
         public bool CanAccept { get; set; }
         public bool CanReject { get; set; }
@@ -68,6 +70,8 @@ namespace Application.Features.Order.DTOs
 
         public decimal MyRentalTotal { get; set; }
         public decimal MyServiceFeeTotal { get; set; }
+        /// <summary>Company commission on this merchant's rental (snapshotted at Confirmed).</summary>
+        public decimal MyCompanyCommissionTotal { get; set; }
         public decimal MyNetTotal { get; set; }
     }
 
@@ -113,6 +117,7 @@ namespace Application.Features.Order.DTOs
         public int MerchantId { get; set; }
         public string FullName { get; set; } = string.Empty;
         public bool CashOnReceive { get; set; }
+        public decimal CompanyCommissionPercent { get; set; }
         public int PendingInvitationsCount { get; set; }
         public int AwaitingHandoverCount { get; set; }
         public int ActiveOrdersCount { get; set; }

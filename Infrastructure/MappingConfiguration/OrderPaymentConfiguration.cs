@@ -65,6 +65,11 @@ namespace Infrastructure.MappingConfiguration
                 .IsRequired();
 
             // Configure indexes
+            // Paid totals per order without touching the base table.
+            builder.HasIndex(op => new { op.OrderId, op.State })
+                .IncludeProperties(op => op.Total)
+                .HasDatabaseName("IX_VO_OrderPayment_OrderId_State");
+
             builder.HasIndex(op => op.OrderId)
                 .HasDatabaseName("IX_VO_OrderPayment_OrderId");
 

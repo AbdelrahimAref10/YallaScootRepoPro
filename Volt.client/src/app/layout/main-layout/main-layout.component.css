@@ -3,7 +3,7 @@
     background-color: #FFF;
     height: 100vh;
     overflow: auto;
-    box-shadow: 1px 1px 15px 0 rgb(34 41 47 / 5%);
+    box-shadow: var(--volt-shadow);
 }
 .main_bodyContent {
     padding: 20px 30px 0;

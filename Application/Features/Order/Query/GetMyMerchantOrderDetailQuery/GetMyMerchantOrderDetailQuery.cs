@@ -112,6 +112,9 @@ namespace Application.Features.Order.Query.GetMyMerchantOrderDetailQuery
                         ov.Vehicle.MerchantId == merchant.MerchantId
                         && ov.MerchantResponseStatus != MerchantVehicleResponseStatus.Declined)
                     .Sum(ov => ov.Vehicle.Price * days);
+            var commissionTotal = paymentDetails.Count > 0
+                ? paymentDetails.Sum(p => p.CompanyCommissionAmount)
+                : Domain.Models.MerchantOrderPaymentDetail.ComputeCompanyCommission(rentalTotal, merchant.CompanyCommissionPercent);
 
             var deliveryAssignments = await _context.DeliveryMenOrders
                 .AsNoTracking()
@@ -196,7 +199,9 @@ namespace Application.Features.Order.Query.GetMyMerchantOrderDetailQuery
                     VehicleId = p.VehicleId,
                     VehicleCode = p.Vehicle.VehicleCode,
                     VehicleRental = p.VehicleRental,
-                    NetAmount = p.NetAmount
+                    NetAmount = p.NetAmount,
+                    CompanyCommissionPercent = p.CompanyCommissionPercent,
+                    CompanyCommissionAmount = p.CompanyCommissionAmount
                 }).ToList(),
                 MyHandovers = handovers,
                 MyJournals = journals.Select(j => new OrderJournalDto
@@ -218,7 +223,8 @@ namespace Application.Features.Order.Query.GetMyMerchantOrderDetailQuery
                 }).ToList(),
                 MyRentalTotal = rentalTotal,
                 MyServiceFeeTotal = 0,
-                MyNetTotal = rentalTotal
+                MyCompanyCommissionTotal = commissionTotal,
+                MyNetTotal = rentalTotal - commissionTotal
             });
         }
     }

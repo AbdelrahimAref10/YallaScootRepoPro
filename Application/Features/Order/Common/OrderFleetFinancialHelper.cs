@@ -68,6 +68,27 @@ namespace Application.Features.Order.Common
             if (existing.Count == 0)
                 return;
 
+            // Keep the percent snapshotted at Confirmed for merchants already on the order;
+            // merchants added later get their current percent.
+            var snapshotPercent = existing
+                .GroupBy(p => p.MerchantId)
+                .ToDictionary(g => g.Key, g => g.First().CompanyCommissionPercent);
+            var newMerchantIds = order.OrderVehicles
+                .Select(ov => ov.Vehicle.MerchantId)
+                .Where(id => !snapshotPercent.ContainsKey(id))
+                .Distinct()
+                .ToList();
+            if (newMerchantIds.Count > 0)
+            {
+                var current = await context.Merchants
+                    .AsNoTracking()
+                    .Where(m => newMerchantIds.Contains(m.MerchantId))
+                    .Select(m => new { m.MerchantId, m.CompanyCommissionPercent })
+                    .ToListAsync(cancellationToken);
+                foreach (var m in current)
+                    snapshotPercent[m.MerchantId] = m.CompanyCommissionPercent;
+            }
+
             context.MerchantOrderPaymentDetails.RemoveRange(existing);
 
             foreach (var ov in order.OrderVehicles)
@@ -81,7 +102,8 @@ namespace Application.Features.Order.Common
                         ov.Vehicle.MerchantId,
                         ov.VehicleId,
                         order.CalculateVehicleRental(ov.Vehicle.Price),
-                        actor),
+                        actor,
+                        snapshotPercent.GetValueOrDefault(ov.Vehicle.MerchantId)),
                     cancellationToken);
             }
         }

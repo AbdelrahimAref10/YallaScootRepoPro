@@ -123,6 +123,8 @@ const POSITION_LABEL_KEYS: Record<HandoverImagePosition, string> = {
   [HandoverImagePosition.Right]: 'orders.photoRight'
 };
 
+type OrderDetailTab = 'merchants' | 'riders' | 'journal' | 'documents';
+
 @Component({
   selector: 'app-order-detail',
   standalone: true,
@@ -273,6 +275,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   showCancelDialog = false;
   cancelDialogLoading = false;
   showRefundDialog = false;
+  showCashDialog = false;
+  cashDialogLoading = false;
   refundDialogLoading = false;
   showConfirmOrderDialog = false;
 
@@ -1311,6 +1315,45 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.showRefundDialog = false;
   }
 
+  /** Online order whose payment never went through, before any vehicle reached the customer. */
+  canChangeToCash(): boolean {
+    const o = this.order;
+    if (!o || o.paymentMethod === PaymentMethod.Cash) return false;
+    if (this.isCancelled || o.orderState === OrderState.Completed) return false;
+    if (o.orderTotalDebitedToCompany) return false;
+    if ((o.orderPayments || []).some(p => p.state === PaymentState.Paid || p.state === PaymentState.Refunded)) return false;
+    return !(o.orderVehicles || []).some(v => v.deliveredToCustomer);
+  }
+
+  onChangeToCash(): void {
+    if (!this.canChangeToCash()) return;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.showCashDialog = true;
+  }
+
+  onConfirmChangeToCash(): void {
+    this.cashDialogLoading = true;
+    this.actionLoading = 'changeToCash';
+    this.dispatchService.changeOrderToCash(this.orderId).subscribe({
+      next: () => {
+        this.showCashDialog = false;
+        this.cashDialogLoading = false;
+        this.actionLoading = '';
+        this.showSuccessMessage(this.localeService.translate('orders.changedToCash'));
+        this.loadOrder();
+      },
+      error: (error: any) => {
+        this.showCashDialog = false;
+        this.cashDialogLoading = false;
+        this.actionLoading = '';
+        this.showErrorMessage(
+          error?.errorMessage || error?.error?.errorMessage || this.localeService.translate('orders.changeToCashFailed')
+        );
+      }
+    });
+  }
+
   onBack(): void {
     this.router.navigate(['/main/orders']);
   }
@@ -1552,6 +1595,404 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return !this.isCancelled && !this.isRejectedReceipt;
   }
 
+  // ── Invoice / operations tabs ─────────────────────────────────────
+  readonly tabs: { key: OrderDetailTab; labelKey: string }[] = [
+    { key: 'merchants', labelKey: 'orders.tabMerchants' },
+    { key: 'riders', labelKey: 'orders.tabRiders' },
+    { key: 'journal', labelKey: 'orders.tabJournal' },
+    { key: 'documents', labelKey: 'orders.tabDocuments' }
+  ];
+  activeTab: OrderDetailTab = 'merchants';
+
+  tabCount(tab: OrderDetailTab): number {
+    switch (tab) {
+      case 'merchants': return this.order?.merchantOrders?.length || 0;
+      case 'riders': return this.order?.deliveryOrderPaymentDetails?.length || 0;
+      case 'journal': return this.order?.orderJournals?.length || 0;
+      case 'documents': return this.order?.passportImage ? 1 : 0;
+    }
+  }
+
+  /** Company debit/credit totals on this order's journal. */
+  get companyLedger(): { debit: number; credit: number } {
+    let debit = 0;
+    let credit = 0;
+    for (const j of this.order?.orderJournals || []) {
+      if (j.partyType !== LedgerPartyType.Company) continue;
+      if (j.direction === JournalDirection.Debit) debit += j.amount || 0;
+      else credit += j.amount || 0;
+    }
+    return { debit, credit };
+  }
+
+  /** Merchant / rider name for a journal row, resolved from this order's payout snapshots. */
+  journalPartyName(j: { partyType: LedgerPartyType; partyId?: number | null }): string {
+    if (j.partyType === LedgerPartyType.Company) return 'YallaScoot';
+    if (j.partyType === LedgerPartyType.Merchant) {
+      return this.order?.merchantOrderPaymentDetails?.find(p => p.merchantId === j.partyId)?.merchantName
+        || this.order?.orderVehicles?.find(v => v.merchantId === j.partyId)?.merchantName
+        || `#${j.partyId}`;
+    }
+    return this.order?.deliveryOrderPaymentDetails?.find(p => p.deliveryId === j.partyId)?.deliveryName || `#${j.partyId}`;
+  }
+
+  /** Short status for an invoice line, from the vehicle's lifecycle flags. */
+  vehicleLine(v: OrderVehicleDto): { labelKey: string; tone: 'ok' | 'info' | 'warn' | 'red' | 'mute' } {
+    if (v.deliveryFailed) return { labelKey: 'orders.vehicleCancelled', tone: 'mute' };
+    if (v.merchantResponseStatus === MerchantVehicleResponseStatus.Declined) return { labelKey: 'orders.lineDeclined', tone: 'mute' };
+    if (v.deliveredToOwner) return { labelKey: 'orders.cycleReturnedToOwner', tone: 'mute' };
+    if (v.receivedFromCustomer) return { labelKey: 'orders.cycleReceivedFromCustomer', tone: 'info' };
+    if (v.deliveredToCustomer) return { labelKey: 'orders.cycleDeliveredToCustomer', tone: 'ok' };
+    if (v.receivedFromOwner) return { labelKey: 'orders.lineWithRider', tone: 'red' };
+    if (v.merchantResponseStatus === MerchantVehicleResponseStatus.Pending) return { labelKey: 'orders.lineAwaitingMerchant', tone: 'warn' };
+    return { labelKey: 'orders.lineReady', tone: 'info' };
+  }
+
+  // ── Order page (Shopify-style record) ─────────────────────────────
+  showMoreMenu = false;
+  showJournal = false;
+  copiedKey: string | null = null;
+
+  /** Total of captured payments. */
+  get paidAmount(): number {
+    return (this.order?.orderPayments || [])
+      .filter(p => p.state === PaymentState.Paid)
+      .reduce((sum, p) => sum + (p.total || 0), 0);
+  }
+
+  /** Payment status badge shown next to the order number. */
+  get paymentBadge(): { labelKey: string; tone: 'ok' | 'warn' | 'red' | 'mute' | 'info' } {
+    const payments = this.order?.orderPayments || [];
+    if (payments.some(p => p.state === PaymentState.Refunded) || this.order?.moneyRefunded) {
+      return { labelKey: 'orders.payRefunded', tone: 'mute' };
+    }
+    const total = this.order?.orderTotal || 0;
+    const paid = this.paidAmount;
+    if (paid > 0 && paid >= total) return { labelKey: 'orders.payPaid', tone: 'ok' };
+    if (paid > 0) return { labelKey: 'orders.payPartial', tone: 'warn' };
+    if (payments.some(p => p.state === PaymentState.Failed)) return { labelKey: 'orders.payFailed', tone: 'red' };
+    if (this.order?.paymentMethod === PaymentMethod.Cash) return { labelKey: 'orders.payOnDelivery', tone: 'warn' };
+    return { labelKey: 'orders.payPending', tone: 'warn' };
+  }
+
+  /** Fulfilment status of one merchant's vehicles (badge on the merchant card). */
+  groupTone(vehicles: OrderVehicleDto[]): 'ok' | 'info' | 'warn' | 'red' | 'mute' {
+    return this.groupStatus(vehicles).tone;
+  }
+
+  groupLabelKey(vehicles: OrderVehicleDto[]): string {
+    return this.groupStatus(vehicles).labelKey;
+  }
+
+  private groupStatus(vehicles: OrderVehicleDto[]): { labelKey: string; tone: 'ok' | 'info' | 'warn' | 'red' | 'mute' } {
+    const live = vehicles.filter(v => !v.deliveryFailed && v.merchantResponseStatus !== MerchantVehicleResponseStatus.Declined);
+    if (!live.length) return { labelKey: 'orders.lineDeclined', tone: 'mute' };
+    if (live.every(v => v.deliveredToOwner)) return { labelKey: 'orders.cycleReturnedToOwner', tone: 'mute' };
+    if (live.every(v => v.deliveredToCustomer)) return { labelKey: 'orders.groupWithCustomer', tone: 'ok' };
+    if (live.some(v => v.receivedFromOwner)) return { labelKey: 'orders.lineWithRider', tone: 'red' };
+    if (live.some(v => v.merchantResponseStatus === MerchantVehicleResponseStatus.Pending)) {
+      return { labelKey: 'orders.lineAwaitingMerchant', tone: 'warn' };
+    }
+    return { labelKey: 'orders.lineReady', tone: 'info' };
+  }
+
+  merchantInviteLabel(merchantId: number): string {
+    const invite = this.order?.merchantOrders?.find(m => m.merchantId === merchantId);
+    return invite ? this.getMerchantStatusLabel(invite.responseStatus) : '—';
+  }
+
+  merchantInviteRejected(merchantId: number): boolean {
+    return this.order?.merchantOrders?.find(m => m.merchantId === merchantId)?.responseStatus === MerchantOrderResponseStatus.Rejected;
+  }
+
+  get addressText(): string {
+    const o = this.order;
+    if (!o) return '';
+    return [o.hotelName, o.hotelAddress, [o.destinationZoneName, o.cityName].filter(Boolean).join(', '), o.hotelPhone]
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  copy(text: string | null | undefined, key: string): void {
+    if (!text) return;
+    navigator.clipboard?.writeText(text).then(() => {
+      this.copiedKey = key;
+      setTimeout(() => {
+        if (this.copiedKey === key) this.copiedKey = null;
+      }, 1500);
+    }).catch(() => undefined);
+  }
+
+  /** Everything that happened to the order, newest first. */
+  get timeline(): Array<{ date: Date; text: string; detail?: string; tone: 'ok' | 'info' | 'warn' | 'red' | 'mute' }> {
+    const o = this.order;
+    if (!o) return [];
+    const t = (k: string, p?: Record<string, unknown>) => this.localeService.translate(k, p as any);
+    const money = (v: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+    const events: Array<{ date: Date; text: string; detail?: string; tone: 'ok' | 'info' | 'warn' | 'red' | 'mute' }> = [];
+
+    if (o.createdDate) {
+      events.push({ date: new Date(o.createdDate), text: t('orders.evCreated', { name: o.customerName }), tone: 'info' });
+    }
+
+    for (const mo of o.merchantOrders || []) {
+      if (mo.createdDate) {
+        events.push({ date: new Date(mo.createdDate), text: t('orders.evSentToMerchant', { name: mo.merchantName }), tone: 'mute' });
+      }
+      if (mo.respondedAt) {
+        events.push({
+          date: new Date(mo.respondedAt),
+          text: t('orders.evMerchantResponded', { name: mo.merchantName, status: this.getMerchantStatusLabel(mo.responseStatus) }),
+          detail: mo.rejectReason || undefined,
+          tone: mo.responseStatus === MerchantOrderResponseStatus.Rejected ? 'red' : 'ok'
+        });
+      }
+    }
+
+    // Lifecycle steps, dated by the first photo taken at each step.
+    const firstPhoto = new Map<string, Date>();
+    for (const img of this.dispatch.handoverImages || []) {
+      const key = `${img.vehicleId}:${img.step}`;
+      const d = new Date(img.createdDate);
+      if (!firstPhoto.has(key) || d < firstPhoto.get(key)!) firstPhoto.set(key, d);
+    }
+    const stepKeys: Record<number, string> = {
+      1: 'orders.cyclePickup',
+      2: 'orders.cycleDeliveredToCustomer',
+      3: 'orders.cycleReceivedFromCustomer',
+      4: 'orders.cycleReturnedToOwner'
+    };
+    firstPhoto.forEach((date, key) => {
+      const [vehicleId, step] = key.split(':').map(Number);
+      const v = o.orderVehicles?.find(x => x.vehicleId === vehicleId);
+      events.push({ date, text: `${t(stepKeys[step])} · ${v?.vehicleName || ''} #${v?.vehicleCode || vehicleId}`, tone: step === 2 ? 'ok' : 'info' });
+    });
+
+    for (const p of o.orderPayments || []) {
+      if (!p.createdDate) continue;
+      events.push({
+        date: new Date(p.createdDate),
+        text: t('orders.evPayment', { amount: money(p.total), method: this.getPaymentMethodLabel(p.paymentMethod) }),
+        detail: this.getPaymentStateLabel(p.state),
+        tone: p.state === PaymentState.Paid ? 'ok' : p.state === PaymentState.Failed ? 'red' : 'warn'
+      });
+    }
+
+    for (const j of o.orderJournals || []) {
+      if (!j.createdDate) continue;
+      const sign = j.direction === JournalDirection.Credit ? '+' : '−';
+      events.push({
+        date: new Date(j.createdDate),
+        text: `${this.getJournalKindLabel(j.entryKind)} · ${sign}${money(j.amount)}`,
+        detail: `${this.getPartyTypeLabel(j.partyType)} · ${this.journalPartyName(j)}${j.vehicleCode ? ' · #' + j.vehicleCode : ''}`,
+        tone: 'mute'
+      });
+    }
+
+    return events.sort((a, b) => b.date.getTime() - a.date.getTime());
+  }
+
+  /** Badge colour for the order state. */
+  stateTone(state: OrderState): 'ok' | 'info' | 'warn' | 'red' | 'mute' {
+    switch (state) {
+      case OrderState.Pending:
+      case OrderState.MerchantPending:
+        return 'warn';
+      case OrderState.MerchantConfirmed:
+      case OrderState.Confirmed:
+      case OrderState.DeliveryAssigned:
+        return 'info';
+      case OrderState.OnWay:
+      case OrderState.CustomerRejectedReceipt:
+        return 'red';
+      case OrderState.CustomerReceived:
+        return 'ok';
+      default:
+        return 'mute';
+    }
+  }
+
+  /** One-line hint for what the admin should do next in the current state. */
+  get nextStepKey(): string | null {
+    switch (this.order?.orderState) {
+      case OrderState.Pending:
+        return 'orders.nextSendToMerchants';
+      case OrderState.MerchantPending:
+        return this.hasDeclinedVehicles ? 'orders.declinedVehiclesBanner' : 'orders.waitingMerchants';
+      case OrderState.MerchantConfirmed:
+        return 'orders.nextConfirm';
+      case OrderState.Confirmed:
+        return 'orders.assignPerVehicleHint';
+      case OrderState.DeliveryAssigned:
+        return 'orders.pickupHint';
+      case OrderState.OnWay:
+        return 'orders.nextOnWay';
+      case OrderState.CustomerReceived:
+        return 'orders.returnHint';
+      default:
+        return null;
+    }
+  }
+
+  // ── Thermal receipt (80 mm roll) ──────────────────────────────────
+  /** Prints a compact POS-style receipt from a hidden frame, independent of the page layout. */
+  onPrint(): void {
+    if (!this.order) return;
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;width:0;height:0;border:0;right:0;bottom:0;visibility:hidden';
+    document.body.appendChild(frame);
+    const win = frame.contentWindow;
+    const doc = frame.contentDocument;
+    if (!win || !doc) {
+      frame.remove();
+      return;
+    }
+    doc.open();
+    doc.write(this.buildReceiptHtml());
+    doc.close();
+
+    let removed = false;
+    const cleanup = () => {
+      if (removed) return;
+      removed = true;
+      frame.remove();
+    };
+    win.onafterprint = () => setTimeout(cleanup, 100);
+
+    // Print once the logo has loaded (or failed) so the copy is complete.
+    const logo = doc.querySelector('img') as HTMLImageElement | null;
+    const print = () => {
+      win.focus();
+      win.print();
+      setTimeout(cleanup, 60000);
+    };
+    if (logo && !logo.complete) {
+      logo.addEventListener('load', print, { once: true });
+      logo.addEventListener('error', print, { once: true });
+    } else {
+      setTimeout(print, 50);
+    }
+  }
+
+  private buildReceiptHtml(): string {
+    const o = this.order!;
+    const tr = (key: string) => this.localeService.translate(key);
+    const isAr = this.localeService.locale() === 'ar';
+    const locale = isAr ? 'ar-EG' : 'en-GB';
+    const entities: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, c => entities[c]);
+    const money = (v: number | null | undefined) =>
+      new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v ?? 0);
+    const date = (v: Date | string | null | undefined, withTime = false) => {
+      if (!v) return '—';
+      const d = new Date(v);
+      if (Number.isNaN(d.getTime())) return '—';
+      return new Intl.DateTimeFormat(locale, withTime
+        ? { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+        : { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+    };
+    const row = (label: string, value: string, cls = '') =>
+      `<tr class="${cls}"><td>${label}</td><td class="r">${value}</td></tr>`;
+    const days = this.reservationDays;
+    const totals = o.orderTotals;
+
+    const items = (o.orderVehicles || [])
+      .filter(v => !v.deliveryFailed && v.merchantResponseStatus !== MerchantVehicleResponseStatus.Declined)
+      .map(v => `
+        <div class="item">
+          <div class="item-name">${esc(v.vehicleName)} <span class="muted">#${esc(v.vehicleCode)}</span></div>
+          <table>
+            ${row(`${days} × ${money(v.price)}`, money((v.price || 0) * days))}
+            ${row(esc(tr('orders.deliveryFees')), money(v.deliveryFee))}
+          </table>
+        </div>`).join('');
+
+    const sums = [
+      totals ? row(esc(tr('orders.subTotal')), money(totals.subTotal)) : '',
+      totals ? row(esc(tr('orders.deliveryFees')), money(totals.deliveryFees)) : '',
+      totals ? row(esc(tr('orders.serviceFees')), money(totals.serviceFees)) : '',
+      totals && totals.urgentFees > 0 ? row(esc(tr('orders.urgentFees')), money(totals.urgentFees)) : '',
+      totals && totals.tieredDiscount ? row(esc(tr('orders.tieredDiscount')), '-' + money(totals.tieredDiscount)) : '',
+      o.previousDebt > 0 ? row(esc(tr('orders.previousDebt')), money(o.previousDebt)) : ''
+    ].join('');
+
+    const payments = (o.orderPayments || [])
+      .map(p => row(`${esc(this.getPaymentMethodLabel(p.paymentMethod))} · ${esc(this.getPaymentStateLabel(p.state))}`, money(p.total)))
+      .join('');
+
+    const logoUrl = `${location.origin}/assets/images/Logo.png`;
+    const numAlign = isAr ? 'left' : 'right';
+    const numPad = isAr ? 'right' : 'left';
+    const font = isAr ? 'Tahoma, "Segoe UI", Arial, sans-serif' : '"Segoe UI", Arial, Helvetica, sans-serif';
+
+    return `<!doctype html>
+<html lang="${isAr ? 'ar' : 'en'}" dir="${isAr ? 'rtl' : 'ltr'}">
+<head>
+<meta charset="utf-8">
+<title>${esc(o.orderCode)}</title>
+<style>
+  @page { size: 80mm auto; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; color: #000; }
+  body { width: 100%; max-width: 80mm; padding: 4mm 4mm 6mm; font: 11px/1.35 ${font}; }
+  .c { text-align: center; }
+  .logo { display: block; width: 24mm; margin: 0 auto 1.5mm; }
+  .brand { font-size: 15px; font-weight: 800; letter-spacing: .3px; }
+  .muted { color: #444; font-weight: 400; }
+  .small { font-size: 9.5px; }
+  hr { border: 0; border-top: 1px dashed #000; margin: 2.5mm 0; }
+  hr.solid { border-top: 1.5px solid #000; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: .4mm 0; vertical-align: top; }
+  td.r { text-align: ${numAlign}; white-space: nowrap; padding-${numPad}: 2mm; font-variant-numeric: tabular-nums; }
+  .title { font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1mm; }
+  .item { margin-bottom: 1.6mm; }
+  .item-name { font-weight: 700; }
+  .total td { font-size: 14px; font-weight: 800; padding: 1mm 0; }
+  .meta td:first-child { color: #333; }
+</style>
+</head>
+<body>
+  <div class="c">
+    <img class="logo" src="${logoUrl}" alt="">
+    <div class="brand">YallaScoot</div>
+    <div class="small muted">${esc(tr('orders.receiptCompanyLine'))}</div>
+  </div>
+  <hr>
+  <div class="c title">${esc(tr('orders.rentalReceipt'))}</div>
+  <table class="meta">
+    ${row(esc(tr('orders.orderNo')), esc(o.orderCode))}
+    ${row(esc(tr('orders.issuedOn')), date(o.createdDate, true))}
+    ${row(esc(tr('common.status')), esc(this.getStateLabel(this.displayState)))}
+  </table>
+  <hr>
+  <table class="meta">
+    ${row(esc(tr('orders.customer')), esc(o.customerName))}
+    ${o.customerMobileNumber ? row(esc(tr('common.mobile')), `<span dir="ltr">${esc(o.customerMobileNumber)}</span>`) : ''}
+    ${o.hotelName ? row(esc(tr('orders.hotelName')), esc(o.hotelName)) : ''}
+    ${row(esc(tr('orders.destinationZone')), esc(o.destinationZoneName || o.cityName))}
+    ${row(esc(tr('orders.rentalPeriod')), `${date(o.reservationDateFrom)} – ${date(o.reservationDateTo)}`)}
+    ${row(esc(tr('orders.lineDays')), String(days))}
+  </table>
+  <hr>
+  ${items}
+  <hr>
+  <table>${sums}</table>
+  <hr class="solid">
+  <table>${row(esc(tr('orders.totalDue')), `${money(o.orderTotal)} ${esc(tr('common.currency'))}`, 'total')}</table>
+  <hr class="solid">
+  <table class="meta">
+    ${row(esc(tr('orders.paymentMethod')), esc(this.getPaymentMethodLabel(o.paymentMethod)))}
+    ${payments}
+  </table>
+  <hr>
+  <div class="c small">${esc(tr('orders.invoiceThanks'))}</div>
+  <div class="c small muted">${esc(o.orderCode)} · ${date(new Date(), true)}</div>
+</body>
+</html>`;
+  }
+
   get displayState(): OrderState {
     if (!this.order) return OrderState.Pending;
     return this.isCancelled ? OrderState.Cancelled : this.order.orderState;
@@ -1639,6 +2080,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   get MerchantVehicleResponseStatus() {
     return MerchantVehicleResponseStatus;
+  }
+
+  get JournalDirection() {
+    return JournalDirection;
   }
 
   get PaymentMethod() {

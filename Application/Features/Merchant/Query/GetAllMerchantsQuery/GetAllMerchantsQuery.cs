@@ -63,6 +63,7 @@ namespace Application.Features.Merchant.Query.GetAllMerchantsQuery
                     PersonalImage = m.PersonalImage,
                     IsActive = m.IsActive,
                     CashOnReceive = m.CashOnReceive,
+                    CompanyCommissionPercent = m.CompanyCommissionPercent,
                     IsDeleted = m.IsDeleted,
                     CreatedDate = m.CreatedDate
                 })

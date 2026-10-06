@@ -25,7 +25,10 @@ namespace Infrastructure
 
             services.AddDbContext<DatabaseContext>(options =>
                 options.UseSqlServer(
-                        configuration.GetConnectionString("DefaultConnection")
+                        configuration.GetConnectionString("DefaultConnection"),
+                        // Collection Includes load in separate SELECTs instead of one joined result,
+                        // so parent rows are not multiplied by every child collection.
+                        sql => sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
                 )
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
             );

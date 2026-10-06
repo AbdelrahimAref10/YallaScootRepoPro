@@ -64,7 +64,7 @@
   color: var(--volt-text-secondary);
   font-family: inherit;
   font-size: 0.75rem;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
@@ -76,9 +76,9 @@
 }
 
 .pagination__page--active {
-  background: var(--volt-accent);
-  border-color: var(--volt-accent);
-  color: #fff;
+  background: var(--volt-text-primary);
+  border-color: var(--volt-text-primary);
+  color: var(--volt-surface);
 }
 
 .pagination__page--active:hover {
@@ -95,7 +95,7 @@
   height: 1.85rem;
   color: var(--volt-text-muted);
   font-size: 0.75rem;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 @media (prefers-reduced-motion: reduce) {

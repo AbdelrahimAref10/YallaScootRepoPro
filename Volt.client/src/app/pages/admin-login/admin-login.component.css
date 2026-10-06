@@ -78,9 +78,9 @@
 
 .login__error {
   padding: 0.75rem 0.9rem;
-  border-radius: 0.55rem;
-  background: rgba(227, 6, 19, 0.08);
-  border: 1px solid rgba(227, 6, 19, 0.2);
+  border-radius: 0.45rem;
+  background: rgba(225, 6, 0, 0.08);
+  border: 1px solid rgba(225, 6, 0, 0.2);
   color: #c00;
   font-size: 0.85rem;
 }
@@ -102,7 +102,7 @@
   height: 2.75rem;
   padding: 0 0.95rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.55rem;
+  border-radius: 0.45rem;
   background: #f7f8fa;
   color: #111;
   font: inherit;
@@ -116,13 +116,13 @@
 
 .login__input:focus {
   outline: none;
-  border-color: #e30613;
+  border-color: var(--volt-accent);
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.12);
+  box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.12);
 }
 
 .login__input--invalid {
-  border-color: #ef4444;
+  border-color: var(--volt-accent);
   background: #fff7f7;
 }
 
@@ -155,7 +155,7 @@
 
 .login__field-error {
   font-size: 0.78rem;
-  color: #dc2626;
+  color: var(--volt-accent);
 }
 
 .login__submit {
@@ -163,8 +163,8 @@
   width: 100%;
   height: 2.9rem;
   border: 0;
-  border-radius: 0.55rem;
-  background: #e30613;
+  border-radius: 0.45rem;
+  background: var(--volt-accent);
   color: #fff;
   font: inherit;
   font-size: 0.95rem;

@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, debounceTime, distinctUntilChanged, filter, switchMap, takeUntil } from 'rxjs';
+import { Subject, debounceTime, filter, switchMap, takeUntil } from 'rxjs';
+import { RiderDispatchService } from '../../core/services/rider-dispatch.service';
 import { AdminOrderClient, OrderDto, PagedResultOfOrderDto, OrderState, PaymentMethod, CityClient, CityDto, PagedResultOfCityDto } from '../../core/services/clientAPI';
 import { AdminNotificationService } from '../../core/services/admin-notification.service';
 import { LocaleService } from '../../core/services/locale.service';
@@ -23,17 +24,17 @@ import {
 export class OrdersComponent implements OnInit, OnDestroy {
   private readonly localeService = inject(LocaleService);
   private readonly adminNotifications = inject(AdminNotificationService);
+  private readonly dispatchService = inject(RiderDispatchService);
 
-  /** Full list from API (before state/city client filters). */
-  private allOrders: OrderDto[] = [];
-  /** Current page of filtered orders shown in the UI. */
+  /** Current page returned by the API for the selected state. */
   orders: OrderDto[] = [];
   currentPage = 1;
   pageSize = 10;
   totalCount = 0;
   totalPages = 0;
   searchOrderCode = '';
-  selectedState: OrderState | null = null;
+  /** Every request carries one state; the page opens on Pending. */
+  selectedState: OrderState = OrderState.Pending;
   viewMode: 'table' | 'cards' = this.readStoredViewMode();
   isLoading = false;
   errorMessage = '';
@@ -50,8 +51,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   cities: CityDto[] = [];
   isLoadingCities = false;
 
-  readonly pipelineStates: Array<{ state: OrderState | null; key: string; dot: string }> = [
-    { state: null, key: 'common.all', dot: 'all' },
+  readonly pipelineStates: Array<{ state: OrderState; key: string; dot: string }> = [
     { state: OrderState.Pending, key: 'common.pending', dot: 'pending' },
     { state: OrderState.MerchantPending, key: 'common.merchantPending', dot: 'merchant-pending' },
     { state: OrderState.MerchantConfirmed, key: 'common.merchantConfirmed', dot: 'merchant-confirmed' },
@@ -115,28 +115,26 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   setupLiveSearch(): void {
+    // Each emission is one server request for the selected state / city / code / page.
     this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap((orderCode) => {
-        if (this.allOrders.length === 0) {
-          this.isLoading = true;
-        }
+      debounceTime(150),
+      switchMap(() => {
+        this.isLoading = true;
         this.errorMessage = '';
-
-        // Load all matching orders (no state filter) — state/city filtering is client-side.
         return this.orderClient.getAllOrders(
-          1,
-          1000,
-          undefined,
-          orderCode || undefined
+          this.currentPage,
+          this.pageSize,
+          this.selectedState,
+          this.searchOrderCode.trim() || undefined,
+          this.searchFilters.cityId && this.searchFilters.cityId > 0 ? this.searchFilters.cityId : undefined
         );
       }),
       takeUntil(this.destroy$)
     ).subscribe({
       next: (result: PagedResultOfOrderDto) => {
-        this.allOrders = result.items || [];
-        this.applyClientFilters();
+        this.orders = result.items || [];
+        this.totalCount = result.totalCount || 0;
+        this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -145,33 +143,6 @@ export class OrdersComponent implements OnInit, OnDestroy {
         console.error('Error loading orders:', error);
       }
     });
-  }
-
-  /** Apply state + city filters and paginate on the frontend. */
-  private applyClientFilters(): void {
-    let filtered = [...this.allOrders];
-
-    const stateFilter = this.searchFilters.state !== null
-      ? this.searchFilters.state
-      : this.selectedState;
-
-    if (stateFilter !== null) {
-      filtered = filtered.filter(order => order.orderState === stateFilter);
-    }
-
-    if (this.searchFilters.cityId !== null && this.searchFilters.cityId > 0) {
-      filtered = filtered.filter(order => order.cityId === this.searchFilters.cityId);
-    }
-
-    this.totalCount = filtered.length;
-    this.totalPages = Math.max(1, Math.ceil(filtered.length / this.pageSize));
-
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
-    }
-
-    const start = (this.currentPage - 1) * this.pageSize;
-    this.orders = filtered.slice(start, start + this.pageSize);
   }
 
   loadCities(): void {
@@ -193,7 +164,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   triggerSearch(): void {
-    this.searchSubject.next(this.searchOrderCode);
+    this.loadStateCounts();
+    this.searchSubject.next(`${this.selectedState}|${this.searchFilters.cityId}|${this.searchOrderCode}|${this.currentPage}`);
   }
 
   onSearch(): void {
@@ -201,12 +173,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.triggerSearch();
   }
 
-  onStateFilter(state: OrderState | null): void {
+  onStateFilter(state: OrderState): void {
     this.selectedState = state;
-    this.searchFilters.state = null;
     this.currentPage = 1;
-    // State filtering is client-side — no API round-trip needed.
-    this.applyClientFilters();
+    this.triggerSearch();
   }
 
   onAdvancedSearch(): void {
@@ -221,8 +191,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   onFilterChange(): void {
     this.currentPage = 1;
-    // City filter is client-side.
-    this.applyClientFilters();
+    this.triggerSearch();
   }
 
   onClearSearch(): void {
@@ -231,16 +200,13 @@ export class OrdersComponent implements OnInit, OnDestroy {
       cityId: null
     };
     this.searchOrderCode = '';
-    this.selectedState = null;
     this.currentPage = 1;
     this.loadOrders();
   }
 
   hasActiveFilters(): boolean {
-    return this.searchFilters.state !== null ||
-           (this.searchFilters.cityId !== null && this.searchFilters.cityId > 0) ||
-           (this.searchOrderCode && this.searchOrderCode.trim().length > 0) ||
-           this.selectedState !== null;
+    return (this.searchFilters.cityId !== null && this.searchFilters.cityId > 0) ||
+           this.searchOrderCode.trim().length > 0;
   }
 
   onView(orderId: number): void {
@@ -262,7 +228,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
-      this.applyClientFilters();
+      this.triggerSearch();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -359,37 +325,23 @@ export class OrdersComponent implements OnInit, OnDestroy {
     }, 5000);
   }
 
-  getPipelineCount(state: OrderState | null): number {
-    let source = this.allOrders;
+  /** Per-state totals from the server; refreshed with filters, not derived from a loaded list. */
+  private stateCounts = new Map<number, number>();
 
-    if (this.searchFilters.cityId !== null && this.searchFilters.cityId > 0) {
-      source = source.filter(o => o.cityId === this.searchFilters.cityId);
-    }
-
-    if (state === null) {
-      return source.length;
-    }
-    return source.filter(o => o.orderState === state).length;
+  getPipelineCount(state: OrderState): number {
+    return this.stateCounts.get(state) ?? 0;
   }
 
-  get pendingOrdersCount(): number {
-    return this.allOrders.filter(o => o.orderState === OrderState.Pending).length;
-  }
-
-  get confirmedOrdersCount(): number {
-    return this.allOrders.filter(o => o.orderState === OrderState.Confirmed).length;
-  }
-
-  get onWayOrdersCount(): number {
-    return this.allOrders.filter(o => o.orderState === OrderState.OnWay).length;
-  }
-
-  get receivedOrdersCount(): number {
-    return this.allOrders.filter(o => o.orderState === OrderState.CustomerReceived).length;
-  }
-
-  get completedOrdersCount(): number {
-    return this.allOrders.filter(o => o.orderState === OrderState.Completed).length;
+  private loadStateCounts(): void {
+    const cityId = this.searchFilters.cityId && this.searchFilters.cityId > 0 ? this.searchFilters.cityId : null;
+    this.dispatchService.getOrderStateCounts(cityId, this.searchOrderCode.trim() || null).subscribe({
+      next: rows => {
+        this.stateCounts = new Map(rows.map(r => [r.state, r.count]));
+      },
+      error: () => {
+        this.stateCounts = new Map();
+      }
+    });
   }
 
   private readStoredViewMode(): 'table' | 'cards' {

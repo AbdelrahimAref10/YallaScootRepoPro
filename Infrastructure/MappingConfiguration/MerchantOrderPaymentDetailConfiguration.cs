@@ -22,6 +22,8 @@ namespace Infrastructure.MappingConfiguration
             builder.Property(x => x.VehicleId).HasColumnName("VehicleId").IsRequired();
             builder.Property(x => x.VehicleRental).HasColumnName("VehicleRental").HasColumnType("decimal(18,2)").IsRequired();
             builder.Property(x => x.NetAmount).HasColumnName("NetAmount").HasColumnType("decimal(18,2)").IsRequired();
+            builder.Property(x => x.CompanyCommissionPercent).HasColumnName("CompanyCommissionPercent").HasColumnType("decimal(5,2)").HasDefaultValue(0m).IsRequired();
+            builder.Property(x => x.CompanyCommissionAmount).HasColumnName("CompanyCommissionAmount").HasColumnType("decimal(18,2)").HasDefaultValue(0m).IsRequired();
 
             builder.Property(x => x.CreatedBy).HasColumnName("CreatedBy").HasMaxLength(256);
             builder.Property(x => x.CreatedDate).HasColumnName("CreatedDate").IsRequired();

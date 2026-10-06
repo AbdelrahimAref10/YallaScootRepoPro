@@ -1,17 +1,17 @@
 /* Profile Page - Complete Redesign */
 
 .profile-page {
-  @apply min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30;
+  @apply min-h-screen bg-neutral-50;
 }
 
 /* Hero Section */
 .profile-hero {
-  @apply bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 text-white shadow-2xl relative overflow-hidden;
+  @apply bg-primary-600 text-white shadow-2xl relative overflow-hidden;
 }
 
 .profile-hero::before {
   content: '';
-  @apply absolute inset-0 bg-gradient-to-br from-primary-500/20 to-transparent;
+  @apply absolute inset-0 bg-primary-500/20;
 }
 
 .profile-hero__container {
@@ -149,7 +149,7 @@
 
 /* Progress */
 .profile-progress {
-  @apply mb-8 p-6 bg-gradient-to-r from-primary-50 to-primary-100 rounded-2xl border border-primary-200;
+  @apply mb-8 p-6 bg-primary-50 rounded-2xl border border-primary-200;
 }
 
 .profile-progress__bar {
@@ -157,7 +157,7 @@
 }
 
 .profile-progress__fill {
-  @apply h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-500 ease-out;
+  @apply h-full bg-primary-500 rounded-full transition-all duration-500 ease-out;
 }
 
 .profile-progress__text {
@@ -320,7 +320,7 @@
 
 /* Password Requirements */
 .profile-form__password-requirements {
-  @apply mt-4 space-y-2.5 p-4 bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-xl border-2 [border-color:var(--volt-border)];
+  @apply mt-4 space-y-2.5 p-4 bg-neutral-50 rounded-xl border-2 [border-color:var(--volt-border)];
 }
 
 .profile-form__password-requirement {
@@ -366,7 +366,7 @@
 }
 
 .profile-card__header {
-  @apply px-6 py-4 bg-gradient-to-r from-neutral-50 to-white border-b [border-color:var(--volt-border)];
+  @apply px-6 py-4 bg-neutral-50 border-b [border-color:var(--volt-border)];
 }
 
 .profile-card__title {

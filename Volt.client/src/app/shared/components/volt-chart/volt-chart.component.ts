@@ -118,16 +118,21 @@ export class VoltChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     const textMuted = this.cssVar('--volt-text-muted', '#92a3a1');
     const textSecondary = this.cssVar('--volt-text-secondary', '#667877');
     const border = this.cssVar('--volt-border', '#e6ecec');
+    // Canvas cannot resolve CSS variables, so read the computed body font.
+    const fontFamily = getComputedStyle(document.body).fontFamily || 'Manrope, sans-serif';
     const palette = [
       accent,
-      '#3b82f6',
+      '#161316',
       '#f59e0b',
-      '#ef4444',
-      '#8b5cf6',
-      '#10b981',
-      '#06b6d4',
-      '#f97316'
+      '#2459c7',
+      '#138a4a',
+      '#7c5cff',
+      '#ff7a59',
+      '#8d868f'
     ];
+    if (document.documentElement.classList.contains('dark')) {
+      palette[1] = '#c4bfc6';
+    }
 
     const chartDatasets = this.datasets.map((ds, index) => {
       const color = ds.color || palette[index % palette.length];
@@ -140,16 +145,21 @@ export class VoltChartComponent implements AfterViewInit, OnChanges, OnDestroy {
             ? ds.data.map((_, i) => palette[i % palette.length])
             : this.withAlpha(color, 0.85)
           : this.type === 'bar'
-            ? this.withAlpha(color, 0.85)
-            : this.withAlpha(color, 0.18),
-        borderColor: color,
-        borderWidth: isLineLike ? 2.5 : 1.5,
+            ? this.withAlpha(color, 0.9)
+            : this.withAlpha(color, 0.08),
+        borderColor: this.type === 'doughnut' || this.type === 'pie'
+          ? this.cssVar('--volt-surface', '#fff')
+          : color,
+        borderWidth: isLineLike ? 2 : this.type === 'doughnut' || this.type === 'pie' ? 3 : 0,
         fill: ds.fill ?? (this.type === 'line'),
-        tension: ds.tension ?? 0.35,
-        pointRadius: isLineLike ? 3 : 0,
+        tension: ds.tension ?? 0.25,
+        pointRadius: 0,
         pointHoverRadius: isLineLike ? 5 : 0,
-        borderRadius: this.type === 'bar' ? 8 : 0,
-        maxBarThickness: 36
+        pointBackgroundColor: this.cssVar('--volt-surface', '#fff'),
+        pointBorderWidth: 2.5,
+        borderRadius: this.type === 'bar' ? 2 : 0,
+        maxBarThickness: 28,
+        hoverOffset: this.type === 'doughnut' ? 6 : 0
       };
     });
 
@@ -173,17 +183,21 @@ export class VoltChartComponent implements AfterViewInit, OnChanges, OnDestroy {
               boxHeight: 10,
               usePointStyle: true,
               padding: 16,
-              font: { family: 'var(--volt-font)', size: 12 }
+              font: { family: fontFamily, size: 12, weight: 600 }
             }
           },
           tooltip: {
-            backgroundColor: this.cssVar('--volt-surface', '#fff'),
-            titleColor: this.cssVar('--volt-text-primary', '#1a2b2a'),
-            bodyColor: textSecondary,
-            borderColor: border,
+            backgroundColor: '#161316',
+            titleColor: '#ffffff',
+            bodyColor: 'rgba(255, 255, 255, 0.78)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
             borderWidth: 1,
             padding: 12,
             cornerRadius: 10,
+            titleFont: { family: fontFamily, size: 12, weight: 700 },
+            bodyFont: { family: fontFamily, size: 12 },
+            displayColors: true,
+            boxPadding: 4,
             callbacks: this.currency
               ? {
                   label: (ctx) => {
@@ -204,24 +218,25 @@ export class VoltChartComponent implements AfterViewInit, OnChanges, OnDestroy {
           ? undefined
           : {
               x: {
-                grid: { color: this.withAlpha(border, 0.7) },
+                grid: { display: this.horizontal, color: this.withAlpha(border, 0.7) },
                 border: { display: false },
-                ticks: { color: textMuted, font: { family: 'var(--volt-font)', size: 11 }, maxRotation: 0 }
+                ticks: { color: textMuted, font: { family: fontFamily, size: 11 }, maxRotation: 0, autoSkipPadding: 14 }
               },
               y: {
                 beginAtZero: true,
-                grid: { color: this.withAlpha(border, 0.7) },
+                grid: { display: !this.horizontal, color: this.withAlpha(border, 0.7) },
                 border: { display: false },
                 ticks: {
                   color: textMuted,
-                  font: { family: 'var(--volt-font)', size: 11 },
+                  font: { family: fontFamily, size: 11 },
                   callback: this.currency
                     ? (value: string | number) => `${new Intl.NumberFormat('en-EG', { notation: 'compact' }).format(Number(value))}`
                     : undefined
                 }
               }
             },
-        cutout: this.type === 'doughnut' ? '68%' : undefined
+        interaction: { mode: 'index', intersect: false },
+        cutout: this.type === 'doughnut' ? '72%' : undefined
       } as ChartConfiguration['options']
     };
 

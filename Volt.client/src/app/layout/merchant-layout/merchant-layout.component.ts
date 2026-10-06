@@ -38,7 +38,7 @@ export class MerchantLayoutComponent implements OnInit, OnDestroy {
     { labelKey: 'merchant.nav.home', route: '/merchant/home', icon: 'dashboard' },
     { labelKey: 'merchant.nav.orders', route: '/merchant/orders', icon: 'orders' },
     { labelKey: 'merchant.nav.vehicles', route: '/merchant/vehicles', icon: 'vehicles' },
-    { labelKey: 'merchant.nav.payments', route: '/merchant/payments', icon: 'reports' }
+    { labelKey: 'merchant.nav.payments', route: '/merchant/payments', icon: 'money' }
   ];
 
   private mediaQuery?: MediaQueryList;

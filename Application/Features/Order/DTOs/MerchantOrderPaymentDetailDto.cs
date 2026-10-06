@@ -10,5 +10,7 @@ namespace Application.Features.Order.DTOs
         public string VehicleCode { get; set; } = string.Empty;
         public decimal VehicleRental { get; set; }
         public decimal NetAmount { get; set; }
+        public decimal CompanyCommissionPercent { get; set; }
+        public decimal CompanyCommissionAmount { get; set; }
     }
 }

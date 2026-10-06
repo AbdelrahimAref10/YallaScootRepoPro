@@ -186,6 +186,9 @@ namespace Application.Features.Order.Query.GetMyMerchantOrdersQuery
                 var rentalTotal = orderPayments.Count > 0
                     ? orderPayments.Sum(p => p.VehicleRental)
                     : rentalEstimateByOrder.GetValueOrDefault(o.OrderId) * days;
+                var commissionTotal = orderPayments.Count > 0
+                    ? orderPayments.Sum(p => p.CompanyCommissionAmount)
+                    : Domain.Models.MerchantOrderPaymentDetail.ComputeCompanyCommission(rentalTotal, merchant.CompanyCommissionPercent);
 
                 return new MerchantPortalOrderListItemDto
                 {
@@ -204,7 +207,8 @@ namespace Application.Features.Order.Query.GetMyMerchantOrdersQuery
                     MyVehiclesCount = myVehicleRows,
                     MyRentalTotal = rentalTotal,
                     MyServiceFeeTotal = 0,
-                    MyNetTotal = rentalTotal,
+                    MyCompanyCommissionTotal = commissionTotal,
+                    MyNetTotal = rentalTotal - commissionTotal,
                     CanAccept = canAccept,
                     CanReject = canReject,
                     PendingHandoverVehicleCount = pendingHandover,

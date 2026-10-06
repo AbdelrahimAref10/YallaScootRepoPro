@@ -31,7 +31,7 @@ type SettlementTab = 'payDelivery' | 'collect' | 'payMerchant';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslatePipe, MultiSelectComponent],
   templateUrl: './settlements.component.html',
-  styleUrls: ['./settlements.component.css', '../../shared/styles/entity-form.css']
+  styleUrls: ['./settlements.component.css']
 })
 export class SettlementsComponent implements OnInit {
   private readonly localeService = inject(LocaleService);
@@ -71,6 +71,7 @@ export class SettlementsComponent implements OnInit {
 
   readonly AdminPayDeliveryKind = AdminPayDeliveryKind;
   readonly AdminCollectFromDeliveryKind = AdminCollectFromDeliveryKind;
+  readonly JournalDirection = JournalDirection;
 
   get deliveryOptions(): MultiSelectOption[] {
     return this.deliveries
@@ -120,6 +121,19 @@ export class SettlementsComponent implements OnInit {
     this.activeTab = tab;
     this.errorMessage = '';
     this.successMessage = '';
+    // Show the statement of whoever is already picked on this tab.
+    const partyId = tab === 'payDelivery' ? this.payDeliveryId : tab === 'collect' ? this.collectDeliveryId : this.payMerchantId;
+    this.onPartySelected(tab === 'payMerchant' ? 'merchant' : 'delivery', partyId);
+  }
+
+  /** Load the selected rider's / merchant's statement as soon as they are picked. */
+  onPartySelected(kind: 'delivery' | 'merchant', value: unknown): void {
+    const id = value != null && value !== '' ? Number(value) : null;
+    if (!id) {
+      this.ledger = null;
+      return;
+    }
+    this.loadLedger(kind === 'merchant' ? LedgerPartyType.Merchant : LedgerPartyType.Delivery, id);
   }
 
   loadLookups(): void {

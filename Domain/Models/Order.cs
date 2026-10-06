@@ -812,7 +812,17 @@ namespace Domain.Models
                             returnFeeShare,
                             OrderJournalEntryKind.DeliveryFeeAccrued,
                             $"order:{OrderId}:vehicle:{vehicleId}:delivery-fee:return",
-                            note: "Delivery fee credit for the return leg on return to owner")
+                            note: "Delivery fee credit for the return leg on return to owner"),
+                        new OrderLedgerLine(
+                            OrderId,
+                            vehicleId,
+                            LedgerPartyType.Company,
+                            null,
+                            JournalDirection.Debit,
+                            returnFeeShare,
+                            OrderJournalEntryKind.CompanyReturnLegCommissionCharged,
+                            $"order:{OrderId}:vehicle:{vehicleId}:company-return-commission",
+                            note: "Company debit for the return-leg delivery commission")
                     },
                     modifiedBy));
             }
@@ -870,6 +880,32 @@ namespace Domain.Models
                     note: "Merchant vehicle rental credit on customer delivery"));
             }
 
+            // Company's percentage of the merchant's rental (snapshotted at Confirmed): debit the merchant, credit the company.
+            if (snapshot.MerchantCompanyCommission > 0)
+            {
+                lines.Add(new OrderLedgerLine(
+                    OrderId,
+                    vid,
+                    LedgerPartyType.Merchant,
+                    snapshot.MerchantId,
+                    JournalDirection.Debit,
+                    snapshot.MerchantCompanyCommission,
+                    OrderJournalEntryKind.MerchantCompanyCommissionCharged,
+                    $"order:{OrderId}:vehicle:{vid}:merchant-commission",
+                    note: "Company commission debit on merchant vehicle rental"));
+
+                lines.Add(new OrderLedgerLine(
+                    OrderId,
+                    vid,
+                    LedgerPartyType.Company,
+                    null,
+                    JournalDirection.Credit,
+                    snapshot.MerchantCompanyCommission,
+                    OrderJournalEntryKind.CompanyMerchantCommissionAccrued,
+                    $"order:{OrderId}:vehicle:{vid}:company-merchant-commission",
+                    note: "Company commission credit from merchant vehicle rental"));
+            }
+
             // Service fee is YallaScoot profit only — never split or deducted from merchant rent.
             // Post the full order amount once on the first customer delivery (cash or online).
             if (!CompanyServiceFeeAccrued && snapshot.OrderServiceFees > 0)
@@ -899,6 +935,23 @@ namespace Domain.Models
                     OrderJournalEntryKind.DeliveryFeeAccrued,
                     $"order:{OrderId}:vehicle:{vid}:delivery-fee",
                     note: "Delivery fee credit on customer delivery"));
+            }
+
+            // Company keeps the rest of this vehicle's delivery fee; the return-leg commission is
+            // debited back from the company when that rider is credited (MarkVehicleDeliveredToOwner).
+            var deliveryFeeRemainder = snapshot.VehicleDeliveryFee - snapshot.DeliveryFeeShare;
+            if (deliveryFeeRemainder > 0)
+            {
+                lines.Add(new OrderLedgerLine(
+                    OrderId,
+                    vid,
+                    LedgerPartyType.Company,
+                    null,
+                    JournalDirection.Credit,
+                    deliveryFeeRemainder,
+                    OrderJournalEntryKind.CompanyDeliveryFeeRemainderAccrued,
+                    $"order:{OrderId}:vehicle:{vid}:company-delivery-remainder",
+                    note: "Company credit for delivery fee after delivery-leg commission"));
             }
 
             // Cash: the courier collected the full order amount from the customer.
@@ -953,6 +1006,36 @@ namespace Domain.Models
             if (OrderState == OrderState.DeliveryAssigned)
                 throw new InvalidOperationException(
                     "Cannot deliver to customer before at least one vehicle is received from owner (OnWay).");
+        }
+
+        /// <summary>
+        /// Admin switches an online order whose payment never went through (Pending or Failed) to cash
+        /// on delivery. Only allowed before any vehicle reaches the customer, because the cash collected
+        /// from the customer is posted to the rider on the first customer delivery.
+        /// </summary>
+        public void ChangePaymentToCash(string? modifiedBy = null)
+        {
+            if (PaymentMethodId == (int)PaymentMethod.Cash)
+                throw new InvalidOperationException("Order is already paid in cash.");
+
+            if (OrderState is OrderState.Cancelled or OrderState.Completed)
+                throw new InvalidOperationException($"Cannot change payment of a {OrderState} order.");
+
+            if (OrderPayments.Any(p => p.State is PaymentState.Paid or PaymentState.Refunded) || OrderTotalDebitedToCompany)
+                throw new InvalidOperationException("The online payment already went through; it cannot be switched to cash.");
+
+            if (OrderVehicles.Any(v => v.DeliveredToCustomer))
+                throw new InvalidOperationException("A vehicle was already delivered to the customer; payment can no longer be switched to cash.");
+
+            PaymentMethodId = (int)PaymentMethod.Cash;
+
+            var payment = OrderPayments.FirstOrDefault();
+            if (payment == null)
+                OrderPayments.Add(OrderPayment.Create(OrderId, (int)PaymentMethod.Cash, OrderTotal, modifiedBy));
+            else
+                payment.Update((int)PaymentMethod.Cash, OrderTotal, modifiedBy);
+
+            Touch(modifiedBy);
         }
 
         private void Touch(string? modifiedBy)

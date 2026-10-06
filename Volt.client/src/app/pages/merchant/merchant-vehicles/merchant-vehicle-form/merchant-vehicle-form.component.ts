@@ -24,7 +24,7 @@ import {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent],
   templateUrl: './merchant-vehicle-form.component.html',
-  styleUrls: ['./merchant-vehicle-form.component.css', '../../../../shared/styles/entity-form.css']
+  styleUrls: ['./merchant-vehicle-form.component.css', '../../../../shared/styles/entity-form.css', '../../../../shared/styles/record-form.css']
 })
 export class MerchantVehicleFormComponent implements OnInit {
   private readonly localeService = inject(LocaleService);
@@ -65,6 +65,21 @@ export class MerchantVehicleFormComponent implements OnInit {
     { value: VehicleStatus.UnderMaintenance, key: 'vehicles.maintenance' },
     { value: VehicleStatus.Rented, key: 'vehicles.rented' }
   ];
+
+  optionLabel(options: { value: unknown; label: string }[], value: unknown): string {
+    if (value === null || value === undefined || value === '') return '—';
+    return options.find(o => o.value === value || String(o.value) === String(value))?.label ?? '—';
+  }
+
+  /** Share of required fields already valid, for the summary meter. */
+  get completion(): number {
+    const required = ['name', 'vehicleCode', 'categoryId', 'subCategoryId', 'status', 'color', 'type', 'model', 'price'];
+    const done = required.filter(name => {
+      const control = this.vehicleForm?.get(name);
+      return !!control && control.valid && control.value !== null && control.value !== '';
+    }).length;
+    return Math.round((done / required.length) * 100);
+  }
 
   get categoryOptions(): MultiSelectOption[] {
     return this.categories

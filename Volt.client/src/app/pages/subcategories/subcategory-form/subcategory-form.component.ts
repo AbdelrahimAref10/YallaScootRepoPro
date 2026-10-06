@@ -15,7 +15,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MultiSelectComponent, TranslatePipe],
   templateUrl: './subcategory-form.component.html',
-  styleUrls: ['./subcategory-form.component.css', '../../../shared/styles/entity-form.css']
+  styleUrls: ['./subcategory-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
 export class SubCategoryFormComponent implements OnInit {
   subCategoryForm: FormGroup;
@@ -42,6 +42,21 @@ export class SubCategoryFormComponent implements OnInit {
       isOffer: [false],
       imageUrl: [null]
     });
+  }
+
+  optionLabel(options: { value: unknown; label: string }[], value: unknown): string {
+    if (value === null || value === undefined || value === '') return '—';
+    return options.find(o => o.value === value || String(o.value) === String(value))?.label ?? '—';
+  }
+
+  /** Share of required fields already valid, for the summary meter. */
+  get completion(): number {
+    const required = ['name', 'categoryId', 'description'];
+    const done = required.filter(name => {
+      const control = this.subCategoryForm?.get(name);
+      return !!control && control.valid && control.value !== null && control.value !== '';
+    }).length;
+    return Math.round((done / required.length) * 100);
   }
 
   get categoryOptions(): MultiSelectOption[] {

@@ -14,6 +14,8 @@ namespace Application.Features.Merchant.DTOs
         public string? PersonalImage { get; set; }
         public bool IsActive { get; set; }
         public bool CashOnReceive { get; set; }
+        /// <summary>Company percentage of this merchant's vehicle rental (0–100).</summary>
+        public decimal CompanyCommissionPercent { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime CreatedDate { get; set; }
     }

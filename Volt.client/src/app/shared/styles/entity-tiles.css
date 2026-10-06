@@ -27,8 +27,8 @@
 .subcategories__tile:hover,
 .vehicles__tile:hover {
   border-color: var(--volt-accent-muted);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(227, 6, 19, 0.12);
+  transform: translateY(-1px);
+  box-shadow: var(--volt-shadow-hover);
 }
 
 .categories__tile-media,
@@ -82,7 +82,7 @@
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.02em;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(2px);
 }
 
 .categories__tile-status--active,
@@ -103,12 +103,12 @@
 }
 
 .vehicles__tile-status.vehicles__status--maintenance {
-  background: rgba(217, 119, 6, 0.95);
+  background: rgba(178, 107, 0, 0.95);
   color: #fff;
 }
 
 .vehicles__tile-status.vehicles__status--rented {
-  background: rgba(37, 99, 235, 0.95);
+  background: rgba(36, 89, 199, 0.95);
   color: #fff;
 }
 
@@ -120,7 +120,7 @@
   border-radius: 999px;
   font-size: 0.68rem;
   font-weight: 750;
-  background: rgba(245, 158, 11, 0.95);
+  background: rgba(178, 107, 0, 0.95);
   color: #fff;
 }
 
@@ -161,7 +161,7 @@
 .vehicles__tile-code {
   margin: 0;
   font-size: 0.78rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -221,7 +221,7 @@
 
 .vehicles__tile-price-unit {
   font-size: 0.7rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-muted);
 }
 
@@ -235,7 +235,7 @@
 .subcategories__tile-subs,
 .vehicles__tile-subs {
   font-size: 0.72rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-muted);
 }
 
@@ -272,7 +272,7 @@
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: 0.75rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-bg);
   color: var(--volt-text-secondary);
@@ -303,24 +303,24 @@
 
 .categories__action--warn:hover,
 .subcategories__action--warn:hover {
-  background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
-  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(178, 107, 0, 0.12);
+  color: var(--volt-warn);
+  border-color: rgba(178, 107, 0, 0.28);
 }
 
 .categories__action--success:hover,
 .subcategories__action--success:hover {
-  background: rgba(34, 197, 94, 0.12);
-  color: #16a34a;
-  border-color: rgba(34, 197, 94, 0.28);
+  background: rgba(19, 138, 74, 0.12);
+  color: var(--volt-ok);
+  border-color: rgba(19, 138, 74, 0.28);
 }
 
 .categories__action--danger:hover,
 .subcategories__action--danger:hover,
 .vehicles__action--danger:hover {
-  background: rgba(239, 68, 68, 0.1);
-  color: #dc2626;
-  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(225, 6, 0, 0.1);
+  color: var(--volt-accent);
+  border-color: rgba(225, 6, 0, 0.28);
 }
 
 .categories__meta-chip,
@@ -333,10 +333,10 @@
   max-width: 10rem;
   padding: 0.3rem 0.65rem;
   border-radius: 999px;
-  background: var(--volt-accent-soft);
-  color: var(--volt-accent-strong);
+  background: var(--volt-surface-muted);
+  color: var(--volt-text-secondary);
   font-size: 0.75rem;
-  font-weight: 650;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

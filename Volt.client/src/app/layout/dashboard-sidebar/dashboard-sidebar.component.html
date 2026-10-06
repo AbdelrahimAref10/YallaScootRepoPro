@@ -9,7 +9,7 @@
       <img src="assets/images/Logo.png" alt="" class="dashboard-sidebar__logo-img" />
     </div>
     <div class="dashboard-sidebar__brand-text" *ngIf="isOpen">
-      <span class="dashboard-sidebar__brand-name">{{ 'app.name' | t }}</span>
+      <span class="dashboard-sidebar__brand-name">Yalla<b>Scoot</b></span>
       <span class="dashboard-sidebar__brand-tag">{{ 'app.tagline' | t }}</span>
     </div>
 
@@ -32,8 +32,11 @@
   </div>
 
   <nav class="dashboard-sidebar__nav" [attr.aria-label]="'app.name' | t">
+    <ng-container *ngFor="let item of menuItems; let i = index">
+    <span class="dashboard-sidebar__group" *ngIf="startsGroup(i)" [class.dashboard-sidebar__group--compact]="!isOpen">
+      <ng-container *ngIf="isOpen">{{ item.groupKey! | t }}</ng-container>
+    </span>
     <a
-      *ngFor="let item of menuItems"
       [routerLink]="item.route"
       routerLinkActive="dashboard-sidebar__item--active"
       [routerLinkActiveOptions]="{ exact: item.route === exactActiveRoute }"
@@ -57,11 +60,16 @@
           <path *ngSwitchCase="'shifts'" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
           <path *ngSwitchCase="'orders'" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
           <path *ngSwitchCase="'reports'" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          <path *ngSwitchCase="'merchants'" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 9l1.5-5h15L21 9M3 9h18M3 9a3 3 0 006 0 3 3 0 006 0 3 3 0 006 0M5 12v8h14v-8M10 20v-5h4v5"/>
+          <path *ngSwitchCase="'riders'" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M5.5 20a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm13 0a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 17.5h6l2.5-6H19M14 6h2.5l2 5.5M8 17.5L11 11h3.5"/>
+          <path *ngSwitchCase="'money'" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 10h18M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2zm2 9h3"/>
+          <path *ngSwitchCase="'ledger'" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6.25v13m0-13C10.83 5.48 9.25 5 7.5 5S4.17 5.48 3 6.25v13C4.17 18.48 5.75 18 7.5 18s3.33.48 4.5 1.25m0-13C13.17 5.48 14.75 5 16.5 5s3.33.48 4.5 1.25v13C19.83 18.48 18.25 18 16.5 18s-3.33.48-4.5 1.25"/>
           <path *ngSwitchCase="'support'" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
         </ng-container>
       </svg>
       <span class="dashboard-sidebar__item-label" *ngIf="isOpen">{{ item.labelKey | t }}</span>
     </a>
+    </ng-container>
   </nav>
 
   <div class="dashboard-sidebar__footer" *ngIf="isOpen">

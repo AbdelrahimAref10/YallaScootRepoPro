@@ -27,6 +27,8 @@ namespace Application.Features.Merchant.Command.AdminCreateMerchantCommand
         public string? PersonalImage { get; set; }
         public bool IsActive { get; set; } = true;
         public bool CashOnReceive { get; set; }
+        /// <summary>Company percentage of this merchant's vehicle rental (0–100).</summary>
+        public decimal CompanyCommissionPercent { get; set; }
     }
 
     public class AdminCreateMerchantCommandHandler : IRequestHandler<AdminCreateMerchantCommand, Result<int>>
@@ -53,6 +55,9 @@ namespace Application.Features.Merchant.Command.AdminCreateMerchantCommand
 
         public async Task<Result<int>> Handle(AdminCreateMerchantCommand request, CancellationToken cancellationToken)
         {
+            if (request.CompanyCommissionPercent < 0 || request.CompanyCommissionPercent > 100)
+                return Result.Failure<int>("Company commission percent must be between 0 and 100");
+
             if (string.IsNullOrWhiteSpace(request.FullName))
                 return Result.Failure<int>("Full name is required");
 
@@ -160,7 +165,8 @@ namespace Application.Features.Merchant.Command.AdminCreateMerchantCommand
                 personalImageUrl,
                 createdBy,
                 isActive: request.IsActive,
-                cashOnReceive: request.CashOnReceive);
+                cashOnReceive: request.CashOnReceive,
+                companyCommissionPercent: request.CompanyCommissionPercent);
 
             _context.Merchants.Add(merchant);
 

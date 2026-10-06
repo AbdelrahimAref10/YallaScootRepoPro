@@ -16,7 +16,7 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent],
   templateUrl: './merchants.component.html',
-  styleUrls: ['./merchants.component.css']
+  styleUrls: ['./merchants.component.css', '../../shared/styles/list-filters.css']
 })
 export class MerchantsComponent implements OnInit {
   private readonly localeService = inject(LocaleService);

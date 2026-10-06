@@ -43,7 +43,9 @@ namespace Application.Features.Auth.Command.RefreshTokenCommand
             if (string.IsNullOrWhiteSpace(request.RefreshToken))
                 return Result.Failure<RefreshTokenResponse>("Refresh token is required");
 
+            // Tracked: the token is revoked below and must be persisted (context default is NoTracking).
             var refreshToken = await _context.RefreshTokens
+                .AsTracking()
                 .Include(rt => rt.User)
                 .FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken, cancellationToken);
 

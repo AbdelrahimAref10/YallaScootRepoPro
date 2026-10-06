@@ -14,9 +14,22 @@
         <span></span>
       </span>
     </button>
+
+    <nav class="dashboard-header__crumbs" aria-label="breadcrumb">
+      <span class="dashboard-header__crumb-root">{{ consoleKey | t }}</span>
+      <ng-container *ngIf="sectionKey">
+        <span class="dashboard-header__crumb-sep" aria-hidden="true">/</span>
+        <span [class.dashboard-header__crumb-current]="!detailKey">{{ sectionKey | t }}</span>
+      </ng-container>
+      <ng-container *ngIf="detailKey">
+        <span class="dashboard-header__crumb-sep" aria-hidden="true">/</span>
+        <span class="dashboard-header__crumb-current">{{ detailKey | t }}</span>
+      </ng-container>
+    </nav>
   </div>
 
   <div class="dashboard-header__right">
+    <span class="dashboard-header__date">{{ today | date: 'EEE, d MMM y' }}</span>
     <app-lang-switcher></app-lang-switcher>
     <app-theme-toggle></app-theme-toggle>
 

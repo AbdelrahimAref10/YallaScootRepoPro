@@ -50,13 +50,27 @@ namespace Application.Features.AdminHome.Query.GetHomeCustomerGrowthQuery
                 customers = customers.Where(c => c.CityId == request.CityId.Value);
             }
 
-            var total = await customers.CountAsync(cancellationToken);
-            var active = await customers.CountAsync(c => c.State == CustomerState.Active, cancellationToken);
-            var inactive = await customers.CountAsync(c => c.State == CustomerState.InActive, cancellationToken);
-            var blocked = await customers.CountAsync(c => c.State == CustomerState.Blocked, cancellationToken);
-            var individual = await customers.CountAsync(c => c.RegisterAs == 0, cancellationToken);
-            var institution = await customers.CountAsync(c => c.RegisterAs == 1, cancellationToken);
-            var cashBlocked = await customers.CountAsync(c => c.CashBlock, cancellationToken);
+            // All headline counts in one pass (was 7 round trips).
+            var stats = await customers
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    Active = g.Count(c => c.State == CustomerState.Active),
+                    Inactive = g.Count(c => c.State == CustomerState.InActive),
+                    Blocked = g.Count(c => c.State == CustomerState.Blocked),
+                    Individual = g.Count(c => c.RegisterAs == 0),
+                    Institution = g.Count(c => c.RegisterAs == 1),
+                    CashBlocked = g.Count(c => c.CashBlock)
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+            var total = stats?.Total ?? 0;
+            var active = stats?.Active ?? 0;
+            var inactive = stats?.Inactive ?? 0;
+            var blocked = stats?.Blocked ?? 0;
+            var individual = stats?.Individual ?? 0;
+            var institution = stats?.Institution ?? 0;
+            var cashBlocked = stats?.CashBlocked ?? 0;
 
             var createdInRange = await customers
                 .Where(c => c.CreatedDate >= from && c.CreatedDate <= to)

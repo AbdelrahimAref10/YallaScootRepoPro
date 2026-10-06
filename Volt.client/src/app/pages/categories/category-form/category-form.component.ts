@@ -16,7 +16,7 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent],
   templateUrl: './category-form.component.html',
-  styleUrls: ['./category-form.component.css', '../../../shared/styles/entity-form.css']
+  styleUrls: ['./category-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
 export class CategoryFormComponent implements OnInit {
   private readonly localeService = inject(LocaleService);
@@ -44,6 +44,21 @@ export class CategoryFormComponent implements OnInit {
       cityId: [null, [Validators.required]],
       imageUrl: [null]
     });
+  }
+
+  optionLabel(options: { value: unknown; label: string }[], value: unknown): string {
+    if (value === null || value === undefined || value === '') return '—';
+    return options.find(o => o.value === value || String(o.value) === String(value))?.label ?? '—';
+  }
+
+  /** Share of required fields already valid, for the summary meter. */
+  get completion(): number {
+    const required = ['name', 'cityId', 'description'];
+    const done = required.filter(name => {
+      const control = this.categoryForm?.get(name);
+      return !!control && control.valid && control.value !== null && control.value !== '';
+    }).length;
+    return Math.round((done / required.length) * 100);
   }
 
   get cityOptions(): MultiSelectOption[] {

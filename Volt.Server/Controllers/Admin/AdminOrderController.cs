@@ -7,6 +7,7 @@ using Application.Features.Order.Command.MarkCustomerRejectedReceiptCommand;
 using Application.Features.Order.Command.MarkMerchantHandoverToDeliveryCommand;
 using Application.Features.Order.Command.MarkOrderCancellationFeePaidCommand;
 using Application.Features.Order.Command.MarkOrderMoneyRefundedCommand;
+using Application.Features.Order.Command.ChangeOrderPaymentToCashCommand;
 using Application.Features.Order.Command.AdminReplacementOrderVehicleCommand;
 using Application.Features.Order.Command.AdminRemoveOrderVehicleCommand;
 using Application.Features.Order.Command.OrderVehicleLifecycleCommands;
@@ -21,6 +22,7 @@ using Application.Features.Order.Query.AdminCalculateOrderTotalsQuery;
 using Application.Features.Order.Query.GetAdminAvailableVehiclesQuery;
 using Application.Features.Order.Query.GetAllOrdersQuery;
 using Application.Features.Order.Query.GetOrderByIdQuery;
+using Application.Features.Order.Query.GetOrderStateCountsQuery;
 using Application.Features.Zone.Query.GetZonesByCityQuery;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -45,6 +47,17 @@ namespace Volt.Server.Controllers.Admin
         [ProducesResponseType(typeof(PagedResult<OrderDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllOrders([FromQuery] GetAllOrdersQuery query)
+        {
+            var result = await _mediator.Send(query);
+            if (result.IsFailure)
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            return Ok(result.Value);
+        }
+
+        [HttpGet("StateCounts")]
+        [ProducesResponseType(typeof(List<OrderStateCountDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetOrderStateCounts([FromQuery] GetOrderStateCountsQuery query)
         {
             var result = await _mediator.Send(query);
             if (result.IsFailure)
@@ -344,6 +357,17 @@ namespace Volt.Server.Controllers.Admin
         public async Task<IActionResult> RejectOrder(int orderId)
         {
             var result = await _mediator.Send(new RejectOrderCommand { OrderId = orderId });
+            if (result.IsFailure)
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            return Ok(result.Value);
+        }
+
+        [HttpPost("{orderId}/ChangeToCash")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ChangeToCash(int orderId)
+        {
+            var result = await _mediator.Send(new ChangeOrderPaymentToCashCommand { OrderId = orderId });
             if (result.IsFailure)
                 return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
             return Ok(result.Value);

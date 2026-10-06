@@ -4,7 +4,6 @@ using Domain.Enums;
 using Infrastructure;
 using Infrastructure.Services;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +15,10 @@ namespace Application.Features.Order.Query.GetOrderByIdQuery
         public int OrderId { get; set; }
     }
 
+    /// <summary>
+    /// Admin order detail. One call to <c>dbo.usp_GetAdminOrderDetail</c> returns every section already
+    /// filtered by order id (filter first, join after), replacing a wide Include graph plus nine follow-up queries.
+    /// </summary>
     public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Result<OrderDetailDto>>
     {
         private readonly DatabaseContext _context;
@@ -29,93 +32,67 @@ namespace Application.Features.Order.Query.GetOrderByIdQuery
 
         public async Task<Result<OrderDetailDto>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
         {
-            var order = await _context.Orders
-                .Include(o => o.Customer)
-                .Include(o => o.SubCategory)
-                .Include(o => o.City)
-                .Include(o => o.DestinationZone)
-                .Include(o => o.OrderVehicles)
-                    .ThenInclude(ov => ov.Vehicle)
-                        .ThenInclude(v => v.Merchant)
-                            .ThenInclude(m => m.Zone)
-                .Include(o => o.OrderPayments)
-                .Include(o => o.ReservedVehiclesPerDays)
-                .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
+            var data = await _context.GetAdminOrderDetailAsync(
+                request.OrderId,
+                (int)WalletType.OrderCancellationFees,
+                cancellationToken);
 
+            var order = data.Header;
             if (order == null)
             {
                 return Result.Failure<OrderDetailDto>($"Order with ID {request.OrderId} not found");
             }
 
-            var refundablePaypal = await _context.RefundablePaypalAmounts
-                .FirstOrDefaultAsync(rpa => rpa.OrderId == request.OrderId, cancellationToken);
-
-            var orderTotals = await _context.OrderTotals
-                .FirstOrDefaultAsync(ot => ot.OrderId == request.OrderId, cancellationToken);
-
-            var orderCodeMarker = $"Order #{order.OrderCode}";
-            var cancellationFeeEntry = await _context.CustomerWallets
-                .Where(cw => cw.OrderId == request.OrderId
-                    && cw.Type == WalletType.OrderCancellationFees
-                    && cw.Description.Contains(orderCodeMarker))
-                .FirstOrDefaultAsync(cancellationToken);
-
-            var merchantOrders = await _context.MerchantOrders
-                .AsNoTracking()
-                .Include(mo => mo.Merchant)
-                .Where(mo => mo.OrderId == request.OrderId)
-                .ToListAsync(cancellationToken);
-
-            var merchantPaymentDetails = await _context.MerchantOrderPaymentDetails
-                .AsNoTracking()
-                .Include(p => p.Merchant)
-                .Include(p => p.Vehicle)
-                .Where(p => p.OrderId == request.OrderId)
-                .ToListAsync(cancellationToken);
-
-            var deliveryMenOrders = await _context.DeliveryMenOrders
-                .AsNoTracking()
-                .Include(d => d.Delivery)
-                .Include(d => d.Vehicle)
-                .Where(d => d.OrderId == request.OrderId)
-                .ToListAsync(cancellationToken);
-
-            var deliveryPaymentDetails = await _context.DeliveryOrderPaymentDetails
-                .AsNoTracking()
-                .Include(d => d.Delivery)
-                .Include(d => d.Vehicle)
-                .Where(d => d.OrderId == request.OrderId)
-                .ToListAsync(cancellationToken);
-
-            var journals = await _context.OrderJournals
-                .AsNoTracking()
-                .Include(j => j.Vehicle)
-                .Where(j => j.OrderId == request.OrderId)
-                .OrderBy(j => j.CreatedDate)
-                .ThenBy(j => j.OrderJournalId)
-                .ToListAsync(cancellationToken);
-
-            var handoverImages = await _context.OrderVehicleHandoverImages
-                .AsNoTracking()
-                .Where(i => i.OrderId == request.OrderId)
-                .OrderBy(i => i.VehicleId)
-                .ThenBy(i => i.Step)
-                .ThenBy(i => i.Position)
-                .ToListAsync(cancellationToken);
+            var orderVehicles = data.Vehicles.Select(v => new OrderVehicleDto
+            {
+                VehicleId = v.VehicleId,
+                VehicleName = v.VehicleName ?? string.Empty,
+                VehicleCode = v.VehicleCode ?? string.Empty,
+                ImageUrl = !string.IsNullOrWhiteSpace(v.ImageUrl) ? _imageService.GetImageUrl(v.ImageUrl) : null,
+                MerchantId = v.MerchantId,
+                MerchantName = v.MerchantName ?? string.Empty,
+                Status = ParseVehicleStatus(v.Status),
+                Color = v.Color ?? string.Empty,
+                Type = v.Type ?? string.Empty,
+                Model = v.Model ?? string.Empty,
+                Price = v.Price,
+                DeliveryFee = v.DeliveryFee,
+                MerchantCashOnReceive = v.MerchantCashOnReceive ?? false,
+                MerchantZoneId = v.MerchantZoneId ?? 0,
+                MerchantZoneName = v.MerchantZoneName ?? string.Empty,
+                SpeedKmh = v.SpeedKmh,
+                EngineCapacityCc = v.EngineCapacityCc,
+                ReceivedFromOwner = v.ReceivedFromOwner,
+                ReceivedFromOwnerAt = v.ReceivedFromOwnerAt,
+                ReceivedFromOwnerImageUrl = _imageService.GetImageUrl(v.ReceivedFromOwnerImageUrl),
+                DeliveredToCustomer = v.DeliveredToCustomer,
+                DeliveredToCustomerAt = v.DeliveredToCustomerAt,
+                DeliveredToCustomerImageUrl = _imageService.GetImageUrl(v.DeliveredToCustomerImageUrl),
+                ReceivedFromCustomer = v.ReceivedFromCustomer,
+                ReceivedFromCustomerAt = v.ReceivedFromCustomerAt,
+                ReceivedFromCustomerImageUrl = _imageService.GetImageUrl(v.ReceivedFromCustomerImageUrl),
+                DeliveredToOwner = v.DeliveredToOwner,
+                DeliveredToOwnerAt = v.DeliveredToOwnerAt,
+                DeliveredToOwnerImageUrl = _imageService.GetImageUrl(v.DeliveredToOwnerImageUrl),
+                DeliveryFailed = v.DeliveryFailed,
+                DeliveryFailureReason = v.DeliveryFailureReason,
+                DeliveryFailureFaultParty = (FaultParty?)v.DeliveryFailureFaultParty,
+                MerchantResponseStatus = (MerchantVehicleResponseStatus)v.MerchantResponseStatus
+            }).ToList();
 
             var orderDetailDto = new OrderDetailDto
             {
                 OrderId = order.OrderId,
                 OrderCode = order.OrderCode,
                 CustomerId = order.CustomerId,
-                CustomerName = order.Customer.FullName,
-                CustomerMobileNumber = order.Customer.MobileNumber,
+                CustomerName = order.CustomerName ?? string.Empty,
+                CustomerMobileNumber = order.CustomerMobileNumber ?? string.Empty,
                 SubCategoryId = order.SubCategoryId,
-                SubCategoryName = order.SubCategory.Name,
+                SubCategoryName = order.SubCategoryName ?? string.Empty,
                 CityId = order.CityId,
-                CityName = order.City.Name,
+                CityName = order.CityName ?? string.Empty,
                 DestinationZoneId = order.DestinationZoneId,
-                DestinationZoneName = order.DestinationZone?.Name ?? string.Empty,
+                DestinationZoneName = order.DestinationZoneName ?? string.Empty,
                 ReservationDateFrom = order.ReservationDateFrom,
                 ReservationDateTo = order.ReservationDateTo,
                 VehiclesCount = order.VehiclesCount,
@@ -125,102 +102,68 @@ namespace Application.Features.Order.Query.GetOrderByIdQuery
                 MoneyRefunded = order.MoneyRefunded,
                 Notes = order.Notes,
                 PassportImage = Domain.Models.Order.NormalizePassportImage(order.PassportImage),
-                HotelName = order.HotelName,
-                HotelAddress = order.HotelAddress,
+                HotelName = order.HotelName ?? string.Empty,
+                HotelAddress = order.HotelAddress ?? string.Empty,
                 HotelPhone = order.HotelPhone,
                 IsUrgent = order.IsUrgent,
                 PaymentMethod = (PaymentMethod)order.PaymentMethodId,
-                OrderState = order.OrderState,
+                OrderState = (OrderState)order.OrderState,
                 CreatedDate = order.CreatedDate,
-                ReceiptFaultParty = order.ReceiptFaultParty,
+                ReceiptFaultParty = (FaultParty?)order.ReceiptFaultParty,
                 ReceiptRejectNote = order.ReceiptRejectNote,
                 OrderTotalDebitedToCompany = order.OrderTotalDebitedToCompany,
                 OrderDeliveryFailed = order.OrderDeliveryFailed,
                 OrderDeliveryFailureReason = order.OrderDeliveryFailureReason,
-                OrderDeliveryFailureFaultParty = order.OrderDeliveryFailureFaultParty,
-                OrderVehicles = order.OrderVehicles.Select(ov => new OrderVehicleDto
+                OrderDeliveryFailureFaultParty = (FaultParty?)order.OrderDeliveryFailureFaultParty,
+                OrderVehicles = orderVehicles,
+                OrderPayments = data.Payments.Select(p => new OrderPaymentDto
                 {
-                    VehicleId = ov.VehicleId,
-                    VehicleName = ov.Vehicle.Name,
-                    VehicleCode = ov.Vehicle.VehicleCode,
-                    ImageUrl = !string.IsNullOrWhiteSpace(ov.Vehicle.ImageUrl)
-                        ? _imageService.GetImageUrl(ov.Vehicle.ImageUrl)
-                        : null,
-                    MerchantId = ov.Vehicle.MerchantId,
-                    MerchantName = ov.Vehicle.Merchant?.FullName ?? string.Empty,
-                    Status = (int)ov.Vehicle.Status,
-                    Color = ov.Vehicle.Color,
-                    Type = ov.Vehicle.Type,
-                    Model = ov.Vehicle.Model,
-                    Price = ov.Vehicle.Price,
-                    DeliveryFee = ov.DeliveryFee,
-                    MerchantCashOnReceive = ov.Vehicle.Merchant?.CashOnReceive ?? false,
-                    MerchantZoneId = ov.Vehicle.Merchant?.ZoneId ?? 0,
-                    MerchantZoneName = ov.Vehicle.Merchant?.Zone?.Name ?? string.Empty,
-                    SpeedKmh = ov.Vehicle.SpeedKmh,
-                    EngineCapacityCc = ov.Vehicle.EngineCapacityCc,
-                    ReceivedFromOwner = ov.ReceivedFromOwner,
-                    ReceivedFromOwnerImageUrl = _imageService.GetImageUrl(ov.ReceivedFromOwnerImageUrl),
-                    DeliveredToCustomer = ov.DeliveredToCustomer,
-                    DeliveredToCustomerImageUrl = _imageService.GetImageUrl(ov.DeliveredToCustomerImageUrl),
-                    ReceivedFromCustomer = ov.ReceivedFromCustomer,
-                    ReceivedFromCustomerImageUrl = _imageService.GetImageUrl(ov.ReceivedFromCustomerImageUrl),
-                    DeliveredToOwner = ov.DeliveredToOwner,
-                    DeliveredToOwnerImageUrl = _imageService.GetImageUrl(ov.DeliveredToOwnerImageUrl),
-                    DeliveryFailed = ov.DeliveryFailed,
-                    DeliveryFailureReason = ov.DeliveryFailureReason,
-                    DeliveryFailureFaultParty = ov.DeliveryFailureFaultParty,
-                    MerchantResponseStatus = ov.MerchantResponseStatus
+                    Id = p.Id,
+                    OrderId = p.OrderId,
+                    PaymentMethod = (PaymentMethod)p.PaymentMethodId,
+                    Total = p.Total,
+                    State = (PaymentState)p.State,
+                    CreatedDate = p.CreatedDate
                 }).ToList(),
-                OrderPayments = order.OrderPayments.Select(op => new OrderPaymentDto
+                RefundablePaypalAmount = data.Refund == null ? null : new RefundablePaypalAmountDto
                 {
-                    Id = op.Id,
-                    OrderId = op.OrderId,
-                    PaymentMethod = (PaymentMethod)op.PaymentMethodId,
-                    Total = op.Total,
-                    State = op.State,
-                    CreatedDate = op.CreatedDate
-                }).ToList(),
-                RefundablePaypalAmount = refundablePaypal != null ? new RefundablePaypalAmountDto
+                    Id = data.Refund.Id,
+                    CustomerId = data.Refund.CustomerId,
+                    OrderId = data.Refund.OrderId,
+                    OrderTotal = data.Refund.OrderTotal,
+                    CancellationFees = data.Refund.CancellationFees,
+                    RefundableAmount = data.Refund.RefundableAmount,
+                    State = (RefundState)data.Refund.State,
+                    CreatedDate = data.Refund.CreatedDate
+                },
+                OrderTotals = data.Totals == null ? null : new OrderTotalsDto
                 {
-                    Id = refundablePaypal.Id,
-                    CustomerId = refundablePaypal.CustomerId,
-                    OrderId = refundablePaypal.OrderId,
-                    OrderTotal = refundablePaypal.OrderTotal,
-                    CancellationFees = refundablePaypal.CancellationFees,
-                    RefundableAmount = refundablePaypal.RefundableAmount,
-                    State = refundablePaypal.State,
-                    CreatedDate = refundablePaypal.CreatedDate
-                } : null,
-                OrderTotals = orderTotals != null ? new OrderTotalsDto
+                    Id = data.Totals.Id,
+                    OrderId = data.Totals.OrderId,
+                    SubTotal = data.Totals.SubTotal,
+                    ServiceFees = data.Totals.ServiceFees,
+                    DeliveryFees = data.Totals.DeliveryFees,
+                    UrgentFees = data.Totals.UrgentFees,
+                    TieredDiscount = data.Totals.TieredDiscount,
+                    TotalAfterAllFees = data.Totals.TotalAfterAllFees
+                },
+                OrderCancellationFee = data.CancellationFee == null ? null : new OrderCancellationFeeInfoDto
                 {
-                    Id = orderTotals.Id,
-                    OrderId = orderTotals.OrderId,
-                    SubTotal = orderTotals.SubTotal,
-                    ServiceFees = orderTotals.ServiceFees,
-                    DeliveryFees = orderTotals.DeliveryFees,
-                    UrgentFees = orderTotals.UrgentFees,
-                    TieredDiscount = orderTotals.TieredDiscount,
-                    TotalAfterAllFees = orderTotals.TotalAfterAllFees
-                } : null,
-                OrderCancellationFee = cancellationFeeEntry != null ? new OrderCancellationFeeInfoDto
+                    WalletEntryId = data.CancellationFee.Id,
+                    Amount = data.CancellationFee.Withdraw,
+                    State = (CustomerWalletState)data.CancellationFee.State
+                },
+                MerchantOrders = data.MerchantOrders.Select(mo =>
                 {
-                    WalletEntryId = cancellationFeeEntry.Id,
-                    Amount = cancellationFeeEntry.Withdraw,
-                    State = cancellationFeeEntry.State
-                } : null,
-                MerchantOrders = merchantOrders.Select(mo =>
-                {
-                    var merchantVehicles = order.OrderVehicles
-                        .Where(ov => ov.Vehicle.MerchantId == mo.MerchantId)
-                        .ToList();
+                    // Counts come from the vehicle rows already loaded — no extra query.
+                    var merchantVehicles = orderVehicles.Where(v => v.MerchantId == mo.MerchantId).ToList();
                     return new MerchantOrderDto
                     {
                         MerchantOrderId = mo.MerchantOrderId,
                         OrderId = mo.OrderId,
                         MerchantId = mo.MerchantId,
-                        MerchantName = mo.Merchant.FullName,
-                        ResponseStatus = mo.ResponseStatus,
+                        MerchantName = mo.MerchantName ?? string.Empty,
+                        ResponseStatus = (MerchantOrderResponseStatus)mo.ResponseStatus,
                         RejectReason = mo.RejectReason,
                         RespondedAt = mo.RespondedAt,
                         CreatedDate = mo.CreatedDate,
@@ -229,68 +172,70 @@ namespace Application.Features.Order.Query.GetOrderByIdQuery
                         PendingVehiclesCount = merchantVehicles.Count(v => v.MerchantResponseStatus == MerchantVehicleResponseStatus.Pending),
                         DeclinedVehicleCodes = merchantVehicles
                             .Where(v => v.MerchantResponseStatus == MerchantVehicleResponseStatus.Declined)
-                            .Select(v => v.Vehicle.VehicleCode)
+                            .Select(v => v.VehicleCode)
                             .ToList()
                     };
                 }).ToList(),
-                MerchantOrderPaymentDetails = merchantPaymentDetails.Select(p => new MerchantOrderPaymentDetailDto
+                MerchantOrderPaymentDetails = data.MerchantPayments.Select(p => new MerchantOrderPaymentDetailDto
                 {
                     MerchantOrderPaymentDetailId = p.MerchantOrderPaymentDetailId,
                     OrderId = p.OrderId,
                     MerchantId = p.MerchantId,
-                    MerchantName = p.Merchant.FullName,
+                    MerchantName = p.MerchantName ?? string.Empty,
                     VehicleId = p.VehicleId,
-                    VehicleCode = p.Vehicle.VehicleCode,
+                    VehicleCode = p.VehicleCode ?? string.Empty,
                     VehicleRental = p.VehicleRental,
-                    NetAmount = p.NetAmount
+                    NetAmount = p.NetAmount,
+                    CompanyCommissionPercent = p.CompanyCommissionPercent,
+                    CompanyCommissionAmount = p.CompanyCommissionAmount
                 }).ToList(),
-                DeliveryMenOrders = deliveryMenOrders.Select(d => new DeliveryMenOrderDto
+                DeliveryMenOrders = data.DeliveryLegs.Select(d => new DeliveryMenOrderDto
                 {
                     DeliveryMenOrderId = d.DeliveryMenOrderId,
                     OrderId = d.OrderId,
                     VehicleId = d.VehicleId,
-                    VehicleCode = d.Vehicle.VehicleCode,
+                    VehicleCode = d.VehicleCode ?? string.Empty,
                     DeliveryId = d.DeliveryId,
-                    DeliveryName = d.Delivery.FullName,
+                    DeliveryName = d.DeliveryName ?? string.Empty,
                     DeliveryReceivedFromMerchant = d.DeliveryReceivedFromMerchant,
                     ReceivedFromMerchantAt = d.ReceivedFromMerchantAt,
-                    Leg = d.Leg
+                    Leg = (DeliveryLeg)d.Leg
                 }).ToList(),
-                DeliveryOrderPaymentDetails = deliveryPaymentDetails.Select(d => new DeliveryOrderPaymentDetailDto
+                DeliveryOrderPaymentDetails = data.DeliveryPayments.Select(d => new DeliveryOrderPaymentDetailDto
                 {
                     DeliveryOrderPaymentDetailId = d.DeliveryOrderPaymentDetailId,
                     OrderId = d.OrderId,
                     DeliveryId = d.DeliveryId,
-                    DeliveryName = d.Delivery.FullName,
+                    DeliveryName = d.DeliveryName ?? string.Empty,
                     VehicleId = d.VehicleId,
-                    VehicleCode = d.Vehicle.VehicleCode,
+                    VehicleCode = d.VehicleCode ?? string.Empty,
                     DeliveryFeeShare = d.DeliveryFeeShare,
-                    Leg = d.Leg,
+                    Leg = (DeliveryLeg)d.Leg,
                     CommissionPercent = d.CommissionPercent
                 }).ToList(),
-                OrderJournals = journals.Select(j => new OrderJournalDto
+                OrderJournals = data.Journals.Select(j => new OrderJournalDto
                 {
                     OrderJournalId = j.OrderJournalId,
                     OrderId = j.OrderId,
                     VehicleId = j.VehicleId,
-                    VehicleCode = j.Vehicle?.VehicleCode,
-                    PartyType = j.PartyType,
+                    VehicleCode = j.VehicleCode,
+                    PartyType = (LedgerPartyType)j.PartyType,
                     PartyId = j.PartyId,
-                    Direction = j.Direction,
+                    Direction = (JournalDirection)j.Direction,
                     Amount = j.Amount,
-                    EntryKind = j.EntryKind,
+                    EntryKind = (OrderJournalEntryKind)j.EntryKind,
                     IdempotencyKey = j.IdempotencyKey,
-                    FaultParty = j.FaultParty,
+                    FaultParty = (FaultParty?)j.FaultParty,
                     Note = j.Note,
                     CreatedBy = j.CreatedBy,
                     CreatedDate = j.CreatedDate
                 }).ToList(),
-                HandoverImages = handoverImages.Select(i => new OrderVehicleHandoverImageDto
+                HandoverImages = data.HandoverImages.Select(i => new OrderVehicleHandoverImageDto
                 {
                     VehicleId = i.VehicleId,
-                    Step = i.Step,
-                    Position = i.Position,
-                    ImageUrl = i.ImageUrl,
+                    Step = (HandoverStep)i.Step,
+                    Position = (HandoverImagePosition)i.Position,
+                    ImageUrl = i.ImageUrl ?? string.Empty,
                     DeliveryId = i.DeliveryId,
                     CreatedDate = i.CreatedDate
                 }).ToList()
@@ -298,5 +243,9 @@ namespace Application.Features.Order.Query.GetOrderByIdQuery
 
             return Result.Success(orderDetailDto);
         }
+
+        /// <summary>Vehicle.Status is stored as the enum name (string conversion).</summary>
+        private static int ParseVehicleStatus(string? status) =>
+            Enum.TryParse<VehicleStatus>(status, ignoreCase: true, out var parsed) ? (int)parsed : 0;
     }
 }

@@ -68,6 +68,12 @@ namespace Infrastructure.MappingConfiguration
                 .HasDefaultValue(false)
                 .IsRequired();
 
+            builder.Property(m => m.CompanyCommissionPercent)
+                .HasColumnName("CompanyCommissionPercent")
+                .HasColumnType("decimal(5,2)")
+                .HasDefaultValue(0m)
+                .IsRequired();
+
             builder.Property(m => m.IsDeleted)
                 .HasColumnName("IsDeleted")
                 .HasDefaultValue(false)

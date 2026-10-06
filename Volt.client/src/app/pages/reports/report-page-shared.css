@@ -32,17 +32,18 @@
 
 .rp__title {
   margin: 0;
-  font-size: clamp(1.55rem, 2vw, 2rem);
+  font-size: 1.6rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--rp-ink);
+  line-height: 1.2;
 }
 
 .rp__subtitle {
   margin: 0.4rem 0 0;
   max-width: 42rem;
-  color: var(--rp-muted);
-  font-size: 0.92rem;
+  color: var(--volt-text-secondary);
+  font-size: 0.88rem;
   line-height: 1.5;
 }
 
@@ -56,7 +57,7 @@
   background: transparent;
   color: var(--rp-muted);
   font-size: 0.85rem;
-  font-weight: 650;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -77,7 +78,7 @@
   gap: 0.45rem;
   min-height: 2.55rem;
   padding: 0.55rem 1rem;
-  border-radius: 0.85rem;
+  border-radius: var(--volt-radius);
   border: 1px solid transparent;
   font-size: 0.86rem;
   font-weight: 700;
@@ -112,7 +113,7 @@
 }
 
 .rp__btn--excel {
-  background: #0f766e;
+  background: var(--volt-accent);
   color: #fff;
 }
 
@@ -124,11 +125,10 @@
 .rp__panel {
   margin-bottom: 1rem;
   padding: 1rem 1.1rem 1.15rem;
-  border-radius: 1.25rem;
-  border: 1px solid var(--rp-line);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--rp-surface) 92%, #fff), var(--rp-surface));
-  box-shadow: var(--volt-shadow, 0 10px 30px rgba(15, 23, 42, 0.04));
+  border-radius: var(--volt-radius);
+  border: 1px solid var(--volt-border);
+  background: var(--volt-surface);
+  box-shadow: var(--volt-shadow);
 }
 
 .rp__panel-head {
@@ -156,18 +156,30 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
+  border: 1px solid var(--volt-border);
+  border-radius: var(--volt-radius);
+  background: var(--volt-surface);
+  box-shadow: var(--volt-shadow);
 }
 
 @media (max-width: 1100px) {
   .rp__filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  border: 1px solid var(--volt-border);
+  border-radius: var(--volt-radius);
+  background: var(--volt-surface);
+  box-shadow: var(--volt-shadow);
+}
 }
 
 @media (max-width: 640px) {
   .rp__filters {
     grid-template-columns: 1fr;
-  }
+  border: 1px solid var(--volt-border);
+  border-radius: var(--volt-radius);
+  background: var(--volt-surface);
+  box-shadow: var(--volt-shadow);
+}
 }
 
 .rp__field {
@@ -188,7 +200,7 @@
   min-height: 2.7rem;
   width: 100%;
   padding: 0.55rem 0.8rem;
-  border-radius: 0.85rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--rp-line);
   background: var(--rp-bg);
   color: var(--rp-ink);
@@ -212,7 +224,7 @@
   position: relative;
   overflow: hidden;
   padding: 0.95rem 1rem;
-  border-radius: 1.1rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--rp-line);
   background: var(--rp-surface);
 }
@@ -244,7 +256,7 @@
 }
 
 .rp__table-card {
-  border-radius: 1.25rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--rp-line);
   background: var(--rp-surface);
   overflow: hidden;
@@ -304,10 +316,10 @@
   font-weight: 750;
 }
 
-.rp__chip--ok { background: rgba(22, 163, 74, 0.12); color: #15803d; }
-.rp__chip--warn { background: rgba(245, 158, 11, 0.14); color: #b45309; }
-.rp__chip--bad { background: rgba(239, 68, 68, 0.12); color: #dc2626; }
-.rp__chip--info { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; }
+.rp__chip--ok { background: rgba(19, 138, 74, 0.12); color: var(--volt-ok); }
+.rp__chip--warn { background: rgba(178, 107, 0, 0.14); color: var(--volt-warn); }
+.rp__chip--bad { background: rgba(225, 6, 0, 0.12); color: var(--volt-accent); }
+.rp__chip--info { background: rgba(36, 89, 199, 0.12); color: var(--volt-info); }
 .rp__chip--muted { background: rgba(100, 116, 139, 0.12); color: #475569; }
 
 .rp__empty,
@@ -319,7 +331,7 @@
 }
 
 .rp__error {
-  color: #b91c1c;
+  color: var(--volt-accent);
 }
 
 .rp__footer-totals {
@@ -400,10 +412,9 @@
   flex-direction: column;
   min-height: 13.5rem;
   padding: 1.25rem;
-  border-radius: 1.35rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background:
-    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--volt-accent-soft) 70%, transparent), transparent 55%),
     var(--volt-surface);
   box-shadow: var(--volt-shadow, 0 10px 30px rgba(15, 23, 42, 0.04));
   text-decoration: none;
@@ -412,9 +423,9 @@
 }
 
 .reports__card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--volt-accent) 45%, var(--volt-border));
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--volt-shadow-hover);
 }
 
 .reports__card-icon {
@@ -423,7 +434,7 @@
   width: 2.85rem;
   height: 2.85rem;
   margin-bottom: 1rem;
-  border-radius: 0.95rem;
+  border-radius: var(--volt-radius);
   background: color-mix(in srgb, var(--volt-accent-soft) 80%, #fff);
   color: var(--volt-accent);
 }

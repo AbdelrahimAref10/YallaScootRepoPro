@@ -16,15 +16,15 @@
 
 .zone-rates__alert {
   padding: 0.85rem 1rem;
-  border-radius: 0.85rem;
+  border-radius: var(--volt-radius);
   font-size: 0.875rem;
   font-weight: 600;
 }
 
 .zone-rates__alert--ok {
-  border: 1px solid rgba(16, 185, 129, 0.28);
-  background: rgba(16, 185, 129, 0.12);
-  color: #047857;
+  border: 1px solid rgba(19, 138, 74, 0.28);
+  background: rgba(19, 138, 74, 0.12);
+  color: var(--volt-ok);
 }
 
 .zone-rates__empty {
@@ -34,7 +34,7 @@
   text-align: center;
   gap: 0.55rem;
   padding: 3.5rem 1.5rem;
-  border-radius: 1.15rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
 }
@@ -56,7 +56,7 @@
   place-items: center;
   width: 3.4rem;
   height: 3.4rem;
-  border-radius: 1rem;
+  border-radius: var(--volt-radius);
   background: var(--volt-accent-muted);
   color: var(--volt-accent);
   margin-bottom: 0.35rem;
@@ -77,7 +77,7 @@
 .zone-rates__origins,
 .zone-rates__matrix {
   border: 1px solid var(--volt-border);
-  border-radius: 1.15rem;
+  border-radius: var(--volt-radius);
   background: var(--volt-surface);
 }
 
@@ -99,13 +99,13 @@
 .zone-rates__dirty {
   font-size: 0.75rem;
   font-weight: 750;
-  color: #b45309;
+  color: var(--volt-warn);
 }
 
 .zone-rates__count {
   margin: 0.55rem 0 0;
   font-size: 0.75rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-muted);
 }
 
@@ -131,11 +131,11 @@
   width: 100%;
   min-height: 2.7rem;
   padding: 0.55rem 0.75rem;
-  border-radius: 0.8rem;
+  border-radius: var(--volt-radius);
   border: 1px solid transparent;
   background: transparent;
   color: var(--volt-text-primary);
-  font-weight: 650;
+  font-weight: 700;
   text-align: start;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
@@ -147,8 +147,8 @@
 
 .zone-rates__origin--active {
   background: var(--volt-accent-muted);
-  border-color: var(--volt-accent);
-  color: var(--volt-accent);
+  border-color: var(--volt-ok);
+  color: var(--volt-ok);
 }
 
 .zone-rates__origin-dot {
@@ -190,7 +190,7 @@
   gap: 0.85rem;
   align-items: center;
   padding: 0.7rem 0.75rem;
-  border-radius: 0.8rem;
+  border-radius: var(--volt-radius);
 }
 
 .zone-rates__row--head {
@@ -214,7 +214,7 @@
 }
 
 .zone-rates__to-name {
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .zone-rates__badge {
@@ -239,11 +239,11 @@
   width: 100%;
   min-height: 2.45rem;
   padding: 0 0.75rem;
-  border-radius: 0.7rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-bg);
   color: var(--volt-text-primary);
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .zone-rates__currency {

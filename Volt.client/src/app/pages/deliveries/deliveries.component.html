@@ -1,122 +1,129 @@
 <div class="deliveries">
   <header class="deliveries__header">
-    <div>
+    <div class="deliveries__header-text">
       <h1 class="deliveries__title">{{ 'deliveries.title' | t }}</h1>
       <p class="deliveries__subtitle">{{ 'deliveries.subtitle' | t }}</p>
     </div>
-    <button type="button" class="deliveries__add-btn" (click)="onAddNew()">
-      <span>{{ 'deliveries.add' | t }}</span>
-    </button>
+    <div class="deliveries__header-actions">
+      <button type="button" class="deliveries__add-btn" (click)="onAddNew()">
+        <svg class="deliveries__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        <span>{{ 'deliveries.add' | t }}</span>
+      </button>
+    </div>
   </header>
 
-  <div *ngIf="successMessage" class="deliveries__alert deliveries__alert--ok" role="status">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="deliveries__alert" role="alert">{{ errorMessage }}</div>
+  <section class="list-filters" aria-label="filters">
+    <div class="list-filters__search">
+      <span class="list-filters__search-icon-wrap" aria-hidden="true">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </span>
+      <input
+        type="search"
+        class="list-filters__search-input"
+        [(ngModel)]="searchTerm"
+        (keyup.enter)="applyFilters()"
+        [placeholder]="'deliveries.searchPlaceholder' | t"
+        [attr.aria-label]="'common.search' | t"
+      />
+    </div>
 
-  <section class="deliveries__filters" aria-label="filters">
-    <input
-      type="search"
-      class="deliveries__search"
-      [(ngModel)]="searchTerm"
-      (keyup.enter)="applyFilters()"
-      [placeholder]="'deliveries.searchPlaceholder' | t"
-    />
+    <div class="list-filters__field list-filters__field--sm">
+      <app-multi-select
+        [multiple]="false"
+        [searchable]="false"
+        [clearable]="false"
+        [options]="deletedFilterOptions"
+        [(ngModel)]="deletedFilterValue"
+      ></app-multi-select>
+    </div>
 
-    <app-multi-select
-      [multiple]="false"
-      [searchable]="false"
-      [clearable]="false"
-      [options]="deletedFilterOptions"
-      [(ngModel)]="deletedFilterValue"
-    ></app-multi-select>
-
-    <button type="button" class="deliveries__btn deliveries__btn--primary" (click)="applyFilters()">
-      {{ 'common.search' | t }}
+    <button type="button" class="list-filters__search-btn" (click)="applyFilters()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <span>{{ 'common.search' | t }}</span>
     </button>
-    <button type="button" class="deliveries__btn" (click)="clearFilters()">
-      {{ 'common.clearFilters' | t }}
+
+    <button type="button" class="list-filters__clear" (click)="clearFilters()" [attr.title]="'common.clearFilters' | t">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/></svg>
+      <span>{{ 'common.clear' | t }}</span>
     </button>
   </section>
 
-  <div *ngIf="isLoading" class="deliveries__loading">{{ 'common.loading' | t }}</div>
+  <div *ngIf="successMessage" class="deliveries__alert deliveries__alert--success" role="status">
+    <svg class="deliveries__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span>{{ successMessage }}</span>
+  </div>
 
-  <section *ngIf="!isLoading" class="deliveries__panel">
-    <div class="deliveries__table-scroll">
-      <table class="deliveries__table">
-        <thead>
-          <tr>
-            <th>{{ 'common.name' | t }}</th>
-            <th>{{ 'login.username' | t }}</th>
-            <th>{{ 'common.city' | t }}</th>
-            <th>{{ 'common.phone' | t }}</th>
-            <th>{{ 'common.email' | t }}</th>
-            <th>{{ 'common.status' | t }}</th>
-            <th>{{ 'riders.availability' | t }}</th>
-            <th>{{ 'deliveries.cashDebt' | t }}</th>
-            <th>{{ 'deliveries.deleted' | t }}</th>
-            <th>{{ 'common.createdDate' | t }}</th>
-            <th>{{ 'common.actions' | t }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="deliveries.length === 0">
-            <td colspan="11" class="deliveries__empty">{{ 'deliveries.empty' | t }}</td>
-          </tr>
-          <tr *ngFor="let d of deliveries">
-            <td>{{ d.fullName }}</td>
-            <td>{{ d.userName || '—' }}</td>
-            <td>{{ d.cityName || '—' }}</td>
-            <td>{{ d.mobileNumber }}</td>
-            <td>{{ d.email || '—' }}</td>
-            <td>
-              <span
-                class="deliveries__badge"
-                [class.deliveries__badge--on]="d.isActive"
-                [class.deliveries__badge--off]="!d.isActive"
-              >
-                {{ statusLabel(d.isActive) }}
-              </span>
-            </td>
-            <td>
-              <span *ngIf="availability.get(d.deliveryId) as a; else noAvailability" class="deliveries__presence">
-                <span class="deliveries__presence-dot" [ngClass]="'deliveries__presence-dot--' + availabilityTone(d.deliveryId)" aria-hidden="true"></span>
-                <span>
-                  {{ availabilityKey(d.deliveryId) | t }}
-                  <small *ngIf="a.currentShiftName">{{ a.currentShiftName }}</small>
-                </span>
-              </span>
-              <ng-template #noAvailability>—</ng-template>
-            </td>
-            <td>
-              <span
-                *ngIf="debtOf(d.deliveryId) as debt"
-                class="deliveries__debt"
-                [class.deliveries__debt--over]="isOverDebtLimit(d.deliveryId)"
-                [attr.title]="isOverDebtLimit(d.deliveryId) ? ('riders.overDebtLimit' | t) : null"
-              >
-                <strong>{{ money(debt.cashDebt) }} <small>{{ 'riders.currencyShort' | t }}</small></strong>
-                <small class="deliveries__debt-limit">
-                  {{ debt.cashDebtLimit != null
-                    ? ('deliveries.debtLimitOf' | t:{ limit: money(debt.cashDebtLimit) })
-                    : ('deliveries.noDebtLimit' | t) }}
-                </small>
-              </span>
-            </td>
-            <td>{{ d.isDeleted ? ('common.yes' | t) : ('common.no' | t) }}</td>
-            <td>{{ d.createdDate | date:'yyyy-MM-dd' }}</td>
-            <td>
-              <div class="deliveries__row-actions" *ngIf="!d.isDeleted">
-                <button type="button" class="deliveries__link" (click)="onEdit(d)">{{ 'common.edit' | t }}</button>
-                <button type="button" class="deliveries__link" (click)="onEditDebtLimit(d)">{{ 'deliveries.debtLimitAction' | t }}</button>
-                <button type="button" class="deliveries__link deliveries__link--danger" (click)="onDelete(d)" [disabled]="isDeleting">
-                  {{ 'common.delete' | t }}
-                </button>
-              </div>
-              <span *ngIf="d.isDeleted">—</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <div *ngIf="errorMessage" class="deliveries__alert deliveries__alert--error" role="alert">
+    <svg class="deliveries__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <div *ngIf="isLoading" class="deliveries__loading">
+    <div class="deliveries__spinner" aria-hidden="true"></div>
+    <p>{{ 'common.loading' | t }}</p>
+  </div>
+
+  <div *ngIf="!isLoading && deliveries.length === 0" class="deliveries__empty">
+    <div class="deliveries__empty-icon" aria-hidden="true">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
     </div>
+    <h2 class="deliveries__empty-title">{{ 'deliveries.empty' | t }}</h2>
+    <p class="deliveries__empty-text">{{ 'deliveries.emptyHint' | t }}</p>
+    <button type="button" class="deliveries__add-btn" (click)="onAddNew()">
+      <svg class="deliveries__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+      <span>{{ 'deliveries.add' | t }}</span>
+    </button>
+  </div>
+
+  <section *ngIf="!isLoading && deliveries.length > 0" class="pc-grid">
+    <article *ngFor="let d of deliveries" class="pc-card" [class.pc-card--muted]="!d.isActive || d.isDeleted">
+      <header class="pc-card__head">
+        <span class="pc-avatar">
+          <img *ngIf="d.personalImage" [src]="d.personalImage" alt="" />
+          <ng-container *ngIf="!d.personalImage">{{ (d.fullName || '?').charAt(0) }}</ng-container>
+          <span class="pc-avatar__dot" [ngClass]="'pc-avatar__dot--' + availabilityTone(d.deliveryId)" aria-hidden="true"></span>
+        </span>
+        <div class="pc-card__id">
+          <span class="pc-card__name">{{ d.fullName }}</span>
+          <span class="pc-card__handle">
+            <ng-container *ngIf="availability.get(d.deliveryId) as a; else noAvailability">
+              {{ availabilityKey(d.deliveryId) | t }}<ng-container *ngIf="a.currentShiftName"> · {{ a.currentShiftName }}</ng-container>
+            </ng-container>
+            <ng-template #noAvailability>&#64;{{ d.userName || '—' }}</ng-template>
+          </span>
+        </div>
+        <span class="pc-status" [class.pc-status--ok]="d.isActive && !d.isDeleted" [class.pc-status--off]="!d.isActive || d.isDeleted">
+          {{ d.isDeleted ? ('deliveries.deleted' | t) : statusLabel(d.isActive) }}
+        </span>
+      </header>
+      <div class="pc-card__facts">
+        <div class="pc-fact"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>{{ d.cityName || '—' }}</span></div>
+        <div class="pc-fact pc-fact--ltr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg><span>{{ d.mobileNumber }}</span></div>
+        <div class="pc-fact"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><span>{{ d.email || '—' }}</span></div>
+      </div>
+      <dl class="pc-card__stats">
+        <div class="pc-stat" [class.pc-stat--alert]="isOverDebtLimit(d.deliveryId)">
+          <dt>{{ 'deliveries.cashDebt' | t }}</dt>
+          <dd>{{ money(debtOf(d.deliveryId).cashDebt || 0) }} <small>{{ 'riders.currencyShort' | t }}</small></dd>
+        </div>
+        <div class="pc-stat">
+          <dt>{{ 'deliveries.debtLimitAction' | t }}</dt>
+          <dd>{{ debtOf(d.deliveryId).cashDebtLimit != null ? money(debtOf(d.deliveryId).cashDebtLimit!) : '—' }}</dd>
+        </div>
+        <div class="pc-stat">
+          <dt>{{ 'common.createdDate' | t }}</dt>
+          <dd>{{ d.createdDate | date:'d MMM y' }}</dd>
+        </div>
+      </dl>
+      <footer class="pc-card__foot">
+        <span class="pc-card__since">&#64;{{ d.userName || '—' }}</span>
+        <div class="pc-card__actions" *ngIf="!d.isDeleted">
+          <button type="button" class="va-act va-act--edit" (click)="onEdit(d)" [attr.title]="'common.edit' | t" [attr.aria-label]="'common.edit' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+          <button type="button" class="va-act va-act--money" (click)="onEditDebtLimit(d)" [attr.title]="'deliveries.debtLimitAction' | t" [attr.aria-label]="'deliveries.debtLimitAction' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M3 10h18M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2zm2 9h3"/></svg></button>
+          <button type="button" class="va-act va-act--delete" (click)="onDelete(d)" [disabled]="isDeleting" [attr.title]="'common.delete' | t" [attr.aria-label]="'common.delete' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+        </div>
+      </footer>
+    </article>
   </section>
 </div>
 

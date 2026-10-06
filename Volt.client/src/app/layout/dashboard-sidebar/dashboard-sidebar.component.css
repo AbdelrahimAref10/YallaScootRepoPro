@@ -1,4 +1,4 @@
-/* Dashboard Sidebar — soft light rail (POS style) */
+/* Dashboard Sidebar — white rail, flat and formal */
 
 .dashboard-sidebar {
   position: fixed;
@@ -10,6 +10,7 @@
   width: 15.75rem;
   background: var(--volt-sidebar-bg);
   border-inline-end: 1px solid var(--volt-sidebar-border);
+  color: var(--volt-sidebar-text);
   transition:
     width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
     inset-inline-start 0.3s cubic-bezier(0.22, 1, 0.36, 1),
@@ -37,11 +38,11 @@
   flex-shrink: 0;
   width: 2.65rem;
   height: 2.65rem;
-  border-radius: 1rem;
+  border-radius: var(--volt-radius);
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: var(--volt-surface);
+  background: #fff;
   border: 1px solid var(--volt-border);
 }
 
@@ -62,11 +63,17 @@
 }
 
 .dashboard-sidebar__brand-name {
-  font-size: 1.15rem;
+  font-family: var(--volt-font-heading);
+  font-size: 1.1rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--volt-text-primary);
   line-height: 1.1;
+}
+
+.dashboard-sidebar__brand-name b {
+  color: var(--volt-accent);
+  font-weight: 800;
 }
 
 .dashboard-sidebar__brand-tag {
@@ -88,7 +95,7 @@
   height: 2.35rem;
   margin-inline-start: auto;
   border: 1px solid var(--volt-border);
-  border-radius: 0.85rem;
+  border-radius: 0.45rem;
   background: var(--volt-surface);
   color: var(--volt-text-secondary);
   cursor: pointer;
@@ -105,9 +112,9 @@
 }
 
 .dashboard-sidebar__close:hover {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.28);
-  color: #dc2626;
+  background: rgba(225, 6, 0, 0.08);
+  border-color: rgba(225, 6, 0, 0.28);
+  color: var(--volt-accent);
 }
 
 .dashboard-sidebar__close:active {
@@ -120,7 +127,29 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.15rem;
+}
+
+.dashboard-sidebar__group {
+  display: block;
+  padding: 1rem 0.95rem 0.35rem;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--volt-text-muted);
+  white-space: nowrap;
+}
+
+.dashboard-sidebar__group:first-child {
+  padding-top: 0.25rem;
+}
+
+.dashboard-sidebar__group--compact {
+  height: 1px;
+  margin: 0.6rem 0.9rem;
+  padding: 0;
+  background: var(--volt-border);
 }
 
 .dashboard-sidebar__item {
@@ -128,19 +157,20 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  padding: 0.8rem 0.95rem;
-  border-radius: 0.9rem;
+  padding: 0.62rem 0.95rem;
+  border-radius: 0.4rem;
   color: var(--volt-sidebar-text);
   text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 650;
+  font-size: 0.86rem;
+  font-weight: 600;
   transition: background 0.2s ease, color 0.2s ease;
 }
 
 .dashboard-sidebar__item::before {
   content: "";
   position: absolute;
-  inset-inline-start: 0.35rem;
+  inset-inline-start: -0.85rem;
+  display: none;
   top: 50%;
   width: 3px;
   height: 0;
@@ -152,7 +182,7 @@
 
 .dashboard-sidebar__item:hover {
   background: var(--volt-sidebar-hover);
-  color: var(--volt-accent);
+  color: var(--volt-text-primary);
 }
 
 :host-context([dir="rtl"]) .dashboard-sidebar__item:hover {
@@ -165,7 +195,12 @@
 }
 
 .dashboard-sidebar__item--active::before {
-  height: 1.35rem;
+  height: 1.5rem;
+}
+
+.dashboard-sidebar__item--active {
+  font-weight: 700;
+  color: var(--volt-accent) !important;
 }
 
 .dashboard-sidebar__item--active .dashboard-sidebar__item-icon {
@@ -174,8 +209,8 @@
 
 .dashboard-sidebar__item-icon {
   flex-shrink: 0;
-  width: 1.3rem;
-  height: 1.3rem;
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .dashboard-sidebar__item-label {
@@ -195,7 +230,9 @@
 }
 
 .dashboard-sidebar__footer {
-  padding: 0.9rem 1.15rem 1.25rem;
+  margin: 0;
+  padding: 0.9rem 1.15rem;
+  border-top: 1px solid var(--volt-sidebar-border);
 }
 
 .dashboard-sidebar__footer-text {
@@ -211,7 +248,7 @@
 }
 
 .dashboard-sidebar__nav::-webkit-scrollbar-thumb {
-  background: rgba(227, 6, 19, 0.28);
+  background: var(--volt-border-strong);
   border-radius: 999px;
 }
 
@@ -220,7 +257,7 @@
 }
 
 :host-context(html.dark) .dashboard-sidebar__brand-name {
-  color: #fff;
+  color: var(--volt-text-primary);
 }
 
 :host-context(html.dark) .dashboard-sidebar__close {

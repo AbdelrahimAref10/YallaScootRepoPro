@@ -72,6 +72,10 @@ namespace Infrastructure.MappingConfiguration
 
             builder.HasIndex(cw => cw.State)
                 .HasDatabaseName("IX_VO_CustomerWallet_State");
+
+            // Dashboard: cancellation fees by type within a period.
+            builder.HasIndex(cw => new { cw.Type, cw.CreatedDate })
+                .HasDatabaseName("IX_VO_CustomerWallet_Type_CreatedDate");
         }
     }
 }

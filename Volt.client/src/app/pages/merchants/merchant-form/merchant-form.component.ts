@@ -23,7 +23,7 @@ import {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent],
   templateUrl: './merchant-form.component.html',
-  styleUrls: ['./merchant-form.component.css', '../../../shared/styles/entity-form.css']
+  styleUrls: ['./merchant-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
 export class MerchantFormComponent implements OnInit {
   @ViewChild('personalImageInput', { static: false }) personalImageInputRef?: ElementRef<HTMLInputElement>;
@@ -45,6 +45,28 @@ export class MerchantFormComponent implements OnInit {
   existingPersonalImage: string | null = null;
   cities: CityDto[] = [];
   zones: ZoneLookupDto[] = [];
+
+  /** First letter of the name for the summary avatar. */
+  get initial(): string {
+    const name = String(this.merchantForm?.get('fullName')?.value || '').trim();
+    return name ? name.charAt(0).toUpperCase() : '?';
+  }
+
+  /** Share of required fields already valid, for the summary meter. */
+  get completion(): number {
+    const required = ['fullName', 'userName', 'mobileNumber', 'email', 'cityId', 'zoneId'];
+    if (!this.isEditMode) required.push('password');
+    const done = required.filter(name => {
+      const control = this.merchantForm?.get(name);
+      return !!control && control.valid && control.value !== null && control.value !== '';
+    }).length;
+    return Math.round((done / required.length) * 100);
+  }
+
+  optionLabel(options: MultiSelectOption[], value: unknown): string {
+    if (value === null || value === undefined || value === '') return '—';
+    return options.find(o => o.value === value || String(o.value) === String(value))?.label ?? '—';
+  }
 
   get cityOptions(): MultiSelectOption[] {
     return this.cities.map(city => ({
@@ -71,7 +93,8 @@ export class MerchantFormComponent implements OnInit {
       zoneId: [null, [Validators.required]],
       personalImage: [''],
       isActive: [true],
-      cashOnReceive: [false]
+      cashOnReceive: [false],
+      companyCommissionPercent: [0, [Validators.required, Validators.min(0), Validators.max(100)]]
     });
 
     this.loadCities();
@@ -140,6 +163,7 @@ export class MerchantFormComponent implements OnInit {
           zoneId: merchant.zoneId || null,
           isActive: merchant.isActive,
           cashOnReceive: merchant.cashOnReceive,
+          companyCommissionPercent: merchant.companyCommissionPercent ?? 0,
           personalImage: ''
         }, { emitEvent: false });
         this.loadZones(merchant.cityId || null, merchant.zoneId || null);
@@ -204,6 +228,7 @@ export class MerchantFormComponent implements OnInit {
       command.personalImage = value.personalImage || this.existingPersonalImage || null;
       command.isActive = !!value.isActive;
       command.cashOnReceive = !!value.cashOnReceive;
+      command.companyCommissionPercent = Number(value.companyCommissionPercent) || 0;
       command.password = value.password || null;
 
       this.merchantClient.update(this.merchantId, command).subscribe({
@@ -230,6 +255,7 @@ export class MerchantFormComponent implements OnInit {
     create.personalImage = value.personalImage || null;
     create.isActive = !!value.isActive;
     create.cashOnReceive = !!value.cashOnReceive;
+    create.companyCommissionPercent = Number(value.companyCommissionPercent) || 0;
 
     this.merchantClient.create(create).subscribe({
       next: () => this.router.navigate(['/main/merchants']),

@@ -12,28 +12,33 @@
 
 .journals__header {
   padding: 0.2rem 0.1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--volt-border);
 }
 
 .journals__title {
   margin: 0;
-  font-size: 1.55rem;
+  font-size: 1.6rem;
   font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .journals__subtitle {
   margin: 0.35rem 0 0;
-  color: var(--volt-text-muted);
+  color: var(--volt-text-secondary);
+  font-size: 0.88rem;
 }
 
 .journals__alert {
   padding: 0.8rem 1rem;
-  border-radius: 0.8rem;
+  border-radius: var(--volt-radius);
   font-size: 0.9rem;
 }
 
 .journals__alert--err {
-  background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
+  background: rgba(225, 6, 0, 0.12);
+  color: var(--volt-accent);
 }
 
 .journals__filters {
@@ -62,14 +67,14 @@
 
 .journals__actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.5rem;
 }
 
 .journals__btn {
   min-height: 3rem;
   padding: 0 1.1rem;
-  border-radius: 0.8rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
   color: var(--volt-text-primary);
@@ -114,23 +119,25 @@
 }
 
 .journals__table thead th {
-  padding: 0.85rem 1rem;
-  text-align: center;
-  font-size: 0.7rem;
-  font-weight: 750;
-  letter-spacing: 0.06em;
+  padding: 0.7rem 1rem;
+  text-align: start;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--volt-text-muted);
-  background: var(--volt-surface-muted);
+  background: var(--volt-surface-hover);
   border-bottom: 1px solid var(--volt-border);
+  white-space: nowrap;
 }
 
 .journals__table tbody td {
-  padding: 0.85rem 1rem;
+  padding: 0.75rem 1rem;
   vertical-align: middle;
-  text-align: center;
+  text-align: start;
   border-bottom: 1px solid var(--volt-border);
-  font-size: 0.875rem;
+  font-size: 0.86rem;
+  white-space: nowrap;
 }
 
 .journals__table tbody tr:hover td {
@@ -172,13 +179,13 @@
 }
 
 .journals__dir--credit {
-  background: rgba(22, 163, 74, 0.12);
-  color: #15803d;
+  background: rgba(19, 138, 74, 0.12);
+  color: var(--volt-ok);
 }
 
 .journals__dir--debit {
-  background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
+  background: rgba(225, 6, 0, 0.12);
+  color: var(--volt-accent);
 }
 
 .journals__totals {
@@ -214,9 +221,9 @@
 }
 
 .journals__total--positive strong {
-  color: #15803d;
+  color: var(--volt-ok);
 }
 
 .journals__total--negative strong {
-  color: #b91c1c;
+  color: var(--volt-accent);
 }

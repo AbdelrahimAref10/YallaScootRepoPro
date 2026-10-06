@@ -18,6 +18,8 @@ namespace Domain.Models
         public bool IsActive { get; private set; }
         /// <summary>When true, delivery pays merchant cash at handover; journal nets merchant and credits delivery advance.</summary>
         public bool CashOnReceive { get; private set; }
+        /// <summary>Company's percentage of this merchant's vehicle rental (0–100). Debited from the merchant on customer delivery.</summary>
+        public decimal CompanyCommissionPercent { get; private set; }
         public bool IsDeleted { get; private set; }
         public string? CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; }
@@ -96,8 +98,11 @@ namespace Domain.Models
             string? personalImage = null,
             string? createdBy = null,
             bool isActive = true,
-            bool cashOnReceive = false)
+            bool cashOnReceive = false,
+            decimal companyCommissionPercent = 0m)
         {
+            EnsureCommissionPercent(companyCommissionPercent);
+
             if (userId <= 0)
                 throw new ArgumentException("User ID must be greater than zero", nameof(userId));
 
@@ -127,6 +132,7 @@ namespace Domain.Models
                 IsInvitationCodeUsed = true,
                 IsActive = isActive,
                 CashOnReceive = cashOnReceive,
+                CompanyCommissionPercent = companyCommissionPercent,
                 IsDeleted = false,
                 CreatedBy = createdBy,
                 CreatedDate = DateTime.UtcNow,
@@ -171,8 +177,12 @@ namespace Domain.Models
             bool? cashOnReceive = null,
             bool? isActive = null,
             int? cityId = null,
-            int? zoneId = null)
+            int? zoneId = null,
+            decimal? companyCommissionPercent = null)
         {
+            if (companyCommissionPercent.HasValue)
+                EnsureCommissionPercent(companyCommissionPercent.Value);
+
             if (string.IsNullOrWhiteSpace(fullName))
                 throw new ArgumentException("Full name cannot be empty", nameof(fullName));
 
@@ -193,6 +203,8 @@ namespace Domain.Models
                 CityId = cityId.Value;
             if (zoneId.HasValue)
                 ZoneId = zoneId.Value;
+            if (companyCommissionPercent.HasValue)
+                CompanyCommissionPercent = companyCommissionPercent.Value;
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }
@@ -206,6 +218,12 @@ namespace Domain.Models
             IsActive = false;
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
+        }
+
+        private static void EnsureCommissionPercent(decimal percent)
+        {
+            if (percent < 0 || percent > 100)
+                throw new ArgumentException("Company commission percent must be between 0 and 100", nameof(percent));
         }
 
         public void SetCashOnReceive(bool cashOnReceive, string? modifiedBy = null)

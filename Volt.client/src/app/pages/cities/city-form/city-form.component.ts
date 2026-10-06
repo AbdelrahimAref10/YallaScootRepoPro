@@ -23,7 +23,7 @@ function commissionSumValidator(group: AbstractControl): ValidationErrors | null
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslatePipe],
   templateUrl: './city-form.component.html',
-  styleUrls: ['./city-form.component.css', '../../../shared/styles/entity-form.css']
+  styleUrls: ['../../../shared/styles/entity-form.css', './city-form.component.css']
 })
 export class CityFormComponent implements OnInit {
   private readonly localeService = inject(LocaleService);
@@ -166,6 +166,90 @@ export class CityFormComponent implements OnInit {
 
   removeTieredDiscount(index: number): void {
     this.tieredDiscountsFormArray.removeAt(index);
+  }
+
+  /** Appends a tier that starts the day after the last one ends. */
+  addNextTier(): void {
+    const ends = this.tierRows.map(t => t.to).filter(v => v > 0);
+    const from = ends.length ? Math.max(...ends) + 1 : 1;
+    this.addTieredDiscount(from, from + 6, 0);
+  }
+
+  num(name: string): number {
+    return Number(this.cityForm.get(name)?.value ?? 0) || 0;
+  }
+
+  /** Slider writes through the form control so the number box updates with it. */
+  setPercent(name: string, value: string | number): void {
+    const control = this.cityForm.get(name);
+    control?.setValue(Number(value));
+    control?.markAsDirty();
+    control?.markAsTouched();
+  }
+
+  get tierRows(): { from: number; to: number; discount: number }[] {
+    return this.tieredDiscountsFormArray.controls.map(c => ({
+      from: Number(c.get('from')?.value ?? 0) || 0,
+      to: Number(c.get('to')?.value ?? 0) || 0,
+      discount: Number(c.get('discount')?.value ?? 0) || 0
+    }));
+  }
+
+  /** Right edge of the discount ladder axis, in days. */
+  get ladderMax(): number {
+    const ends = this.tierRows.map(t => Math.max(t.to, t.from));
+    return Math.max(30, ...ends) + 1;
+  }
+
+  /** Tallest discount on the ladder, so small percentages stay readable. */
+  get ladderPeak(): number {
+    return Math.min(100, Math.max(10, ...this.tierRows.map(t => t.discount)));
+  }
+
+  tierLeft(i: number): number {
+    const t = this.tierRows[i];
+    return (Math.max(t.from, 1) - 1) / this.ladderMax * 100;
+  }
+
+  tierWidth(i: number): number {
+    const t = this.tierRows[i];
+    if (!t.from || !t.to || t.to < t.from) return 0;
+    return (t.to - t.from + 1) / this.ladderMax * 100;
+  }
+
+  tierSpan(i: number): number {
+    const t = this.tierRows[i];
+    return t.from > 0 && t.to >= t.from ? t.to - t.from + 1 : 0;
+  }
+
+  /** Indices of tiers whose day range overlaps another tier. */
+  get overlappingTiers(): number[] {
+    const rows = this.tierRows;
+    const hits = new Set<number>();
+    rows.forEach((a, i) => rows.forEach((b, j) => {
+      if (i < j && a.from && a.to && b.from && b.to && a.from <= b.to && b.from <= a.to) {
+        hits.add(i);
+        hits.add(j);
+      }
+    }));
+    return [...hits];
+  }
+
+  isOverlapping(i: number): boolean {
+    return this.overlappingTiers.includes(i);
+  }
+
+  get companyPercent(): number {
+    return Math.max(0, Math.round((100 - this.commissionTotal) * 100) / 100);
+  }
+
+  get selectedZoneGroupName(): string {
+    const id = this.cityForm.get('zoneGroupId')?.value;
+    return this.zoneGroups.find(g => Number(g.zoneGroupId) === Number(id))?.name ?? '';
+  }
+
+  scrollToSection(id: string): void {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   loadCity(): void {

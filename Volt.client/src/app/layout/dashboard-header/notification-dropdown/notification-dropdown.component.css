@@ -9,7 +9,7 @@
   max-height: 600px;
   display: flex;
   flex-direction: column;
-  border-radius: 1rem;
+  border-radius: var(--volt-radius);
   background: var(--volt-surface);
   border: 1px solid var(--volt-border);
   z-index: 50;
@@ -80,7 +80,7 @@
 .notification-dropdown__empty-text {
   margin: 0 0 0.25rem;
   font-size: 1rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-primary);
 }
 
@@ -119,7 +119,7 @@
 .notification-dropdown__item-icon {
   width: 2.35rem;
   height: 2.35rem;
-  border-radius: 0.7rem;
+  border-radius: var(--volt-radius);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -146,7 +146,7 @@
 .notification-dropdown__item-title {
   margin: 0;
   font-size: 0.875rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-primary);
 }
 
@@ -209,7 +209,7 @@
   display: flex;
   justify-content: center;
   font-size: 0.85rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-accent);
   text-decoration: none;
 }

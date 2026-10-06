@@ -87,6 +87,7 @@ namespace Application.Features.Order.Query.GetMyMerchantDashboardQuery
                 MerchantId = merchant.MerchantId,
                 FullName = merchant.FullName,
                 CashOnReceive = merchant.CashOnReceive,
+                CompanyCommissionPercent = merchant.CompanyCommissionPercent,
                 PendingInvitationsCount = pendingInvitations,
                 AwaitingHandoverCount = awaitingHandover,
                 ActiveOrdersCount = activeOrders,

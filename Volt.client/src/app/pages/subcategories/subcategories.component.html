@@ -326,7 +326,7 @@
   <div class="subcategories__actions">
     <button
       type="button"
-      class="subcategories__action"
+      class="subcategories__action va-act va-act--view"
       (click)="onViewVehicles(subCategory.subCategoryId)"
       [attr.title]="'subcategories.viewVehicles' | t"
       [attr.aria-label]="'subcategories.viewVehicles' | t"
@@ -338,7 +338,7 @@
     </button>
     <button
       type="button"
-      class="subcategories__action"
+      class="subcategories__action va-act va-act--edit"
       (click)="onEdit(subCategory)"
       [attr.title]="'subcategories.editItem' | t"
       [attr.aria-label]="'subcategories.editItem' | t"
@@ -350,7 +350,7 @@
     <button
       *ngIf="subCategory.isActive"
       type="button"
-      class="subcategories__action subcategories__action--warn"
+      class="subcategories__action subcategories__action--warn va-act va-act--off"
       (click)="onDeactivate(subCategory.subCategoryId)"
       [attr.title]="'subcategories.deactivateItem' | t"
       [attr.aria-label]="'subcategories.deactivateItem' | t"
@@ -362,7 +362,7 @@
     <button
       *ngIf="!subCategory.isActive"
       type="button"
-      class="subcategories__action subcategories__action--success"
+      class="subcategories__action subcategories__action--success va-act va-act--on"
       (click)="onActivate(subCategory.subCategoryId)"
       [attr.title]="'subcategories.activateItem' | t"
       [attr.aria-label]="'subcategories.activateItem' | t"
@@ -373,7 +373,7 @@
     </button>
     <button
       type="button"
-      class="subcategories__action subcategories__action--danger"
+      class="subcategories__action subcategories__action--danger va-act va-act--delete"
       (click)="onDelete(subCategory.subCategoryId)"
       [attr.title]="'subcategories.deleteItem' | t"
       [attr.aria-label]="'subcategories.deleteItem' | t"

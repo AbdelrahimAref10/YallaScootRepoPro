@@ -28,6 +28,7 @@ namespace Application.Features.SubCategory.Command.DeleteSubCategoryCommand
         public async Task<Result<bool>> Handle(DeleteSubCategoryCommand request, CancellationToken cancellationToken)
         {
             var subCategory = await _context.SubCategories
+                .AsTracking()
                 .Include(sc => sc.Vehicles)
                 .FirstOrDefaultAsync(sc => sc.SubCategoryId == request.SubCategoryId, cancellationToken);
 

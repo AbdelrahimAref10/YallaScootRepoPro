@@ -7,8 +7,10 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'Cairo', 'system-ui', 'sans-serif'],
-        arabic: ['Cairo', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        sans: ['Manrope', 'Cairo', 'system-ui', 'sans-serif'],
+        heading: ['Montserrat', 'Manrope', 'Cairo', 'sans-serif'],
+        display: ['Teko', 'Montserrat', 'Cairo', 'sans-serif'],
+        arabic: ['Cairo', 'Manrope', 'system-ui', 'sans-serif'],
       },
       colors: {
         primary: {
@@ -17,8 +19,8 @@ module.exports = {
           200: '#ffc6c9',
           300: '#ff9aa0',
           400: '#ff5d68',
-          500: '#e30613',
-          600: '#c80511',
+          500: '#e10600',
+          600: '#b80500',
           700: '#a5040e',
           800: '#86040d',
           900: '#6f0810',

@@ -233,6 +233,18 @@ export class CustomersComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Status pill colour for the customer card. */
+  customerTone(state: CustomerState): string {
+    switch (state) {
+      case CustomerState.Active:
+        return 'pc-status--ok';
+      case CustomerState.Blocked:
+        return 'pc-status--red';
+      default:
+        return 'pc-status--off';
+    }
+  }
+
   private toNullableNumber(values: Array<string | number | boolean>): number | undefined {
     if (values.length !== 1) {
       return undefined;

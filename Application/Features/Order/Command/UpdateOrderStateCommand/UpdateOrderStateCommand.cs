@@ -158,6 +158,12 @@ namespace Application.Features.Order.Command.UpdateOrderStateCommand
             if (order.VehiclesCount <= 0)
                 return Result.Failure("Invalid vehicles count");
 
+            var merchantIds = order.OrderVehicles.Select(ov => ov.Vehicle.MerchantId).Distinct().ToList();
+            var commissionByMerchant = await _context.Merchants
+                .AsNoTracking()
+                .Where(m => merchantIds.Contains(m.MerchantId))
+                .ToDictionaryAsync(m => m.MerchantId, m => m.CompanyCommissionPercent, cancellationToken);
+
             foreach (var ov in order.OrderVehicles)
             {
                 var vehicle = ov.Vehicle;
@@ -170,7 +176,8 @@ namespace Application.Features.Order.Command.UpdateOrderStateCommand
                         vehicle.MerchantId,
                         vehicle.VehicleId,
                         order.CalculateVehicleRental(vehicle.Price),
-                        actor),
+                        actor,
+                        commissionByMerchant.GetValueOrDefault(vehicle.MerchantId)),
                     cancellationToken);
             }
 

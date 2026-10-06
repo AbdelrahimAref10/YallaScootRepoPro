@@ -23,7 +23,7 @@ import {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent],
   templateUrl: './delivery-form.component.html',
-  styleUrls: ['./delivery-form.component.css', '../../../shared/styles/entity-form.css']
+  styleUrls: ['./delivery-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
 export class DeliveryFormComponent implements OnInit {
   @ViewChild('personalImageInput', { static: false }) personalImageInputRef?: ElementRef<HTMLInputElement>;
@@ -45,6 +45,28 @@ export class DeliveryFormComponent implements OnInit {
   existingPersonalImage: string | null = null;
   cities: CityDto[] = [];
   zones: ZoneLookupDto[] = [];
+
+  /** First letter of the name for the summary avatar. */
+  get initial(): string {
+    const name = String(this.deliveryForm?.get('fullName')?.value || '').trim();
+    return name ? name.charAt(0).toUpperCase() : '?';
+  }
+
+  /** Share of required fields already valid, for the summary meter. */
+  get completion(): number {
+    const required = ['fullName', 'userName', 'mobileNumber', 'email', 'cityId', 'zoneId'];
+    if (!this.isEditMode) required.push('password');
+    const done = required.filter(name => {
+      const control = this.deliveryForm?.get(name);
+      return !!control && control.valid && control.value !== null && control.value !== '';
+    }).length;
+    return Math.round((done / required.length) * 100);
+  }
+
+  optionLabel(options: MultiSelectOption[], value: unknown): string {
+    if (value === null || value === undefined || value === '') return '—';
+    return options.find(o => o.value === value || String(o.value) === String(value))?.label ?? '—';
+  }
 
   get cityOptions(): MultiSelectOption[] {
     return this.cities.map(city => ({

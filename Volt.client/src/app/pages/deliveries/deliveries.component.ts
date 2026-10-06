@@ -28,7 +28,7 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent],
   templateUrl: './deliveries.component.html',
-  styleUrls: ['./deliveries.component.css', '../../shared/styles/entity-form.css']
+  styleUrls: ['./deliveries.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-form.css']
 })
 export class DeliveriesComponent implements OnInit {
   private readonly localeService = inject(LocaleService);

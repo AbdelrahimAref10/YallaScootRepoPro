@@ -1,28 +1,16 @@
-<div class="entity-form">
-  <div class="entity-form__top">
-    <div class="entity-form__intro">
-      <button
-        type="button"
-        class="entity-form__back"
-        (click)="onCancel()"
-        [attr.title]="'cities.backToList' | t"
-        [attr.aria-label]="'cities.backToList' | t"
-      >
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 19l-7-7 7-7"/>
-        </svg>
+<div class="cs">
+  <!-- Header -->
+  <header class="cs-head">
+    <div class="cs-head__intro">
+      <button type="button" class="cs-head__back" (click)="onCancel()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        {{ 'cities.backToList' | t }}
       </button>
-      <div>
-        <h1 class="entity-form__title">
-          {{ (isEditMode ? 'cities.editTitle' : 'cities.addNew') | t }}
-        </h1>
-        <p class="entity-form__subtitle">
-          {{ (isEditMode ? 'cities.editSubtitle' : 'cities.addSubtitle') | t }}
-        </p>
-      </div>
+      <p class="cs-head__kicker">{{ 'cities.studioKicker' | t }}</p>
+      <h1 class="cs-head__title">{{ (isEditMode ? 'cities.editTitle' : 'cities.addNew') | t }}</h1>
+      <p class="cs-head__sub">{{ (isEditMode ? 'cities.editSubtitle' : 'cities.addSubtitle') | t }}</p>
     </div>
-
-    <div class="entity-form__top-actions" *ngIf="!isLoading">
+    <div class="cs-head__actions" *ngIf="!isLoading">
       <button type="button" class="entity-form__btn entity-form__btn--ghost" (click)="onCancel()" [disabled]="isSaving">
         {{ 'common.cancel' | t }}
       </button>
@@ -32,10 +20,10 @@
         (click)="onSubmit()"
         [disabled]="cityForm.get('name')?.invalid || cityForm.get('zoneGroupId')?.invalid || isSaving"
       >
-        {{ (isEditMode ? 'cities.update' : 'cities.create') | t }}
+        {{ isSaving ? ('common.saving' | t) : ((isEditMode ? 'cities.update' : 'cities.create') | t) }}
       </button>
     </div>
-  </div>
+  </header>
 
   <div *ngIf="errorMessage" class="entity-form__alert" role="alert">{{ errorMessage }}</div>
 
@@ -44,295 +32,310 @@
     <p>{{ 'cities.loadingDetails' | t }}</p>
   </div>
 
-  <form *ngIf="!isLoading" [formGroup]="cityForm" (ngSubmit)="onSubmit()" class="entity-form__shell entity-form__shell--stack">
-    <section class="entity-form__card">
-      <div class="entity-form__card-head">
-        <p class="entity-form__card-kicker">{{ 'common.details' | t }}</p>
-        <h2 class="entity-form__card-title">{{ 'cities.basicInfo' | t }}</h2>
-        <p class="entity-form__card-text">{{ 'cities.basicInfoSubtitle' | t }}</p>
-      </div>
-
-      <div class="entity-form__card-body">
-        <div class="entity-form__field">
-          <label class="entity-form__label">
-            {{ 'cities.name' | t }}<span class="entity-form__req">*</span>
-          </label>
-          <input
-            type="text"
-            formControlName="name"
-            class="entity-form__input"
-            [placeholder]="'cities.namePlaceholder' | t"
-          />
-          <p *ngIf="cityForm.get('name')?.invalid && cityForm.get('name')?.touched" class="entity-form__error">
-            {{ 'cities.nameRequired' | t }}
-          </p>
-        </div>
-
-        <div class="entity-form__field">
-          <label class="entity-form__label">{{ 'common.description' | t }}</label>
-          <textarea
-            formControlName="description"
-            class="entity-form__textarea"
-            rows="4"
-            [placeholder]="'cities.descriptionPlaceholder' | t"
-          ></textarea>
+  <form *ngIf="!isLoading" [formGroup]="cityForm" (ngSubmit)="onSubmit()" class="cs-form">
+    <!-- Identity band -->
+    <section class="cs-band">
+      <div class="cs-band__id">
+        <span class="cs-band__mark" aria-hidden="true">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"/></svg>
+        </span>
+        <div class="cs-band__name">
+          <strong>{{ cityForm.get('name')?.value || ('cities.newCity' | t) }}</strong>
+          <span>{{ selectedZoneGroupName || ('cities.noGroupYet' | t) }}</span>
         </div>
       </div>
-    </section>
-
-    <section class="entity-form__card">
-      <div class="entity-form__card-head">
-        <p class="entity-form__card-kicker">{{ 'cities.feesKicker' | t }}</p>
-        <h2 class="entity-form__card-title">{{ 'cities.feesConfig' | t }}</h2>
-        <p class="entity-form__card-text">{{ 'cities.feesConfigSubtitle' | t }}</p>
-      </div>
-
-      <div class="entity-form__card-body">
-        <div class="entity-form__row">
-          <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'cities.urgentDelivery' | t }}</label>
-            <input
-              type="number"
-              formControlName="urgentDelivery"
-              class="entity-form__input"
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-            />
-          </div>
-        </div>
-
-        <div class="entity-form__row">
-          <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'cities.serviceFees' | t }}</label>
-            <input
-              type="number"
-              formControlName="serviceFees"
-              class="entity-form__input"
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-            />
-          </div>
-
-          <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'cities.cancellationFees' | t }}</label>
-            <input
-              type="number"
-              formControlName="cancellationFees"
-              class="entity-form__input"
-              min="0"
-              max="100"
-              step="0.01"
-              placeholder="0.00"
-            />
-            <p *ngIf="cityForm.get('cancellationFees')?.invalid && cityForm.get('cancellationFees')?.touched" class="entity-form__error">
-              {{ 'cities.cancellationFeesRange' | t }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="entity-form__card">
-      <div class="entity-form__card-head">
-        <p class="entity-form__card-kicker">{{ 'cities.riderCommissionKicker' | t }}</p>
-        <h2 class="entity-form__card-title">{{ 'cities.riderCommission' | t }}</h2>
-        <p class="entity-form__card-text">{{ 'cities.riderCommissionSubtitle' | t }}</p>
-      </div>
-
-      <div class="entity-form__card-body">
-        <div class="entity-form__row">
-          <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'cities.deliveryLegCommission' | t }}</label>
-            <input
-              type="number"
-              formControlName="deliveryLegCommissionPercent"
-              class="entity-form__input"
-              min="0"
-              max="100"
-              step="0.01"
-              placeholder="50"
-            />
-            <p *ngIf="cityForm.get('deliveryLegCommissionPercent')?.invalid && cityForm.get('deliveryLegCommissionPercent')?.touched" class="entity-form__error">
-              {{ 'cities.commissionRange' | t }}
-            </p>
-          </div>
-
-          <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'cities.returnLegCommission' | t }}</label>
-            <input
-              type="number"
-              formControlName="returnLegCommissionPercent"
-              class="entity-form__input"
-              min="0"
-              max="100"
-              step="0.01"
-              placeholder="50"
-            />
-            <p *ngIf="cityForm.get('returnLegCommissionPercent')?.invalid && cityForm.get('returnLegCommissionPercent')?.touched" class="entity-form__error">
-              {{ 'cities.commissionRange' | t }}
-            </p>
-          </div>
-        </div>
-        <p
-          class="city-form__commission-total"
-          [class.city-form__commission-total--over]="cityForm.hasError('commissionOver100')"
-        >
-          {{ 'cities.commissionTotal' | t:{ total: commissionTotal } }}
-        </p>
-        <p *ngIf="cityForm.hasError('commissionOver100')" class="entity-form__error">
-          {{ 'cities.commissionSumTooHigh' | t }}
-        </p>
-      </div>
-    </section>
-
-    <section class="entity-form__card city-form__zones-card">
-      <div class="entity-form__card-head">
-        <p class="entity-form__card-kicker">{{ 'cities.zoneGroupKicker' | t }}</p>
-        <h2 class="entity-form__card-title">
-          {{ 'cities.zoneGroup' | t }}<span class="entity-form__req">*</span>
-        </h2>
-        <p class="entity-form__card-text">{{ 'cities.zoneGroupHint' | t }}</p>
-      </div>
-
-      <div class="entity-form__card-body">
-        <p class="city-form__exclusive">{{ 'cities.oneGroupOnly' | t }}</p>
-
-        <div class="city-form__groups" role="radiogroup" [attr.aria-label]="'cities.zoneGroup' | t">
-          <button
-            type="button"
-            class="city-form__group"
-            *ngFor="let group of zoneGroups"
-            role="radio"
-            [attr.aria-checked]="isZoneGroupSelected(group.zoneGroupId)"
-            [class.city-form__group--selected]="isZoneGroupSelected(group.zoneGroupId)"
-            (click)="selectZoneGroup(group.zoneGroupId)"
-          >
-            <span class="city-form__group-radio" aria-hidden="true"></span>
-            <span class="city-form__group-copy">
-              <strong>{{ group.name }}</strong>
-              <span>{{ 'cities.zoneGroupCardHint' | t }}</span>
-            </span>
-            <span *ngIf="isZoneGroupSelected(group.zoneGroupId)" class="city-form__group-badge">
-              {{ 'cities.selectedGroup' | t }}
-            </span>
-          </button>
-        </div>
-
-        <div *ngIf="zoneGroups.length === 0" class="city-form__tier-empty">
-          <p>{{ 'cities.noZoneGroups' | t }}</p>
-        </div>
-
-        <p *ngIf="cityForm.get('zoneGroupId')?.invalid && cityForm.get('zoneGroupId')?.touched" class="entity-form__error">
-          {{ 'cities.zoneGroupRequired' | t }}
-        </p>
-      </div>
-    </section>
-
-    <section class="entity-form__card">
-      <div class="entity-form__card-head city-form__tier-head">
-        <div>
-          <p class="entity-form__card-kicker">{{ 'cities.discountsKicker' | t }}</p>
-          <h2 class="entity-form__card-title">{{ 'cities.tieredDiscounts' | t }}</h2>
-          <p class="entity-form__card-text">{{ 'cities.tieredDiscountsSubtitle' | t }}</p>
-        </div>
-        <button type="button" class="city-form__add-tier" (click)="addTieredDiscount()">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
-          </svg>
-          <span>{{ 'cities.addTier' | t }}</span>
+      <dl class="cs-band__stats">
+        <button type="button" class="cs-stat" (click)="scrollToSection('cs-fees')">
+          <dt>{{ 'cities.feeServiceShort' | t }}</dt>
+          <dd>{{ num('serviceFees') | number: '1.0-2' }} <small>{{ 'common.currency' | t }}</small></dd>
         </button>
-      </div>
-
-      <div class="entity-form__card-body">
-        <div class="city-form__tiers">
-          <div
-            *ngFor="let tierControl of tieredDiscountsFormArray.controls; let i = index"
-            class="city-form__tier"
-            [formGroup]="getTieredDiscountFormGroup(i)"
-          >
-            <div class="city-form__tier-top">
-              <span class="city-form__tier-label">{{ 'cities.tierNumber' | t:{ n: i + 1 } }}</span>
-              <button
-                type="button"
-                class="city-form__tier-remove"
-                (click)="removeTieredDiscount(i)"
-                [attr.title]="'cities.removeTier' | t"
-                [attr.aria-label]="'cities.removeTier' | t"
-              >
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
-            </div>
-
-            <div class="entity-form__row entity-form__row--3">
-              <div class="entity-form__field">
-                <label class="entity-form__label">{{ 'cities.tierFrom' | t }}</label>
-                <div class="city-form__day-input">
-                  <input
-                    type="number"
-                    formControlName="from"
-                    class="entity-form__input"
-                    min="1"
-                    step="1"
-                    placeholder="1"
-                  />
-                  <span class="city-form__day-unit">{{ 'cities.tierDayUnit' | t }}</span>
-                </div>
-                <p *ngIf="tierControl.get('from')?.invalid && tierControl.get('from')?.touched" class="entity-form__error">
-                  {{ 'common.required' | t }}
-                </p>
-              </div>
-
-              <div class="entity-form__field">
-                <label class="entity-form__label">{{ 'cities.tierTo' | t }}</label>
-                <div class="city-form__day-input">
-                  <input
-                    type="number"
-                    formControlName="to"
-                    class="entity-form__input"
-                    min="1"
-                    step="1"
-                    placeholder="1"
-                  />
-                  <span class="city-form__day-unit">{{ 'cities.tierDayUnit' | t }}</span>
-                </div>
-                <p *ngIf="tierControl.get('to')?.invalid && tierControl.get('to')?.touched" class="entity-form__error">
-                  {{ 'common.required' | t }}
-                </p>
-                <p *ngIf="tierControl.hasError('invalidRange') && tierControl.get('to')?.touched" class="entity-form__error">
-                  {{ 'cities.tierInvalidRange' | t }}
-                </p>
-              </div>
-
-              <div class="entity-form__field">
-                <label class="entity-form__label">{{ 'cities.tierDiscount' | t }}</label>
-                <input
-                  type="number"
-                  formControlName="discount"
-                  class="entity-form__input"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  placeholder="0.00"
-                />
-                <p *ngIf="tierControl.get('discount')?.invalid && tierControl.get('discount')?.touched" class="entity-form__error">
-                  {{ 'cities.discountRange' | t }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div *ngIf="tieredDiscountsFormArray.length === 0" class="city-form__tier-empty">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <p>{{ 'cities.tierEmpty' | t }}</p>
-          </div>
-        </div>
-      </div>
+        <button type="button" class="cs-stat" (click)="scrollToSection('cs-fees')">
+          <dt>{{ 'cities.feeUrgentShort' | t }}</dt>
+          <dd>{{ num('urgentDelivery') | number: '1.0-2' }} <small>{{ 'common.currency' | t }}</small></dd>
+        </button>
+        <button type="button" class="cs-stat" (click)="scrollToSection('cs-fees')">
+          <dt>{{ 'cities.feeCancelShort' | t }}</dt>
+          <dd>{{ num('cancellationFees') | number: '1.0-2' }}<small>%</small></dd>
+        </button>
+        <button type="button" class="cs-stat" [class.cs-stat--bad]="cityForm.hasError('commissionOver100')" (click)="scrollToSection('cs-commission')">
+          <dt>{{ 'cities.riderShare' | t }}</dt>
+          <dd>{{ commissionTotal | number: '1.0-2' }}<small>%</small></dd>
+        </button>
+        <button type="button" class="cs-stat" (click)="scrollToSection('cs-tiers')">
+          <dt>{{ 'cities.tieredDiscounts' | t }}</dt>
+          <dd>{{ tieredDiscountsFormArray.length }}</dd>
+        </button>
+      </dl>
     </section>
+
+    <div class="cs-layout">
+      <div class="cs-main">
+        <!-- 01 Basics -->
+        <section class="cs-card" id="cs-basics">
+          <header class="cs-card__head">
+            <span class="cs-card__step">01</span>
+            <div>
+              <h2 class="cs-card__title">{{ 'cities.basicInfo' | t }}</h2>
+              <p class="cs-card__hint">{{ 'cities.basicInfoSubtitle' | t }}</p>
+            </div>
+          </header>
+          <div class="cs-basics">
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="cs-name">{{ 'cities.name' | t }}<span class="entity-form__req">*</span></label>
+              <input id="cs-name" type="text" formControlName="name" class="entity-form__input cs-input-lg" [placeholder]="'cities.namePlaceholder' | t" />
+              <p *ngIf="cityForm.get('name')?.invalid && cityForm.get('name')?.touched" class="entity-form__error">{{ 'cities.nameRequired' | t }}</p>
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="cs-desc">{{ 'common.description' | t }}</label>
+              <textarea id="cs-desc" formControlName="description" class="entity-form__textarea" rows="3" [placeholder]="'cities.descriptionPlaceholder' | t"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- 02 Fees -->
+        <section class="cs-card" id="cs-fees">
+          <header class="cs-card__head">
+            <span class="cs-card__step">02</span>
+            <div>
+              <h2 class="cs-card__title">{{ 'cities.feesConfig' | t }}</h2>
+              <p class="cs-card__hint">{{ 'cities.feesConfigSubtitle' | t }}</p>
+            </div>
+          </header>
+          <div class="cs-fees">
+            <label class="cs-fee" for="cs-service">
+              <span class="cs-fee__icon cs-fee__icon--ink" aria-hidden="true">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+              </span>
+              <span class="cs-fee__label">{{ 'cities.serviceFees' | t }}</span>
+              <span class="cs-fee__hint">{{ 'cities.serviceFeesHint' | t }}</span>
+              <span class="cs-fee__field">
+                <input id="cs-service" type="number" min="0" step="0.01" formControlName="serviceFees" placeholder="0" />
+                <em>{{ 'common.currency' | t }}</em>
+              </span>
+            </label>
+
+            <label class="cs-fee" for="cs-urgent">
+              <span class="cs-fee__icon cs-fee__icon--warn" aria-hidden="true">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </span>
+              <span class="cs-fee__label">{{ 'cities.urgentDelivery' | t }}</span>
+              <span class="cs-fee__hint">{{ 'cities.urgentDeliveryHint' | t }}</span>
+              <span class="cs-fee__field">
+                <input id="cs-urgent" type="number" min="0" step="0.01" formControlName="urgentDelivery" placeholder="0" />
+                <em>{{ 'common.currency' | t }}</em>
+              </span>
+            </label>
+
+            <label class="cs-fee" for="cs-cancel" [class.cs-fee--bad]="cityForm.get('cancellationFees')?.invalid">
+              <span class="cs-fee__icon cs-fee__icon--accent" aria-hidden="true">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              </span>
+              <span class="cs-fee__label">{{ 'cities.cancellationFees' | t }}</span>
+              <span class="cs-fee__hint">{{ 'cities.cancellationFeesHint' | t }}</span>
+              <span class="cs-fee__field">
+                <input id="cs-cancel" type="number" min="0" max="100" step="0.01" formControlName="cancellationFees" placeholder="0" />
+                <em>%</em>
+              </span>
+              <span class="cs-fee__meter"><span [style.width.%]="num('cancellationFees') > 100 ? 100 : num('cancellationFees')"></span></span>
+              <span *ngIf="cityForm.get('cancellationFees')?.invalid" class="entity-form__error">{{ 'cities.cancellationFeesRange' | t }}</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- 03 Rider commission -->
+        <section class="cs-card" id="cs-commission">
+          <header class="cs-card__head">
+            <span class="cs-card__step">03</span>
+            <div>
+              <h2 class="cs-card__title">{{ 'cities.riderCommission' | t }}</h2>
+              <p class="cs-card__hint">{{ 'cities.riderCommissionSubtitle' | t }}</p>
+            </div>
+          </header>
+
+          <div class="cs-split" [class.cs-split--over]="cityForm.hasError('commissionOver100')">
+            <div class="cs-split__bar" role="img" [attr.aria-label]="'cities.commissionTotal' | t:{ total: commissionTotal }">
+              <span class="cs-split__seg cs-split__seg--out" [style.flex-grow]="num('deliveryLegCommissionPercent')">
+                <b *ngIf="num('deliveryLegCommissionPercent') >= 8">{{ num('deliveryLegCommissionPercent') | number: '1.0-2' }}%</b>
+              </span>
+              <span class="cs-split__seg cs-split__seg--back" [style.flex-grow]="num('returnLegCommissionPercent')">
+                <b *ngIf="num('returnLegCommissionPercent') >= 8">{{ num('returnLegCommissionPercent') | number: '1.0-2' }}%</b>
+              </span>
+              <span class="cs-split__seg cs-split__seg--co" [style.flex-grow]="companyPercent">
+                <b *ngIf="companyPercent >= 8">{{ companyPercent | number: '1.0-2' }}%</b>
+              </span>
+            </div>
+            <div class="cs-split__scale" aria-hidden="true"><span>0%</span><span>50%</span><span>100%</span></div>
+          </div>
+
+          <div class="cs-legs">
+            <div class="cs-leg">
+              <span class="cs-leg__dot cs-leg__dot--out"></span>
+              <label class="cs-leg__label" for="cs-out">{{ 'cities.deliveryLegCommission' | t }}</label>
+              <div class="cs-leg__field">
+                <input id="cs-out" type="number" min="0" max="100" step="0.5" formControlName="deliveryLegCommissionPercent" />
+                <em>%</em>
+              </div>
+              <input class="cs-range cs-range--out" type="range" min="0" max="100" step="0.5" [value]="num('deliveryLegCommissionPercent')" (input)="setPercent('deliveryLegCommissionPercent', $any($event.target).value)" [attr.aria-label]="'cities.deliveryLegCommission' | t" />
+              <p *ngIf="cityForm.get('deliveryLegCommissionPercent')?.invalid" class="entity-form__error">{{ 'cities.commissionRange' | t }}</p>
+            </div>
+            <div class="cs-leg">
+              <span class="cs-leg__dot cs-leg__dot--back"></span>
+              <label class="cs-leg__label" for="cs-back">{{ 'cities.returnLegCommission' | t }}</label>
+              <div class="cs-leg__field">
+                <input id="cs-back" type="number" min="0" max="100" step="0.5" formControlName="returnLegCommissionPercent" />
+                <em>%</em>
+              </div>
+              <input class="cs-range cs-range--back" type="range" min="0" max="100" step="0.5" [value]="num('returnLegCommissionPercent')" (input)="setPercent('returnLegCommissionPercent', $any($event.target).value)" [attr.aria-label]="'cities.returnLegCommission' | t" />
+              <p *ngIf="cityForm.get('returnLegCommissionPercent')?.invalid" class="entity-form__error">{{ 'cities.commissionRange' | t }}</p>
+            </div>
+            <div class="cs-leg cs-leg--co">
+              <span class="cs-leg__dot cs-leg__dot--co"></span>
+              <span class="cs-leg__label">{{ 'cities.companyShare' | t }}</span>
+              <strong class="cs-leg__value">{{ companyPercent | number: '1.0-2' }}<em>%</em></strong>
+              <p class="cs-leg__note">{{ 'cities.companyShareHint' | t }}</p>
+            </div>
+          </div>
+
+          <p class="cs-total" [class.cs-total--over]="cityForm.hasError('commissionOver100')">
+            {{ 'cities.commissionTotal' | t:{ total: commissionTotal } }}
+          </p>
+          <p *ngIf="cityForm.hasError('commissionOver100')" class="entity-form__error">{{ 'cities.commissionSumTooHigh' | t }}</p>
+        </section>
+
+        <!-- 04 Zone group -->
+        <section class="cs-card" id="cs-zone">
+          <header class="cs-card__head">
+            <span class="cs-card__step">04</span>
+            <div>
+              <h2 class="cs-card__title">{{ 'cities.zoneGroup' | t }}<span class="entity-form__req">*</span></h2>
+              <p class="cs-card__hint">{{ 'cities.zoneGroupHint' | t }}</p>
+            </div>
+            <span class="cs-pill">{{ 'cities.oneGroupOnly' | t }}</span>
+          </header>
+
+          <div class="cs-groups" role="radiogroup" [attr.aria-label]="'cities.zoneGroup' | t">
+            <button
+              type="button"
+              class="cs-group"
+              *ngFor="let group of zoneGroups"
+              role="radio"
+              [attr.aria-checked]="isZoneGroupSelected(group.zoneGroupId)"
+              [class.cs-group--on]="isZoneGroupSelected(group.zoneGroupId)"
+              (click)="selectZoneGroup(group.zoneGroupId)"
+            >
+              <span class="cs-group__map" aria-hidden="true">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+              </span>
+              <span class="cs-group__copy">
+                <strong>{{ group.name }}</strong>
+                <span>{{ 'cities.zoneGroupCardHint' | t }}</span>
+              </span>
+              <span class="cs-group__radio" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div *ngIf="zoneGroups.length === 0" class="cs-empty">
+            <p>{{ 'cities.noZoneGroups' | t }}</p>
+          </div>
+          <p *ngIf="cityForm.get('zoneGroupId')?.invalid && cityForm.get('zoneGroupId')?.touched" class="entity-form__error">{{ 'cities.zoneGroupRequired' | t }}</p>
+        </section>
+
+        <!-- 05 Tiered discounts -->
+        <section class="cs-card" id="cs-tiers">
+          <header class="cs-card__head">
+            <span class="cs-card__step">05</span>
+            <div>
+              <h2 class="cs-card__title">{{ 'cities.tieredDiscounts' | t }}</h2>
+              <p class="cs-card__hint">{{ 'cities.tieredDiscountsSubtitle' | t }}</p>
+            </div>
+            <button type="button" class="cs-add" (click)="addNextTier()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              {{ 'cities.addTier' | t }}
+            </button>
+          </header>
+
+          <!-- Ladder -->
+          <div class="cs-ladder" *ngIf="tieredDiscountsFormArray.length > 0">
+            <div class="cs-ladder__top">
+              <span>{{ 'cities.ladderTitle' | t }}</span>
+              <span class="cs-ladder__legend">{{ 'cities.ladderAxis' | t:{ n: ladderMax - 1 } }}</span>
+            </div>
+            <div class="cs-ladder__track">
+              <span
+                *ngFor="let row of tierRows; let i = index"
+                class="cs-ladder__seg"
+                [class.cs-ladder__seg--bad]="isOverlapping(i)"
+                [style.inset-inline-start.%]="tierLeft(i)"
+                [style.width.%]="tierWidth(i)"
+                [style.height.%]="(row.discount > ladderPeak ? ladderPeak : row.discount) / ladderPeak * 82"
+                [attr.title]="('cities.tierNumber' | t:{ n: i + 1 }) + ': ' + row.from + '–' + row.to + ' · ' + row.discount + '%'"
+              >
+                <b>{{ row.discount | number: '1.0-1' }}%</b>
+              </span>
+            </div>
+            <div class="cs-ladder__axis" aria-hidden="true">
+              <span>1</span>
+              <span>{{ (ladderMax / 2) | number: '1.0-0' }}</span>
+              <span>{{ ladderMax - 1 }}</span>
+            </div>
+          </div>
+
+          <!-- Tier table -->
+          <div class="cs-tiers" *ngIf="tieredDiscountsFormArray.length > 0">
+            <div class="cs-tiers__head" aria-hidden="true">
+              <span>#</span>
+              <span>{{ 'cities.tierFrom' | t }}</span>
+              <span>{{ 'cities.tierTo' | t }}</span>
+              <span>{{ 'cities.tierDiscount' | t }}</span>
+              <span>{{ 'cities.tierLength' | t }}</span>
+              <span></span>
+            </div>
+            <div
+              *ngFor="let tierControl of tieredDiscountsFormArray.controls; let i = index"
+              class="cs-tier"
+              [class.cs-tier--bad]="tierControl.invalid && tierControl.touched || isOverlapping(i)"
+              [formGroup]="getTieredDiscountFormGroup(i)"
+            >
+              <span class="cs-tier__num">{{ i + 1 }}</span>
+              <div class="cs-tier__cell" [attr.data-label]="'cities.tierFrom' | t">
+                <div class="cs-cell-field">
+                  <input type="number" formControlName="from" min="1" step="1" placeholder="1" [attr.aria-label]="'cities.tierFrom' | t" />
+                  <em>{{ 'cities.tierDayUnit' | t }}</em>
+                </div>
+              </div>
+              <div class="cs-tier__cell" [attr.data-label]="'cities.tierTo' | t">
+                <div class="cs-cell-field">
+                  <input type="number" formControlName="to" min="1" step="1" placeholder="1" [attr.aria-label]="'cities.tierTo' | t" />
+                  <em>{{ 'cities.tierDayUnit' | t }}</em>
+                </div>
+              </div>
+              <div class="cs-tier__cell" [attr.data-label]="'cities.tierDiscount' | t">
+                <div class="cs-cell-field">
+                  <input type="number" formControlName="discount" min="0" max="100" step="0.5" placeholder="0" [attr.aria-label]="'cities.tierDiscount' | t" />
+                  <em>%</em>
+                </div>
+              </div>
+              <span class="cs-tier__span">{{ tierSpan(i) ? ('cities.daysSpan' | t:{ n: tierSpan(i) }) : '—' }}</span>
+              <button type="button" class="va-act va-act--delete" (click)="removeTieredDiscount(i)" [attr.title]="'cities.removeTier' | t" [attr.aria-label]="'cities.removeTier' | t">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+              <p class="cs-tier__msg" *ngIf="tierControl.touched && (tierControl.invalid || isOverlapping(i))">
+                <ng-container *ngIf="tierControl.hasError('invalidRange')">{{ 'cities.tierInvalidRange' | t }}</ng-container>
+                <ng-container *ngIf="tierControl.get('discount')?.hasError('max') || tierControl.get('discount')?.hasError('min')">{{ 'cities.discountRange' | t }}</ng-container>
+                <ng-container *ngIf="tierControl.get('from')?.hasError('required') || tierControl.get('to')?.hasError('required')">{{ 'common.required' | t }}</ng-container>
+                <ng-container *ngIf="isOverlapping(i)">{{ 'cities.tierOverlap' | t }}</ng-container>
+              </p>
+            </div>
+          </div>
+
+          <div *ngIf="tieredDiscountsFormArray.length === 0" class="cs-empty">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+            <p>{{ 'cities.tierEmpty' | t }}</p>
+            <button type="button" class="cs-add" (click)="addNextTier()">{{ 'cities.addTier' | t }}</button>
+          </div>
+        </section>
+      </div>
+
+    </div>
   </form>
 </div>

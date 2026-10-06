@@ -148,7 +148,7 @@
                 <div class="cities__actions">
                   <button
                     type="button"
-                    class="cities__action"
+                    class="cities__action va-act va-act--map"
                     (click)="onZoneRates(city)"
                     [attr.title]="'cities.zoneRates' | t"
                     [attr.aria-label]="'cities.zoneRates' | t"
@@ -159,7 +159,7 @@
                   </button>
                   <button
                     type="button"
-                    class="cities__action"
+                    class="cities__action va-act va-act--edit"
                     (click)="onEdit(city)"
                     [attr.title]="'cities.editCity' | t"
                     [attr.aria-label]="'cities.editCity' | t"
@@ -171,7 +171,7 @@
                   <button
                     *ngIf="city.isActive"
                     type="button"
-                    class="cities__action cities__action--warn"
+                    class="cities__action cities__action--warn va-act va-act--delete"
                     (click)="onDelete(city.cityId)"
                     [attr.title]="'cities.deactivateCity' | t"
                     [attr.aria-label]="'cities.deactivateCity' | t"
@@ -183,7 +183,7 @@
                   <button
                     *ngIf="!city.isActive"
                     type="button"
-                    class="cities__action cities__action--success"
+                    class="cities__action cities__action--success va-act va-act--on"
                     (click)="onActivate(city.cityId)"
                     [attr.title]="'cities.activateCity' | t"
                     [attr.aria-label]="'cities.activateCity' | t"
@@ -195,7 +195,7 @@
                   <button
                     *ngIf="!city.isActive"
                     type="button"
-                    class="cities__action cities__action--danger"
+                    class="cities__action cities__action--danger va-act va-act--delete"
                     (click)="onPermanentlyDelete(city.cityId)"
                     [attr.title]="'cities.permanentDeleteCity' | t"
                     [attr.aria-label]="'cities.permanentDeleteCity' | t"

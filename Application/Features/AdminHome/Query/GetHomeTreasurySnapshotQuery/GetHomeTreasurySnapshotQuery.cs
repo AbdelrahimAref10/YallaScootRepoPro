@@ -43,9 +43,19 @@ namespace Application.Features.AdminHome.Query.GetHomeTreasurySnapshotQuery
             var (from, to) = AdminHomeDateRange.Resolve(request.From, request.To, now);
 
             var all = _context.CompanyTreasuries.AsNoTracking();
-            var totalDebit = await all.SumAsync(t => (decimal?)t.DebitAmount, cancellationToken) ?? 0;
-            var totalCredit = await all.SumAsync(t => (decimal?)t.CreditAmount, cancellationToken) ?? 0;
-            var lastUpdated = await all.Select(t => (DateTime?)t.CreatedDate).MaxAsync(cancellationToken);
+            // Totals and last movement in one query (was 3 round trips).
+            var totals = await all
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Debit = g.Sum(t => t.DebitAmount),
+                    Credit = g.Sum(t => t.CreditAmount),
+                    LastUpdated = g.Max(t => (DateTime?)t.CreatedDate)
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+            var totalDebit = totals?.Debit ?? 0;
+            var totalCredit = totals?.Credit ?? 0;
+            var lastUpdated = totals?.LastUpdated;
 
             var inRange = await all
                 .Where(t => t.CreatedDate >= from && t.CreatedDate <= to)

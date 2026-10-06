@@ -26,12 +26,16 @@ namespace Application.Features.Order.DTOs
         public int? EngineCapacityCc { get; set; }
 
         public bool ReceivedFromOwner { get; set; }
+        public DateTime? ReceivedFromOwnerAt { get; set; }
         public string? ReceivedFromOwnerImageUrl { get; set; }
         public bool DeliveredToCustomer { get; set; }
+        public DateTime? DeliveredToCustomerAt { get; set; }
         public string? DeliveredToCustomerImageUrl { get; set; }
         public bool ReceivedFromCustomer { get; set; }
+        public DateTime? ReceivedFromCustomerAt { get; set; }
         public string? ReceivedFromCustomerImageUrl { get; set; }
         public bool DeliveredToOwner { get; set; }
+        public DateTime? DeliveredToOwnerAt { get; set; }
         public string? DeliveredToOwnerImageUrl { get; set; }
         public bool DeliveryFailed { get; set; }
         public string? DeliveryFailureReason { get; set; }

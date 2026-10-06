@@ -77,7 +77,7 @@
   flex-direction: column;
   gap: 0.45rem;
   padding: 0.35rem;
-  border-radius: 1rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface-muted);
 }
@@ -89,7 +89,7 @@
   width: 100%;
   padding: 0.75rem 0.85rem;
   border: 1px solid transparent;
-  border-radius: 0.85rem;
+  border-radius: var(--volt-radius);
   background: var(--volt-surface);
   color: inherit;
   font: inherit;
@@ -100,7 +100,7 @@
 
 .order-customer__result:hover {
   border-color: var(--volt-accent-muted);
-  box-shadow: 0 8px 20px rgba(227, 6, 19, 0.12);
+  box-shadow: var(--volt-shadow-hover);
   transform: translateY(-1px);
 }
 
@@ -112,7 +112,7 @@
   height: 2.35rem;
   flex-shrink: 0;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--volt-accent), var(--volt-accent-strong));
+  background: var(--volt-accent);
   color: #fff;
   font-size: 0.95rem;
   font-weight: 800;
@@ -158,7 +158,7 @@
 .order-customer__empty {
   margin: 0;
   padding: 0.85rem 1rem;
-  border-radius: 0.85rem;
+  border-radius: var(--volt-radius);
   border: 1px dashed var(--volt-border);
   background: var(--volt-surface-muted);
   color: var(--volt-text-muted);
@@ -171,18 +171,16 @@
   align-items: center;
   gap: 0.9rem;
   padding: 0.95rem 1rem;
-  border-radius: 1.05rem;
+  border-radius: var(--volt-radius);
   border: 1px solid color-mix(in srgb, var(--volt-accent) 35%, var(--volt-border));
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--volt-accent) 10%, transparent), transparent 60%),
     var(--volt-surface);
   box-shadow: var(--volt-shadow);
 }
 
 .order-customer__selected--blocked {
-  border-color: rgba(217, 119, 6, 0.4);
+  border-color: rgba(178, 107, 0, 0.4);
   background:
-    linear-gradient(135deg, rgba(217, 119, 6, 0.1), transparent 60%),
     var(--volt-surface);
 }
 
@@ -190,7 +188,7 @@
   flex-shrink: 0;
   min-height: 2.2rem;
   padding: 0 0.85rem;
-  border-radius: 0.75rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
   color: var(--volt-text-secondary);
@@ -242,7 +240,7 @@
   align-items: flex-start;
   gap: 0.65rem;
   padding: 0.85rem 1rem;
-  border-radius: 0.9rem;
+  border-radius: var(--volt-radius);
   border: 1px solid color-mix(in srgb, var(--volt-accent) 30%, var(--volt-border));
   background: var(--volt-accent-soft);
   color: var(--volt-text-secondary);
@@ -270,10 +268,9 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 0.95rem 1.05rem;
-  border-radius: 0.95rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--volt-accent) 6%, transparent), transparent 60%),
     var(--volt-bg);
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
@@ -285,7 +282,7 @@
 }
 
 .order-form__urgent--on {
-  border-color: color-mix(in srgb, var(--volt-accent) 55%, var(--volt-border));
+  border-color: color-mix(in srgb, var(--volt-ok) 55%, var(--volt-border));
   box-shadow: 0 0 0 3px var(--volt-accent-soft);
 }
 
@@ -331,12 +328,12 @@
   height: 1.2rem;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--volt-shadow);
   transition: transform 0.18s ease;
 }
 
 .order-form__urgent--on .order-form__switch {
-  background: var(--volt-accent);
+  background: var(--volt-ok);
 }
 
 .order-form__urgent--on .order-form__switch::after {
@@ -355,10 +352,9 @@
   align-items: center;
   gap: 0.85rem;
   padding: 0.95rem 1.05rem;
-  border-radius: 0.95rem;
+  border-radius: var(--volt-radius);
   border: 1px solid color-mix(in srgb, var(--volt-accent) 40%, var(--volt-border));
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--volt-accent) 14%, transparent), transparent 70%),
     var(--volt-bg);
 }
 
@@ -369,7 +365,7 @@
   width: 2.5rem;
   height: 2.5rem;
   flex-shrink: 0;
-  border-radius: 0.8rem;
+  border-radius: var(--volt-radius);
   border: 1px solid color-mix(in srgb, var(--volt-accent) 35%, var(--volt-border));
   background: var(--volt-surface);
   color: var(--volt-accent-strong);
@@ -427,7 +423,7 @@
   flex-direction: column;
   gap: 0.85rem;
   padding: 1rem;
-  border-radius: 1rem;
+  border-radius: var(--volt-radius);
   border: 1.5px dashed var(--volt-border);
   background: var(--volt-surface-muted);
 }
@@ -441,7 +437,7 @@
   width: 100%;
   max-height: 14rem;
   object-fit: contain;
-  border-radius: 0.85rem;
+  border-radius: var(--volt-radius);
   background: #fff;
   border: 1px solid var(--volt-border);
 }
@@ -479,7 +475,7 @@
   justify-content: center;
   min-height: 2.35rem;
   padding: 0 0.95rem;
-  border-radius: 0.75rem;
+  border-radius: var(--volt-radius);
   font-family: inherit;
   font-size: 0.8rem;
   font-weight: 700;
@@ -491,7 +487,7 @@
   border: none;
   background: var(--volt-accent);
   color: #fff;
-  box-shadow: 0 6px 14px var(--volt-accent-muted);
+  box-shadow: var(--volt-shadow);
 }
 
 .order-form__upload-btn:hover {
@@ -505,9 +501,9 @@
 }
 
 .order-form__clear-btn:hover {
-  border-color: rgba(239, 68, 68, 0.35);
-  color: #dc2626;
-  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(225, 6, 0, 0.35);
+  color: var(--volt-accent);
+  background: rgba(225, 6, 0, 0.08);
 }
 
 /* Fleet shopping section */
@@ -526,7 +522,7 @@
   align-items: center;
   gap: 0.6rem;
   padding: 2.5rem 1rem;
-  border-radius: 1rem;
+  border-radius: var(--volt-radius);
   border: 1.5px dashed var(--volt-border);
   background: var(--volt-surface-muted);
   color: var(--volt-text-muted);
@@ -575,9 +571,9 @@
 }
 
 .order-form__crumb--active {
-  background: var(--volt-accent);
+  background: var(--volt-ok);
   color: #fff;
-  border-color: var(--volt-accent);
+  border-color: var(--volt-ok);
   cursor: default;
 }
 
@@ -605,7 +601,7 @@
   display: grid;
   place-items: center;
   min-height: 7rem;
-  border-radius: 1rem;
+  border-radius: var(--volt-radius);
   border: 1px dashed var(--volt-border);
   background: var(--volt-surface-muted);
   color: var(--volt-text-muted);
@@ -626,7 +622,7 @@
   min-height: 11.5rem;
   max-height: 11.5rem;
   background:
-    linear-gradient(180deg, #f7faf9 0%, #ffffff 55%);
+    var(--volt-surface-hover);
 }
 
 .order-form__fleet-body .categories__tile-img,
@@ -644,8 +640,8 @@
 
 .order-form__pick-tile:hover {
   border-color: var(--volt-accent-muted);
-  transform: translateY(-3px);
-  box-shadow: 0 14px 32px rgba(227, 6, 19, 0.14);
+  transform: translateY(-1px);
+  box-shadow: var(--volt-shadow-hover);
 }
 
 .order-form__pick-tile:hover .categories__tile-img,
@@ -656,7 +652,7 @@
 
 .order-form__pick-tile--selected {
   border-color: var(--volt-accent);
-  box-shadow: 0 0 0 3px var(--volt-accent-soft), 0 12px 28px rgba(227, 6, 19, 0.16);
+  box-shadow: 0 0 0 3px var(--volt-accent-soft), 0 12px 28px rgba(225, 6, 0, 0.16);
 }
 
 .order-form__pick-footer {
@@ -701,7 +697,7 @@
 .order-form__vehicle-code {
   font-size: 0.76rem;
   color: var(--volt-text-muted);
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .order-form__merchant {
@@ -734,8 +730,8 @@
 }
 
 .order-form__check--on {
-  background: var(--volt-accent);
-  border-color: var(--volt-accent);
+  background: var(--volt-ok);
+  border-color: var(--volt-ok);
   color: #fff;
 }
 
@@ -751,10 +747,10 @@
   gap: 1rem;
   padding: 0.9rem 1.1rem;
   margin-top: 0.5rem;
-  border-radius: 1.1rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: color-mix(in srgb, var(--volt-surface) 92%, transparent);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(2px);
   box-shadow: 0 -6px 24px rgba(26, 43, 42, 0.1), var(--volt-shadow);
 }
 
@@ -811,9 +807,9 @@
 }
 
 .order-form__chip--warn {
-  border-color: rgba(217, 119, 6, 0.32);
-  background: rgba(217, 119, 6, 0.12);
-  color: #b45309;
+  border-color: rgba(178, 107, 0, 0.32);
+  background: rgba(178, 107, 0, 0.12);
+  color: var(--volt-warn);
 }
 
 .order-form__btn-spin {
@@ -837,7 +833,7 @@
   justify-content: center;
   padding: 1.25rem;
   background: rgba(10, 17, 16, 0.55);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(2px);
   animation: order-review-fade 0.18s ease both;
 }
 
@@ -852,10 +848,10 @@
   width: 100%;
   max-width: 32rem;
   max-height: min(42rem, 92vh);
-  border-radius: 1.35rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
-  box-shadow: 0 24px 60px rgba(10, 17, 16, 0.32);
+  box-shadow: var(--volt-shadow);
   overflow: hidden;
   animation: order-review-rise 0.22s ease both;
 }
@@ -878,7 +874,6 @@
   gap: 0.75rem;
   padding: 1.35rem 1.4rem 1.1rem;
   background:
-    radial-gradient(120% 100% at 100% 0%, color-mix(in srgb, var(--volt-accent) 18%, transparent), transparent 55%),
     var(--volt-surface);
   border-bottom: 1px solid var(--volt-border);
   flex-shrink: 0;
@@ -913,7 +908,7 @@
   width: 2.2rem;
   height: 2.2rem;
   flex-shrink: 0;
-  border-radius: 0.7rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
   color: var(--volt-text-secondary);
@@ -984,7 +979,7 @@
 .order-review__vehicle-thumb .order-review__vehicle-chip-fallback {
   width: 2.75rem;
   height: 2.75rem;
-  border-radius: 0.6rem;
+  border-radius: 0.45rem;
   object-fit: contain;
   background: #fff;
   border: 1px solid var(--volt-border);
@@ -995,7 +990,7 @@
   align-items: center;
   gap: 0.55rem;
   padding: 0.4rem 0.65rem 0.4rem 0.4rem;
-  border-radius: 0.85rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-bg);
 }
@@ -1004,7 +999,7 @@
 .order-review__vehicle-chip-fallback {
   width: 2.3rem;
   height: 2.3rem;
-  border-radius: 0.6rem;
+  border-radius: 0.45rem;
   object-fit: contain;
   background: #fff;
   border: 1px solid var(--volt-border);
@@ -1056,7 +1051,7 @@
 
 .order-review__meta {
   font-size: 0.7rem !important;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-muted);
 }
 
@@ -1079,7 +1074,7 @@
 
 .order-review__vehicle-rate span {
   font-size: 0.65rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-muted);
 }
 
@@ -1116,7 +1111,7 @@
 
 .order-review__discount span,
 .order-review__discount strong {
-  color: #059669;
+  color: var(--volt-ok);
 }
 
 html.dark .order-review__discount span,
@@ -1130,7 +1125,7 @@ html.dark .order-review__discount strong {
   justify-content: space-between;
   gap: 0.75rem;
   padding: 1rem 1.05rem;
-  border-radius: 0.95rem;
+  border-radius: var(--volt-radius);
   background: color-mix(in srgb, var(--volt-accent) 12%, var(--volt-bg));
   border: 1px solid color-mix(in srgb, var(--volt-accent) 28%, var(--volt-border));
 }
@@ -1235,12 +1230,11 @@ html.dark .order-review__discount strong {
   flex-direction: column;
   gap: 1rem;
   padding: 1.15rem 1.2rem 1.25rem;
-  border-radius: 1.25rem;
+  border-radius: var(--volt-radius);
   border: 1px solid color-mix(in srgb, var(--volt-accent) 22%, var(--volt-border));
   background:
-    radial-gradient(120% 80% at 0% 0%, color-mix(in srgb, var(--volt-accent) 14%, transparent), transparent 55%),
-    linear-gradient(180deg, var(--volt-surface), var(--volt-bg));
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+    var(--volt-surface);
+  box-shadow: var(--volt-shadow);
 }
 
 .order-cal__head {
@@ -1282,7 +1276,7 @@ html.dark .order-review__discount strong {
   align-items: center;
   gap: 0.55rem 0.75rem;
   padding: 0.65rem 0.85rem;
-  border-radius: 0.9rem;
+  border-radius: var(--volt-radius);
   background: var(--volt-surface);
   border: 1px solid var(--volt-border);
   min-height: 3rem;
@@ -1344,7 +1338,7 @@ html.dark .order-review__discount strong {
   justify-content: center;
   width: 2.35rem;
   height: 2.35rem;
-  border-radius: 0.75rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
   color: var(--volt-text-primary);
@@ -1354,7 +1348,7 @@ html.dark .order-review__discount strong {
 
 .order-cal__nav-btn:hover {
   border-color: var(--volt-accent-muted, var(--volt-accent));
-  box-shadow: 0 8px 18px rgba(227, 6, 19, 0.12);
+  box-shadow: var(--volt-shadow-hover);
   transform: translateY(-1px);
 }
 
@@ -1424,7 +1418,7 @@ html.dark .order-review__discount strong {
   color: var(--volt-text-primary);
   font: inherit;
   font-size: 0.75rem;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -1464,15 +1458,15 @@ html.dark .order-review__discount strong {
 
 .order-cal__day--start,
 .order-cal__day--end {
-  background: linear-gradient(135deg, var(--volt-accent), var(--volt-accent-strong, #0d9488));
+  background: var(--volt-accent);
   color: #fff !important;
   font-weight: 800;
-  box-shadow: 0 6px 14px rgba(13, 148, 136, 0.28);
+  box-shadow: var(--volt-shadow);
 }
 
 .order-cal__day--start.order-cal__day--today,
 .order-cal__day--end.order-cal__day--today {
-  box-shadow: 0 6px 14px rgba(13, 148, 136, 0.28);
+  box-shadow: var(--volt-shadow);
 }
 
 .order-form__fleet-panel {
@@ -1498,7 +1492,7 @@ html.dark .order-review__discount strong {
   flex-direction: column;
   gap: 0.15rem;
   padding: 0.85rem 0.95rem;
-  border-radius: 1rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
 }
@@ -1512,23 +1506,23 @@ html.dark .order-review__discount strong {
 
 .order-form__stat span {
   font-size: 0.74rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-muted);
 }
 
 .order-form__stat--ok {
-  border-color: color-mix(in srgb, #10b981 35%, var(--volt-border));
-  background: color-mix(in srgb, #10b981 8%, var(--volt-surface));
+  border-color: color-mix(in srgb, var(--volt-ok) 35%, var(--volt-border));
+  background: color-mix(in srgb, var(--volt-ok) 8%, var(--volt-surface));
 }
 
-.order-form__stat--ok strong { color: #059669; }
+.order-form__stat--ok strong { color: var(--volt-ok); }
 
 .order-form__stat--busy {
-  border-color: color-mix(in srgb, #f59e0b 35%, var(--volt-border));
-  background: color-mix(in srgb, #f59e0b 8%, var(--volt-surface));
+  border-color: color-mix(in srgb, var(--volt-warn) 35%, var(--volt-border));
+  background: color-mix(in srgb, var(--volt-warn) 8%, var(--volt-surface));
 }
 
-.order-form__stat--busy strong { color: #d97706; }
+.order-form__stat--busy strong { color: var(--volt-warn); }
 
 .order-form__fleet-section-title {
   margin: 0 0 0.65rem;
@@ -1555,11 +1549,11 @@ html.dark .order-review__discount strong {
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(2px);
 }
 
 .order-form__badge--ok {
-  background: rgba(16, 185, 129, 0.92);
+  background: rgba(19, 138, 74, 0.92);
   color: #fff;
 }
 
@@ -1596,10 +1590,10 @@ html.dark .order-review__discount strong {
   width: 2rem;
   height: 2rem;
   border: 0;
-  border-radius: 0.65rem;
+  border-radius: 0.45rem;
   background: rgba(255, 255, 255, 0.95);
-  color: #b45309;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+  color: var(--volt-warn);
+  box-shadow: var(--volt-shadow);
   cursor: pointer;
   transition: transform 0.12s ease, background 0.15s ease;
 }
@@ -1620,7 +1614,7 @@ html.dark .order-review__discount strong {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #b45309;
+  color: var(--volt-warn);
   font: inherit;
   font-size: 0.72rem;
   font-weight: 750;
@@ -1630,7 +1624,7 @@ html.dark .order-review__discount strong {
 }
 
 .order-form__booked-link:hover {
-  color: #92400e;
+  color: var(--volt-warn);
 }
 
 /* Booked-days mini calendar dialog */
@@ -1642,16 +1636,16 @@ html.dark .order-review__discount strong {
   place-items: center;
   padding: 1rem;
   background: rgba(10, 17, 16, 0.5);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(2px);
 }
 
 .order-booked__dialog {
   width: min(20.5rem, 100%);
   padding: 1rem 1.05rem 1.1rem;
-  border-radius: 1.15rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.28);
+  box-shadow: var(--volt-shadow);
   color: var(--volt-text-primary);
 }
 
@@ -1669,7 +1663,7 @@ html.dark .order-review__discount strong {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #b45309;
+  color: var(--volt-warn);
 }
 
 .order-booked__title {
@@ -1694,7 +1688,7 @@ html.dark .order-review__discount strong {
   height: 2rem;
   flex-shrink: 0;
   border: 0;
-  border-radius: 0.65rem;
+  border-radius: 0.45rem;
   background: var(--volt-surface-muted);
   color: var(--volt-text-secondary);
   cursor: pointer;
@@ -1708,8 +1702,8 @@ html.dark .order-review__discount strong {
 .order-booked__months {
   margin: 0 0 0.85rem;
   padding: 0.55rem 0.7rem;
-  border-radius: 0.75rem;
-  background: rgba(245, 158, 11, 0.1);
+  border-radius: var(--volt-radius);
+  background: rgba(178, 107, 0, 0.1);
   color: var(--volt-text-secondary);
   font-size: 0.78rem;
   line-height: 1.4;
@@ -1717,7 +1711,7 @@ html.dark .order-review__discount strong {
 
 .order-booked__months strong {
   display: inline;
-  color: #92400e;
+  color: var(--volt-warn);
   font-weight: 800;
 }
 
@@ -1735,7 +1729,7 @@ html.dark .order-review__discount strong {
   justify-content: center;
   width: 1.9rem;
   height: 1.9rem;
-  border-radius: 0.6rem;
+  border-radius: 0.45rem;
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
   color: var(--volt-text-primary);
@@ -1783,7 +1777,7 @@ html.dark .order-review__discount strong {
   display: grid;
   place-items: center;
   aspect-ratio: 1;
-  border-radius: 0.55rem;
+  border-radius: 0.45rem;
   font-size: 0.74rem;
   font-weight: 700;
   color: var(--volt-text-primary);
@@ -1796,9 +1790,9 @@ html.dark .order-review__discount strong {
 }
 
 .order-booked__day--booked {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: var(--volt-warn);
   color: #fff;
-  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.28);
+  box-shadow: var(--volt-shadow);
 }
 
 .order-booked__legend {
@@ -1814,7 +1808,7 @@ html.dark .order-review__discount strong {
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 0.25rem;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: var(--volt-warn);
   flex-shrink: 0;
 }
 
@@ -1825,7 +1819,7 @@ html.dark .order-review__discount strong {
 .order-form__checkoutbar-meta {
   display: block;
   font-size: 0.75rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-muted);
   font-variant-numeric: tabular-nums;
 }

@@ -11,7 +11,7 @@
 .journals__total {
   background: var(--volt-surface, #fff);
   border: 1px solid var(--volt-border, #e5e7eb);
-  border-radius: 0.85rem;
+  border-radius: var(--volt-radius);
   padding: 0.9rem 1rem;
   display: grid;
   gap: 0.3rem;

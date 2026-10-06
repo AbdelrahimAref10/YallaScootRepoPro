@@ -5221,6 +5221,16 @@
               "nullable": true
             },
             "x-position": 4
+          },
+          {
+            "name": "CityId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            },
+            "x-position": 5
           }
         ],
         "responses": {
@@ -5270,6 +5280,60 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/AdminOrder/StateCounts": {
+      "get": {
+        "tags": [
+          "Admin / AdminOrder"
+        ],
+        "operationId": "AdminOrder_GetOrderStateCounts",
+        "parameters": [
+          {
+            "name": "CityId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            },
+            "x-position": 1
+          },
+          {
+            "name": "OrderCode",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderStateCountDto"
+                  }
                 }
               }
             }
@@ -6482,6 +6546,48 @@
           "Admin / AdminOrder"
         ],
         "operationId": "AdminOrder_RejectOrder",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/AdminOrder/{orderId}/ChangeToCash": {
+      "post": {
+        "tags": [
+          "Admin / AdminOrder"
+        ],
+        "operationId": "AdminOrder_ChangeToCash",
         "parameters": [
           {
             "name": "orderId",
@@ -11202,6 +11308,10 @@
             "type": "number",
             "format": "decimal"
           },
+          "myCompanyCommissionTotal": {
+            "type": "number",
+            "format": "decimal"
+          },
           "canAccept": {
             "type": "boolean"
           },
@@ -11370,6 +11480,10 @@
             "type": "number",
             "format": "decimal"
           },
+          "myCompanyCommissionTotal": {
+            "type": "number",
+            "format": "decimal"
+          },
           "myNetTotal": {
             "type": "number",
             "format": "decimal"
@@ -11518,6 +11632,14 @@
           "netAmount": {
             "type": "number",
             "format": "decimal"
+          },
+          "companyCommissionPercent": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "companyCommissionAmount": {
+            "type": "number",
+            "format": "decimal"
           }
         }
       },
@@ -11663,7 +11785,11 @@
           "DeliveryCashFloatReceived",
           "DeliveryCashFloatReturned",
           "OrderTotalDebitedToCompany",
-          "NonDeliveryFaultDebit"
+          "NonDeliveryFaultDebit",
+          "CompanyDeliveryFeeRemainderAccrued",
+          "CompanyReturnLegCommissionCharged",
+          "MerchantCompanyCommissionCharged",
+          "CompanyMerchantCommissionAccrued"
         ],
         "enum": [
           1,
@@ -11680,7 +11806,11 @@
           12,
           13,
           14,
-          15
+          15,
+          16,
+          17,
+          18,
+          19
         ]
       },
       "PartyLedgerDto": {
@@ -11905,6 +12035,10 @@
           "cashOnReceive": {
             "type": "boolean"
           },
+          "companyCommissionPercent": {
+            "type": "number",
+            "format": "decimal"
+          },
           "isDeleted": {
             "type": "boolean"
           },
@@ -11927,6 +12061,10 @@
           },
           "cashOnReceive": {
             "type": "boolean"
+          },
+          "companyCommissionPercent": {
+            "type": "number",
+            "format": "decimal"
           },
           "pendingInvitationsCount": {
             "type": "integer",
@@ -15136,6 +15274,10 @@
           },
           "cashOnReceive": {
             "type": "boolean"
+          },
+          "companyCommissionPercent": {
+            "type": "number",
+            "format": "decimal"
           }
         }
       },
@@ -15173,6 +15315,10 @@
           },
           "cashOnReceive": {
             "type": "boolean"
+          },
+          "companyCommissionPercent": {
+            "type": "number",
+            "format": "decimal"
           },
           "password": {
             "type": "string",
@@ -15235,6 +15381,19 @@
           "createdDate": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "OrderStateCountDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/OrderState"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -15510,12 +15669,22 @@
           "receivedFromOwner": {
             "type": "boolean"
           },
+          "receivedFromOwnerAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "receivedFromOwnerImageUrl": {
             "type": "string",
             "nullable": true
           },
           "deliveredToCustomer": {
             "type": "boolean"
+          },
+          "deliveredToCustomerAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           },
           "deliveredToCustomerImageUrl": {
             "type": "string",
@@ -15524,12 +15693,22 @@
           "receivedFromCustomer": {
             "type": "boolean"
           },
+          "receivedFromCustomerAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "receivedFromCustomerImageUrl": {
             "type": "string",
             "nullable": true
           },
           "deliveredToOwner": {
             "type": "boolean"
+          },
+          "deliveredToOwnerAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           },
           "deliveredToOwnerImageUrl": {
             "type": "string",

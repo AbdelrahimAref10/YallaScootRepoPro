@@ -1,176 +1,191 @@
-<div class="entity-form">
-  <header class="entity-form__header">
+<div class="rf">
+  <header class="rf-head">
     <div>
-      <p class="entity-form__kicker">{{ 'deliveries.title' | t }}</p>
-      <h1 class="entity-form__title">{{ (isEditMode ? 'deliveries.edit' : 'deliveries.add') | t }}</h1>
-      <p class="entity-form__subtitle">{{ 'deliveries.formSubtitle' | t }}</p>
+      <button type="button" class="rf-head__back" (click)="onCancel()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        {{ 'deliveries.title' | t }}
+      </button>
+      <h1 class="rf-head__title">{{ (isEditMode ? 'deliveries.edit' : 'deliveries.add') | t }}</h1>
+      <p class="rf-head__sub">{{ 'deliveries.formSubtitle' | t }}</p>
     </div>
   </header>
 
   <div *ngIf="errorMessage" class="entity-form__alert" role="alert">{{ errorMessage }}</div>
-  <div *ngIf="isLoading" class="entity-form__alert">{{ 'common.loading' | t }}</div>
+  <div *ngIf="isLoading" class="entity-form__loading">
+    <div class="entity-form__spinner" aria-hidden="true"></div>
+    <p>{{ 'common.loading' | t }}</p>
+  </div>
 
-  <form *ngIf="!isLoading" [formGroup]="deliveryForm" (ngSubmit)="onSubmit()">
-    <section class="entity-form__card">
-      <div class="entity-form__card-head">
-        <p class="entity-form__card-kicker">{{ 'common.details' | t }}</p>
-        <h2 class="entity-form__card-title">{{ 'deliveries.profile' | t }}</h2>
-      </div>
-
-      <div class="entity-form__card-body">
-        <div class="entity-form__row">
-          <div class="entity-form__field">
-            <label class="entity-form__label">
-              {{ 'common.name' | t }}<span class="entity-form__req">*</span>
-            </label>
-            <input type="text" formControlName="fullName" class="entity-form__input" />
-            <p *ngIf="deliveryForm.get('fullName')?.invalid && deliveryForm.get('fullName')?.touched" class="entity-form__error">
-              {{ 'common.required' | t }}
-            </p>
+  <form *ngIf="!isLoading" [formGroup]="deliveryForm" (ngSubmit)="onSubmit()" class="rf-layout">
+    <div class="rf-main">
+      <!-- 01 Profile -->
+      <section class="rf-card">
+        <div class="rf-card__head">
+          <span class="rf-card__step">01</span>
+          <div>
+            <h2 class="rf-card__title">{{ 'deliveries.profile' | t }}</h2>
+            <p class="rf-card__hint">{{ 'deliveries.profileHint' | t }}</p>
           </div>
-
+        </div>
+        <div class="rf-grid">
           <div class="entity-form__field">
-            <label class="entity-form__label">
-              {{ 'login.username' | t }}<span class="entity-form__req">*</span>
-            </label>
-            <input
-              type="text"
-              formControlName="userName"
-              class="entity-form__input"
-              [placeholder]="'deliveries.userNamePlaceholder' | t"
-              autocomplete="username"
-            />
-            <p *ngIf="deliveryForm.get('userName')?.invalid && deliveryForm.get('userName')?.touched" class="entity-form__error">
-              {{ 'users.userNameRequired' | t }}
-            </p>
+            <label class="entity-form__label" for="rf-name">{{ 'common.name' | t }}<span class="entity-form__req">*</span></label>
+            <input id="rf-name" type="text" formControlName="fullName" class="entity-form__input" />
+            <p *ngIf="deliveryForm.get('fullName')?.invalid && deliveryForm.get('fullName')?.touched" class="entity-form__error">{{ 'common.required' | t }}</p>
+          </div>
+          <div class="entity-form__field">
+            <label class="entity-form__label" for="rf-user">{{ 'login.username' | t }}<span class="entity-form__req">*</span></label>
+            <input id="rf-user" type="text" formControlName="userName" class="entity-form__input" [placeholder]="'deliveries.userNamePlaceholder' | t" autocomplete="username" />
+            <p *ngIf="deliveryForm.get('userName')?.invalid && deliveryForm.get('userName')?.touched" class="entity-form__error">{{ 'users.userNameRequired' | t }}</p>
             <p class="entity-form__hint">{{ 'deliveries.userNameHint' | t }}</p>
           </div>
-        </div>
-
-        <div class="entity-form__row">
           <div class="entity-form__field">
-            <label class="entity-form__label">
-              {{ 'common.phone' | t }}<span class="entity-form__req">*</span>
-            </label>
-            <input type="text" formControlName="mobileNumber" class="entity-form__input" [readonly]="isEditMode" />
-            <p *ngIf="deliveryForm.get('mobileNumber')?.invalid && deliveryForm.get('mobileNumber')?.touched" class="entity-form__error">
-              {{ 'common.required' | t }}
-            </p>
+            <label class="entity-form__label" for="rf-phone">{{ 'common.phone' | t }}<span class="entity-form__req">*</span></label>
+            <input id="rf-phone" type="text" formControlName="mobileNumber" class="entity-form__input rf-ltr" [readonly]="isEditMode" />
+            <p *ngIf="deliveryForm.get('mobileNumber')?.invalid && deliveryForm.get('mobileNumber')?.touched" class="entity-form__error">{{ 'common.required' | t }}</p>
           </div>
-
           <div class="entity-form__field">
-            <label class="entity-form__label">
-              {{ 'common.email' | t }}<span class="entity-form__req">*</span>
-            </label>
-            <input type="email" formControlName="email" class="entity-form__input" />
-            <p *ngIf="deliveryForm.get('email')?.invalid && deliveryForm.get('email')?.touched" class="entity-form__error">
-              {{ 'common.required' | t }}
-            </p>
+            <label class="entity-form__label" for="rf-email">{{ 'common.email' | t }}<span class="entity-form__req">*</span></label>
+            <input id="rf-email" type="email" formControlName="email" class="entity-form__input" />
+            <p *ngIf="deliveryForm.get('email')?.invalid && deliveryForm.get('email')?.touched" class="entity-form__error">{{ 'common.required' | t }}</p>
           </div>
         </div>
+      </section>
 
-        <div class="entity-form__row">
+      <!-- 02 Account & location -->
+      <section class="rf-card">
+        <div class="rf-card__head">
+          <span class="rf-card__step">02</span>
+          <div>
+            <h2 class="rf-card__title">{{ 'deliveries.accountTitle' | t }}</h2>
+            <p class="rf-card__hint">{{ 'deliveries.accountHint' | t }}</p>
+          </div>
+        </div>
+        <div class="rf-grid">
           <div class="entity-form__field">
-            <label class="entity-form__label">
-              {{ 'customers.password' | t }}
-              <span *ngIf="!isEditMode" class="entity-form__req">*</span>
+            <label class="entity-form__label">{{ 'common.city' | t }}<span class="entity-form__req">*</span></label>
+            <app-multi-select formControlName="cityId" [multiple]="false" [options]="cityOptions" [placeholder]="'deliveries.selectCity' | t"></app-multi-select>
+            <p *ngIf="deliveryForm.get('cityId')?.invalid && deliveryForm.get('cityId')?.touched" class="entity-form__error">{{ 'deliveries.cityRequired' | t }}</p>
+          </div>
+          <div class="entity-form__field">
+            <label class="entity-form__label">{{ 'common.zone' | t }}<span class="entity-form__req">*</span></label>
+            <app-multi-select formControlName="zoneId" [multiple]="false" [options]="zoneOptions" [disabled]="!deliveryForm.get('cityId')?.value" [placeholder]="'common.selectZone' | t"></app-multi-select>
+            <p *ngIf="deliveryForm.get('zoneId')?.invalid && deliveryForm.get('zoneId')?.touched" class="entity-form__error">{{ 'common.zoneRequired' | t }}</p>
+          </div>
+          <div class="entity-form__field">
+            <label class="entity-form__label" for="rf-password">
+              {{ 'customers.password' | t }}<span *ngIf="!isEditMode" class="entity-form__req">*</span>
             </label>
             <input
+              id="rf-password"
               type="password"
               formControlName="password"
               class="entity-form__input"
+              autocomplete="new-password"
               [placeholder]="(isEditMode ? 'customers.passwordOptionalHint' : 'customers.passwordPlaceholder') | t"
             />
-            <p *ngIf="deliveryForm.get('password')?.invalid && deliveryForm.get('password')?.touched" class="entity-form__error">
-              {{ 'customers.passwordRequired' | t }}
-            </p>
+            <p *ngIf="deliveryForm.get('password')?.invalid && deliveryForm.get('password')?.touched" class="entity-form__error">{{ 'customers.passwordRequired' | t }}</p>
           </div>
         </div>
+      </section>
 
-        <div class="entity-form__row">
-          <div class="entity-form__field">
-            <label class="entity-form__label">
-              {{ 'common.city' | t }}<span class="entity-form__req">*</span>
-            </label>
-            <app-multi-select
-              formControlName="cityId"
-              [multiple]="false"
-              [options]="cityOptions"
-              [placeholder]="'deliveries.selectCity' | t"
-            ></app-multi-select>
-            <p *ngIf="deliveryForm.get('cityId')?.invalid && deliveryForm.get('cityId')?.touched" class="entity-form__error">
-              {{ 'deliveries.cityRequired' | t }}
-            </p>
-          </div>
-
-          <div class="entity-form__field">
-            <label class="entity-form__label">
-              {{ 'common.zone' | t }}<span class="entity-form__req">*</span>
-            </label>
-            <app-multi-select
-              formControlName="zoneId"
-              [multiple]="false"
-              [options]="zoneOptions"
-              [disabled]="!deliveryForm.get('cityId')?.value"
-              [placeholder]="'common.selectZone' | t"
-            ></app-multi-select>
-            <p *ngIf="deliveryForm.get('zoneId')?.invalid && deliveryForm.get('zoneId')?.touched" class="entity-form__error">
-              {{ 'common.zoneRequired' | t }}
-            </p>
+      <!-- 03 Settings -->
+      <section class="rf-card">
+        <div class="rf-card__head">
+          <span class="rf-card__step">03</span>
+          <div>
+            <h2 class="rf-card__title">{{ 'deliveries.settingsTitle' | t }}</h2>
+            <p class="rf-card__hint">{{ 'deliveries.settingsHint' | t }}</p>
           </div>
         </div>
+        <div class="entity-form__field">
+          <label class="entity-form__check">
+            <input type="checkbox" formControlName="isActive" />
+            <span>{{ 'deliveries.isActive' | t }}</span>
+          </label>
+          <p class="entity-form__hint">{{ 'deliveries.isActiveHint' | t }}</p>
+        </div>
+      </section>
 
-        <div class="entity-form__row">
-          <div class="entity-form__field entity-form__field--checkbox">
-            <label class="entity-form__check">
-              <input type="checkbox" formControlName="isActive" />
-              <span>{{ 'deliveries.isActive' | t }}</span>
-            </label>
-            <p class="entity-form__hint">{{ 'deliveries.isActiveHint' | t }}</p>
+      <!-- 04 Photo -->
+      <section class="rf-card">
+        <div class="rf-card__head">
+          <span class="rf-card__step">04</span>
+          <div>
+            <h2 class="rf-card__title">{{ 'customers.personalImage' | t }}</h2>
+            <p class="rf-card__hint">{{ 'customers.imageFormats' | t }}</p>
           </div>
         </div>
-      </div>
-    </section>
-
-    <section class="entity-form__card">
-      <div class="entity-form__card-head">
-        <p class="entity-form__card-kicker">{{ 'common.media' | t }}</p>
-        <h2 class="entity-form__card-title">{{ 'customers.personalImage' | t }}</h2>
-      </div>
-
-      <div class="entity-form__card-body">
-        <div class="entity-form__media">
+        <div class="rf-doc">
           <div *ngIf="personalImagePreview" class="entity-form__preview">
             <img [src]="personalImagePreview" [alt]="'customers.imagePreviewAlt' | t" />
-            <button type="button" class="entity-form__remove" (click)="removePersonalImage()">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
+            <button type="button" class="entity-form__remove" (click)="removePersonalImage()" [attr.aria-label]="'customers.removeImage' | t">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
-
-          <label class="entity-form__upload" for="delivery-personal-image">
-            <input
-              #personalImageInput
-              id="delivery-personal-image"
-              type="file"
-              accept="image/*"
-              (change)="onPersonalImageSelect()"
-            />
+          <label class="entity-form__upload" for="deliveries-personal-image">
+            <input #personalImageInput id="deliveries-personal-image" type="file" accept="image/*" (change)="onPersonalImageSelect()" />
+            <span class="entity-form__upload-icon" aria-hidden="true">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </span>
             <strong>{{ personalImagePreview ? ('customers.changeImage' | t) : ('customers.uploadHint' | t) }}</strong>
             <small>{{ 'customers.imageFormats' | t }}</small>
           </label>
         </div>
-      </div>
-    </section>
-
-    <div class="entity-form__footer">
-      <button type="button" class="entity-form__btn entity-form__btn--ghost" (click)="onCancel()" [disabled]="isSaving">
-        {{ 'common.cancel' | t }}
-      </button>
-      <button type="submit" class="entity-form__btn entity-form__btn--primary" [disabled]="isSaving">
-        {{ isSaving ? ('common.saving' | t) : ('common.save' | t) }}
-      </button>
+      </section>
     </div>
+
+    <!-- Summary -->
+    <aside class="rf-side">
+      <div class="rf-summary">
+        <p class="rf-summary__kicker">{{ 'deliveries.summary' | t }}</p>
+        <div class="rf-summary__id">
+          <span class="rf-avatar">
+            <img *ngIf="personalImagePreview" [src]="personalImagePreview" alt="" />
+            <ng-container *ngIf="!personalImagePreview">{{ initial }}</ng-container>
+          </span>
+          <div class="rf-summary__name">
+            <strong>{{ deliveryForm.get('fullName')?.value || ('deliveries.newRecord' | t) }}</strong>
+            <span>&#64;{{ deliveryForm.get('userName')?.value || '—' }}</span>
+          </div>
+        </div>
+
+        <dl class="rf-summary__facts">
+          <div>
+            <dt>{{ 'common.city' | t }}</dt>
+            <dd>{{ optionLabel(cityOptions, deliveryForm.get('cityId')?.value) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'common.zone' | t }}</dt>
+            <dd>{{ optionLabel(zoneOptions, deliveryForm.get('zoneId')?.value) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'common.phone' | t }}</dt>
+            <dd class="rf-ltr">{{ deliveryForm.get('mobileNumber')?.value || '—' }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'common.status' | t }}</dt>
+            <dd [class.rf-on]="deliveryForm.get('isActive')?.value">{{ (deliveryForm.get('isActive')?.value ? 'common.active' : 'common.inactive') | t }}</dd>
+          </div>
+        </dl>
+
+        <div class="rf-summary__progress">
+          <div class="rf-summary__progress-top">
+            <span>{{ 'customers.completion' | t }}</span>
+            <strong>{{ completion }}%</strong>
+          </div>
+          <div class="rf-meter"><span [style.width.%]="completion"></span></div>
+        </div>
+
+        <div class="rf-summary__actions">
+          <button type="submit" class="entity-form__btn entity-form__btn--primary" [disabled]="isSaving">
+            {{ isSaving ? ('common.saving' | t) : ('common.save' | t) }}
+          </button>
+          <button type="button" class="entity-form__btn entity-form__btn--ghost" (click)="onCancel()" [disabled]="isSaving">
+            {{ 'common.cancel' | t }}
+          </button>
+        </div>
+      </div>
+    </aside>
   </form>
 </div>

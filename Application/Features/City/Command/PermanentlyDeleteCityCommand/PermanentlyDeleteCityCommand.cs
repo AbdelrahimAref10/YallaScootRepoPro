@@ -25,6 +25,7 @@ namespace Application.Features.City.Command.PermanentlyDeleteCityCommand
         public async Task<Result<bool>> Handle(PermanentlyDeleteCityCommand request, CancellationToken cancellationToken)
         {
             var city = await _context.Cities
+                .AsTracking()
                 .Include(c => c.Customers)
                 .FirstOrDefaultAsync(c => c.CityId == request.CityId, cancellationToken);
 

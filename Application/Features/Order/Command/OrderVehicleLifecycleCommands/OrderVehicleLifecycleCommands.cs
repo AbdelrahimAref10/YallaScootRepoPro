@@ -46,6 +46,12 @@ namespace Application.Features.Order.Command.OrderVehicleLifecycleCommands
                 .Select(t => t.ServiceFees)
                 .FirstOrDefaultAsync(cancellationToken);
 
+            var vehicleDeliveryFee = await context.OrderVehicles
+                .AsNoTracking()
+                .Where(ov => ov.OrderId == orderId && ov.VehicleId == vehicleId)
+                .Select(ov => ov.DeliveryFee)
+                .FirstOrDefaultAsync(cancellationToken);
+
             return Result.Success(new VehicleSettlementSnapshot
             {
                 VehicleId = vehicleId,
@@ -54,6 +60,8 @@ namespace Application.Features.Order.Command.OrderVehicleLifecycleCommands
                 VehicleRental = merchantDetail.VehicleRental,
                 OrderServiceFees = orderServiceFees,
                 DeliveryFeeShare = deliveryDetail.DeliveryFeeShare,
+                VehicleDeliveryFee = vehicleDeliveryFee,
+                MerchantCompanyCommission = merchantDetail.CompanyCommissionAmount,
                 MerchantCashOnReceive = merchant.CashOnReceive
             });
         }

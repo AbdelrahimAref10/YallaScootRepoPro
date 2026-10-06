@@ -21,6 +21,8 @@ namespace Application.Features.Merchant.Command.AdminUpdateMerchantCommand
         public string? PersonalImage { get; set; }
         public bool IsActive { get; set; } = true;
         public bool CashOnReceive { get; set; }
+        /// <summary>Company percentage of this merchant's vehicle rental (0–100).</summary>
+        public decimal CompanyCommissionPercent { get; set; }
         /// <summary>Optional. When provided, resets the linked user password.</summary>
         public string? Password { get; set; }
     }
@@ -48,6 +50,9 @@ namespace Application.Features.Merchant.Command.AdminUpdateMerchantCommand
         {
             if (request.MerchantId <= 0)
                 return Result.Failure<bool>("MerchantId is required");
+
+            if (request.CompanyCommissionPercent < 0 || request.CompanyCommissionPercent > 100)
+                return Result.Failure<bool>("Company commission percent must be between 0 and 100");
 
             if (string.IsNullOrWhiteSpace(request.FullName))
                 return Result.Failure<bool>("Full name is required");
@@ -121,7 +126,8 @@ namespace Application.Features.Merchant.Command.AdminUpdateMerchantCommand
                 cashOnReceive: request.CashOnReceive,
                 isActive: request.IsActive,
                 cityId: request.CityId,
-                zoneId: request.ZoneId);
+                zoneId: request.ZoneId,
+                companyCommissionPercent: request.CompanyCommissionPercent);
 
             if (!string.Equals(user.UserName, userName, StringComparison.Ordinal))
             {

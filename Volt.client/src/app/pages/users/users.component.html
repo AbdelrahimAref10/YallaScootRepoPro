@@ -151,7 +151,7 @@
                 <div class="users__actions">
                   <button
                     type="button"
-                    class="users__action"
+                    class="users__action va-act va-act--view"
                     (click)="onView(user.id)"
                     [attr.title]="'common.view' | t"
                     [attr.aria-label]="'common.view' | t"
@@ -163,7 +163,7 @@
                   </button>
                   <button
                     type="button"
-                    class="users__action"
+                    class="users__action va-act va-act--edit"
                     (click)="onEdit(user.id)"
                     [attr.title]="'users.editUser' | t"
                     [attr.aria-label]="'users.editUser' | t"
@@ -175,7 +175,7 @@
                   <button
                     *ngIf="!user.active"
                     type="button"
-                    class="users__action users__action--success"
+                    class="users__action users__action--success va-act va-act--on"
                     (click)="onActivate(user.id)"
                     [attr.title]="'users.activateUser' | t"
                     [attr.aria-label]="'users.activateUser' | t"
@@ -187,7 +187,7 @@
                   <button
                     *ngIf="user.active"
                     type="button"
-                    class="users__action users__action--warn"
+                    class="users__action users__action--warn va-act va-act--off"
                     (click)="onDeactivate(user.id)"
                     [attr.title]="'users.deactivateUser' | t"
                     [attr.aria-label]="'users.deactivateUser' | t"

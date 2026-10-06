@@ -7171,7 +7171,7 @@ export class AdminOrderClient {
         this.baseUrl = baseUrl ?? "";
     }
 
-    getAllOrders(pageNumber?: number | undefined, pageSize?: number | undefined, state?: OrderState | null | undefined, orderCode?: string | null | undefined): Observable<PagedResultOfOrderDto> {
+    getAllOrders(pageNumber?: number | undefined, pageSize?: number | undefined, state?: OrderState | null | undefined, orderCode?: string | null | undefined, cityId?: number | null | undefined): Observable<PagedResultOfOrderDto> {
         let url_ = this.baseUrl + "/api/admin/AdminOrder?";
         if (pageNumber === null)
             throw new Error("The parameter 'pageNumber' cannot be null.");
@@ -7185,6 +7185,8 @@ export class AdminOrderClient {
             url_ += "State=" + encodeURIComponent("" + state) + "&";
         if (orderCode !== undefined && orderCode !== null)
             url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
+        if (cityId !== undefined && cityId !== null)
+            url_ += "CityId=" + encodeURIComponent("" + cityId) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -7280,6 +7282,72 @@ export class AdminOrderClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result200 = OrderDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getOrderStateCounts(cityId?: number | null | undefined, orderCode?: string | null | undefined): Observable<OrderStateCountDto[]> {
+        let url_ = this.baseUrl + "/api/admin/AdminOrder/StateCounts?";
+        if (cityId !== undefined && cityId !== null)
+            url_ += "CityId=" + encodeURIComponent("" + cityId) + "&";
+        if (orderCode !== undefined && orderCode !== null)
+            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetOrderStateCounts(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetOrderStateCounts(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<OrderStateCountDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<OrderStateCountDto[]>;
+        }));
+    }
+
+    protected processGetOrderStateCounts(response: HttpResponseBase): Observable<OrderStateCountDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(OrderStateCountDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
             return _observableOf(result200);
             }));
         } else if (status === 400) {
@@ -8678,6 +8746,65 @@ export class AdminOrderClient {
     }
 
     protected processRejectOrder(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    changeToCash(orderId: number): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/admin/AdminOrder/{orderId}/ChangeToCash";
+        if (orderId === undefined || orderId === null)
+            throw new Error("The parameter 'orderId' must be defined.");
+        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processChangeToCash(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processChangeToCash(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processChangeToCash(response: HttpResponseBase): Observable<boolean> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -13884,6 +14011,7 @@ export class MerchantPortalOrderListItemDto {
     myNetTotal!: number;
     myRentalTotal!: number;
     myServiceFeeTotal!: number;
+    myCompanyCommissionTotal!: number;
     canAccept!: boolean;
     canReject!: boolean;
     pendingHandoverVehicleCount!: number;
@@ -13907,6 +14035,7 @@ export class MerchantPortalOrderListItemDto {
             this.myNetTotal = _data["myNetTotal"] !== undefined ? _data["myNetTotal"] : <any>null;
             this.myRentalTotal = _data["myRentalTotal"] !== undefined ? _data["myRentalTotal"] : <any>null;
             this.myServiceFeeTotal = _data["myServiceFeeTotal"] !== undefined ? _data["myServiceFeeTotal"] : <any>null;
+            this.myCompanyCommissionTotal = _data["myCompanyCommissionTotal"] !== undefined ? _data["myCompanyCommissionTotal"] : <any>null;
             this.canAccept = _data["canAccept"] !== undefined ? _data["canAccept"] : <any>null;
             this.canReject = _data["canReject"] !== undefined ? _data["canReject"] : <any>null;
             this.pendingHandoverVehicleCount = _data["pendingHandoverVehicleCount"] !== undefined ? _data["pendingHandoverVehicleCount"] : <any>null;
@@ -13939,6 +14068,7 @@ export class MerchantPortalOrderListItemDto {
         data["myNetTotal"] = this.myNetTotal !== undefined ? this.myNetTotal : <any>null;
         data["myRentalTotal"] = this.myRentalTotal !== undefined ? this.myRentalTotal : <any>null;
         data["myServiceFeeTotal"] = this.myServiceFeeTotal !== undefined ? this.myServiceFeeTotal : <any>null;
+        data["myCompanyCommissionTotal"] = this.myCompanyCommissionTotal !== undefined ? this.myCompanyCommissionTotal : <any>null;
         data["canAccept"] = this.canAccept !== undefined ? this.canAccept : <any>null;
         data["canReject"] = this.canReject !== undefined ? this.canReject : <any>null;
         data["pendingHandoverVehicleCount"] = this.pendingHandoverVehicleCount !== undefined ? this.pendingHandoverVehicleCount : <any>null;
@@ -13995,6 +14125,7 @@ export class MerchantPortalOrderDetailDto {
     myJournals!: OrderJournalDto[];
     myRentalTotal!: number;
     myServiceFeeTotal!: number;
+    myCompanyCommissionTotal!: number;
     myNetTotal!: number;
 
     init(_data?: any) {
@@ -14054,6 +14185,7 @@ export class MerchantPortalOrderDetailDto {
             }
             this.myRentalTotal = _data["myRentalTotal"] !== undefined ? _data["myRentalTotal"] : <any>null;
             this.myServiceFeeTotal = _data["myServiceFeeTotal"] !== undefined ? _data["myServiceFeeTotal"] : <any>null;
+            this.myCompanyCommissionTotal = _data["myCompanyCommissionTotal"] !== undefined ? _data["myCompanyCommissionTotal"] : <any>null;
             this.myNetTotal = _data["myNetTotal"] !== undefined ? _data["myNetTotal"] : <any>null;
         }
     }
@@ -14110,6 +14242,7 @@ export class MerchantPortalOrderDetailDto {
         }
         data["myRentalTotal"] = this.myRentalTotal !== undefined ? this.myRentalTotal : <any>null;
         data["myServiceFeeTotal"] = this.myServiceFeeTotal !== undefined ? this.myServiceFeeTotal : <any>null;
+        data["myCompanyCommissionTotal"] = this.myCompanyCommissionTotal !== undefined ? this.myCompanyCommissionTotal : <any>null;
         data["myNetTotal"] = this.myNetTotal !== undefined ? this.myNetTotal : <any>null;
         return data;
     }
@@ -14215,6 +14348,8 @@ export class MerchantOrderPaymentDetailDto {
     vehicleCode!: string;
     vehicleRental!: number;
     netAmount!: number;
+    companyCommissionPercent!: number;
+    companyCommissionAmount!: number;
 
     init(_data?: any) {
         if (_data) {
@@ -14226,6 +14361,8 @@ export class MerchantOrderPaymentDetailDto {
             this.vehicleCode = _data["vehicleCode"] !== undefined ? _data["vehicleCode"] : <any>null;
             this.vehicleRental = _data["vehicleRental"] !== undefined ? _data["vehicleRental"] : <any>null;
             this.netAmount = _data["netAmount"] !== undefined ? _data["netAmount"] : <any>null;
+            this.companyCommissionPercent = _data["companyCommissionPercent"] !== undefined ? _data["companyCommissionPercent"] : <any>null;
+            this.companyCommissionAmount = _data["companyCommissionAmount"] !== undefined ? _data["companyCommissionAmount"] : <any>null;
         }
     }
 
@@ -14246,6 +14383,8 @@ export class MerchantOrderPaymentDetailDto {
         data["vehicleCode"] = this.vehicleCode !== undefined ? this.vehicleCode : <any>null;
         data["vehicleRental"] = this.vehicleRental !== undefined ? this.vehicleRental : <any>null;
         data["netAmount"] = this.netAmount !== undefined ? this.netAmount : <any>null;
+        data["companyCommissionPercent"] = this.companyCommissionPercent !== undefined ? this.companyCommissionPercent : <any>null;
+        data["companyCommissionAmount"] = this.companyCommissionAmount !== undefined ? this.companyCommissionAmount : <any>null;
         return data;
     }
 }
@@ -14380,6 +14519,10 @@ export enum OrderJournalEntryKind {
     DeliveryCashFloatReturned = 13,
     OrderTotalDebitedToCompany = 14,
     NonDeliveryFaultDebit = 15,
+    CompanyDeliveryFeeRemainderAccrued = 16,
+    CompanyReturnLegCommissionCharged = 17,
+    MerchantCompanyCommissionCharged = 18,
+    CompanyMerchantCommissionAccrued = 19,
 }
 
 export class PartyLedgerDto {
@@ -14655,6 +14798,7 @@ export class MerchantDto {
     personalImage!: string | null;
     isActive!: boolean;
     cashOnReceive!: boolean;
+    companyCommissionPercent!: number;
     isDeleted!: boolean;
     createdDate!: Date;
 
@@ -14672,6 +14816,7 @@ export class MerchantDto {
             this.personalImage = _data["personalImage"] !== undefined ? _data["personalImage"] : <any>null;
             this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
             this.cashOnReceive = _data["cashOnReceive"] !== undefined ? _data["cashOnReceive"] : <any>null;
+            this.companyCommissionPercent = _data["companyCommissionPercent"] !== undefined ? _data["companyCommissionPercent"] : <any>null;
             this.isDeleted = _data["isDeleted"] !== undefined ? _data["isDeleted"] : <any>null;
             this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
         }
@@ -14698,6 +14843,7 @@ export class MerchantDto {
         data["personalImage"] = this.personalImage !== undefined ? this.personalImage : <any>null;
         data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
         data["cashOnReceive"] = this.cashOnReceive !== undefined ? this.cashOnReceive : <any>null;
+        data["companyCommissionPercent"] = this.companyCommissionPercent !== undefined ? this.companyCommissionPercent : <any>null;
         data["isDeleted"] = this.isDeleted !== undefined ? this.isDeleted : <any>null;
         data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
         return data;
@@ -14708,6 +14854,7 @@ export class MerchantDashboardSummaryDto {
     merchantId!: number;
     fullName!: string;
     cashOnReceive!: boolean;
+    companyCommissionPercent!: number;
     pendingInvitationsCount!: number;
     awaitingHandoverCount!: number;
     activeOrdersCount!: number;
@@ -14721,6 +14868,7 @@ export class MerchantDashboardSummaryDto {
             this.merchantId = _data["merchantId"] !== undefined ? _data["merchantId"] : <any>null;
             this.fullName = _data["fullName"] !== undefined ? _data["fullName"] : <any>null;
             this.cashOnReceive = _data["cashOnReceive"] !== undefined ? _data["cashOnReceive"] : <any>null;
+            this.companyCommissionPercent = _data["companyCommissionPercent"] !== undefined ? _data["companyCommissionPercent"] : <any>null;
             this.pendingInvitationsCount = _data["pendingInvitationsCount"] !== undefined ? _data["pendingInvitationsCount"] : <any>null;
             this.awaitingHandoverCount = _data["awaitingHandoverCount"] !== undefined ? _data["awaitingHandoverCount"] : <any>null;
             this.activeOrdersCount = _data["activeOrdersCount"] !== undefined ? _data["activeOrdersCount"] : <any>null;
@@ -14743,6 +14891,7 @@ export class MerchantDashboardSummaryDto {
         data["merchantId"] = this.merchantId !== undefined ? this.merchantId : <any>null;
         data["fullName"] = this.fullName !== undefined ? this.fullName : <any>null;
         data["cashOnReceive"] = this.cashOnReceive !== undefined ? this.cashOnReceive : <any>null;
+        data["companyCommissionPercent"] = this.companyCommissionPercent !== undefined ? this.companyCommissionPercent : <any>null;
         data["pendingInvitationsCount"] = this.pendingInvitationsCount !== undefined ? this.pendingInvitationsCount : <any>null;
         data["awaitingHandoverCount"] = this.awaitingHandoverCount !== undefined ? this.awaitingHandoverCount : <any>null;
         data["activeOrdersCount"] = this.activeOrdersCount !== undefined ? this.activeOrdersCount : <any>null;
@@ -18932,6 +19081,7 @@ export class AdminCreateMerchantCommand {
     personalImage!: string | null;
     isActive!: boolean;
     cashOnReceive!: boolean;
+    companyCommissionPercent!: number;
 
     init(_data?: any) {
         if (_data) {
@@ -18945,6 +19095,7 @@ export class AdminCreateMerchantCommand {
             this.personalImage = _data["personalImage"] !== undefined ? _data["personalImage"] : <any>null;
             this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
             this.cashOnReceive = _data["cashOnReceive"] !== undefined ? _data["cashOnReceive"] : <any>null;
+            this.companyCommissionPercent = _data["companyCommissionPercent"] !== undefined ? _data["companyCommissionPercent"] : <any>null;
         }
     }
 
@@ -18967,6 +19118,7 @@ export class AdminCreateMerchantCommand {
         data["personalImage"] = this.personalImage !== undefined ? this.personalImage : <any>null;
         data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
         data["cashOnReceive"] = this.cashOnReceive !== undefined ? this.cashOnReceive : <any>null;
+        data["companyCommissionPercent"] = this.companyCommissionPercent !== undefined ? this.companyCommissionPercent : <any>null;
         return data;
     }
 }
@@ -18981,6 +19133,7 @@ export class AdminUpdateMerchantCommand {
     personalImage!: string | null;
     isActive!: boolean;
     cashOnReceive!: boolean;
+    companyCommissionPercent!: number;
     password!: string | null;
 
     init(_data?: any) {
@@ -18994,6 +19147,7 @@ export class AdminUpdateMerchantCommand {
             this.personalImage = _data["personalImage"] !== undefined ? _data["personalImage"] : <any>null;
             this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
             this.cashOnReceive = _data["cashOnReceive"] !== undefined ? _data["cashOnReceive"] : <any>null;
+            this.companyCommissionPercent = _data["companyCommissionPercent"] !== undefined ? _data["companyCommissionPercent"] : <any>null;
             this.password = _data["password"] !== undefined ? _data["password"] : <any>null;
         }
     }
@@ -19016,6 +19170,7 @@ export class AdminUpdateMerchantCommand {
         data["personalImage"] = this.personalImage !== undefined ? this.personalImage : <any>null;
         data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
         data["cashOnReceive"] = this.cashOnReceive !== undefined ? this.cashOnReceive : <any>null;
+        data["companyCommissionPercent"] = this.companyCommissionPercent !== undefined ? this.companyCommissionPercent : <any>null;
         data["password"] = this.password !== undefined ? this.password : <any>null;
         return data;
     }
@@ -19093,6 +19248,32 @@ export class AdminNotificationDto {
         data["readAt"] = this.readAt ? this.readAt.toISOString() : <any>null;
         data["readByUserId"] = this.readByUserId !== undefined ? this.readByUserId : <any>null;
         data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
+        return data;
+    }
+}
+
+export class OrderStateCountDto {
+    state!: OrderState;
+    count!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.state = _data["state"] !== undefined ? _data["state"] : <any>null;
+            this.count = _data["count"] !== undefined ? _data["count"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): OrderStateCountDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new OrderStateCountDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["state"] = this.state !== undefined ? this.state : <any>null;
+        data["count"] = this.count !== undefined ? this.count : <any>null;
         return data;
     }
 }
@@ -19356,12 +19537,16 @@ export class OrderVehicleDto {
     speedKmh!: number | null;
     engineCapacityCc!: number | null;
     receivedFromOwner!: boolean;
+    receivedFromOwnerAt!: Date | null;
     receivedFromOwnerImageUrl!: string | null;
     deliveredToCustomer!: boolean;
+    deliveredToCustomerAt!: Date | null;
     deliveredToCustomerImageUrl!: string | null;
     receivedFromCustomer!: boolean;
+    receivedFromCustomerAt!: Date | null;
     receivedFromCustomerImageUrl!: string | null;
     deliveredToOwner!: boolean;
+    deliveredToOwnerAt!: Date | null;
     deliveredToOwnerImageUrl!: string | null;
     deliveryFailed!: boolean;
     deliveryFailureReason!: string | null;
@@ -19388,12 +19573,16 @@ export class OrderVehicleDto {
             this.speedKmh = _data["speedKmh"] !== undefined ? _data["speedKmh"] : <any>null;
             this.engineCapacityCc = _data["engineCapacityCc"] !== undefined ? _data["engineCapacityCc"] : <any>null;
             this.receivedFromOwner = _data["receivedFromOwner"] !== undefined ? _data["receivedFromOwner"] : <any>null;
+            this.receivedFromOwnerAt = _data["receivedFromOwnerAt"] ? new Date(_data["receivedFromOwnerAt"].toString()) : <any>null;
             this.receivedFromOwnerImageUrl = _data["receivedFromOwnerImageUrl"] !== undefined ? _data["receivedFromOwnerImageUrl"] : <any>null;
             this.deliveredToCustomer = _data["deliveredToCustomer"] !== undefined ? _data["deliveredToCustomer"] : <any>null;
+            this.deliveredToCustomerAt = _data["deliveredToCustomerAt"] ? new Date(_data["deliveredToCustomerAt"].toString()) : <any>null;
             this.deliveredToCustomerImageUrl = _data["deliveredToCustomerImageUrl"] !== undefined ? _data["deliveredToCustomerImageUrl"] : <any>null;
             this.receivedFromCustomer = _data["receivedFromCustomer"] !== undefined ? _data["receivedFromCustomer"] : <any>null;
+            this.receivedFromCustomerAt = _data["receivedFromCustomerAt"] ? new Date(_data["receivedFromCustomerAt"].toString()) : <any>null;
             this.receivedFromCustomerImageUrl = _data["receivedFromCustomerImageUrl"] !== undefined ? _data["receivedFromCustomerImageUrl"] : <any>null;
             this.deliveredToOwner = _data["deliveredToOwner"] !== undefined ? _data["deliveredToOwner"] : <any>null;
+            this.deliveredToOwnerAt = _data["deliveredToOwnerAt"] ? new Date(_data["deliveredToOwnerAt"].toString()) : <any>null;
             this.deliveredToOwnerImageUrl = _data["deliveredToOwnerImageUrl"] !== undefined ? _data["deliveredToOwnerImageUrl"] : <any>null;
             this.deliveryFailed = _data["deliveryFailed"] !== undefined ? _data["deliveryFailed"] : <any>null;
             this.deliveryFailureReason = _data["deliveryFailureReason"] !== undefined ? _data["deliveryFailureReason"] : <any>null;
@@ -19429,12 +19618,16 @@ export class OrderVehicleDto {
         data["speedKmh"] = this.speedKmh !== undefined ? this.speedKmh : <any>null;
         data["engineCapacityCc"] = this.engineCapacityCc !== undefined ? this.engineCapacityCc : <any>null;
         data["receivedFromOwner"] = this.receivedFromOwner !== undefined ? this.receivedFromOwner : <any>null;
+        data["receivedFromOwnerAt"] = this.receivedFromOwnerAt ? this.receivedFromOwnerAt.toISOString() : <any>null;
         data["receivedFromOwnerImageUrl"] = this.receivedFromOwnerImageUrl !== undefined ? this.receivedFromOwnerImageUrl : <any>null;
         data["deliveredToCustomer"] = this.deliveredToCustomer !== undefined ? this.deliveredToCustomer : <any>null;
+        data["deliveredToCustomerAt"] = this.deliveredToCustomerAt ? this.deliveredToCustomerAt.toISOString() : <any>null;
         data["deliveredToCustomerImageUrl"] = this.deliveredToCustomerImageUrl !== undefined ? this.deliveredToCustomerImageUrl : <any>null;
         data["receivedFromCustomer"] = this.receivedFromCustomer !== undefined ? this.receivedFromCustomer : <any>null;
+        data["receivedFromCustomerAt"] = this.receivedFromCustomerAt ? this.receivedFromCustomerAt.toISOString() : <any>null;
         data["receivedFromCustomerImageUrl"] = this.receivedFromCustomerImageUrl !== undefined ? this.receivedFromCustomerImageUrl : <any>null;
         data["deliveredToOwner"] = this.deliveredToOwner !== undefined ? this.deliveredToOwner : <any>null;
+        data["deliveredToOwnerAt"] = this.deliveredToOwnerAt ? this.deliveredToOwnerAt.toISOString() : <any>null;
         data["deliveredToOwnerImageUrl"] = this.deliveredToOwnerImageUrl !== undefined ? this.deliveredToOwnerImageUrl : <any>null;
         data["deliveryFailed"] = this.deliveryFailed !== undefined ? this.deliveryFailed : <any>null;
         data["deliveryFailureReason"] = this.deliveryFailureReason !== undefined ? this.deliveryFailureReason : <any>null;

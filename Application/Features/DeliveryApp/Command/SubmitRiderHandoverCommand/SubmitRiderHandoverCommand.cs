@@ -123,6 +123,7 @@ namespace Application.Features.DeliveryApp.Command.SubmitRiderHandoverCommand
                 return result;
 
             var stale = await _context.OrderVehicleHandoverImages
+                .AsTracking()
                 .Where(i => i.OrderId == request.OrderId && i.VehicleId == request.VehicleId && i.Step == request.Step)
                 .ToListAsync(cancellationToken);
             _context.OrderVehicleHandoverImages.RemoveRange(stale);

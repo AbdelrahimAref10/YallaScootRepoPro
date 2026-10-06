@@ -275,6 +275,21 @@ export class RiderDispatchService {
   }
 
   /** Admin order detail as the generated DTO, plus the per-leg riders and handover photos. */
+  /** Switch an online order whose payment is Pending/Failed to cash on delivery. */
+  changeOrderToCash(orderId: number): Observable<boolean> {
+    return this.http.post<boolean>(`${this.baseUrl}/api/admin/AdminOrder/${orderId}/ChangeToCash`, {});
+  }
+
+  /** Order count per state for the orders page badges (one GROUP BY on the server). */
+  getOrderStateCounts(cityId?: number | null, orderCode?: string | null): Observable<Array<{ state: number; count: number }>> {
+    let params = new HttpParams();
+    if (cityId) params = params.set('CityId', String(cityId));
+    if (orderCode) params = params.set('OrderCode', orderCode);
+    return this.http
+      .get<any[]>(`${this.baseUrl}/api/admin/AdminOrder/StateCounts`, { params })
+      .pipe(map(rows => (rows || []).map(r => ({ state: Number(r.state), count: Number(r.count) || 0 }))));
+  }
+
   getOrderDetail(orderId: number): Observable<{ order: OrderDetailDto; dispatch: OrderDispatchInfo }> {
     return this.http.get<any>(`${this.baseUrl}/api/admin/AdminOrder/${orderId}`).pipe(
       map(raw => ({

@@ -13,6 +13,10 @@ namespace Infrastructure.MappingConfiguration
             // Configure primary key
             builder.HasKey(ct => ct.Id);
 
+            // Dashboard: treasury movements per period.
+            builder.HasIndex(ct => ct.CreatedDate)
+                .HasDatabaseName("IX_VO_CompanyTreasury_CreatedDate");
+
             // Configure properties
             builder.Property(ct => ct.Id)
                 .HasColumnName("Id")

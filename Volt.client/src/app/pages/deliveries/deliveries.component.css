@@ -1,265 +1,206 @@
-:host {
-  display: block;
-}
+/* deliveries — same layout as the customers page (header, filters, alerts, states); cards use global pc-* */
 
 .deliveries {
   display: flex;
   flex-direction: column;
-  gap: 1.15rem;
+  gap: 1.1rem;
   color: var(--volt-text-primary);
-  font-family: var(--volt-font);
 }
 
 .deliveries__header {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
-  align-items: flex-start;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--volt-border);
+}
+
+.deliveries__header-text {
+  min-width: 0;
+}
+
+.deliveries__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
 }
 
 .deliveries__title {
   margin: 0;
-  font-size: 1.55rem;
+  font-size: 1.6rem;
   font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--volt-text-primary);
 }
 
 .deliveries__subtitle {
   margin: 0.35rem 0 0;
-  color: var(--volt-text-muted);
+  font-size: 0.88rem;
+  color: var(--volt-text-secondary);
 }
 
 .deliveries__add-btn {
-  min-height: 2.75rem;
-  padding: 0 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
   border: none;
-  border-radius: 0.8rem;
+  border-radius: 0.45rem;
   background: var(--volt-accent);
   color: #fff;
-  font: inherit;
+  font-family: inherit;
+  font-size: 0.875rem;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--volt-shadow);
+  transition: background 0.18s ease, transform 0.12s ease;
+  min-height: 2.6rem;
+}
+
+.deliveries__add-btn:hover {
+  background: var(--volt-accent-strong);
+}
+
+.deliveries__add-btn:active {
+  transform: scale(0.98);
+}
+
+.deliveries__add-icon {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .deliveries__alert {
-  padding: 0.8rem 1rem;
-  border-radius: 0.8rem;
-  background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
-}
-
-.deliveries__alert--ok {
-  background: rgba(22, 163, 74, 0.12);
-  color: #15803d;
-}
-
-.deliveries__filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
   align-items: center;
-}
-
-.deliveries__filters app-multi-select {
-  width: 16rem;
-  max-width: 100%;
-  flex: 0 1 16rem;
-}
-
-.deliveries__search,
-.deliveries__select {
-  min-height: 2.75rem;
-  padding: 0 0.9rem;
-  border: 1px solid var(--volt-border);
-  border-radius: 0.8rem;
-  background: var(--volt-bg);
-  color: var(--volt-text-primary);
-  font: inherit;
-}
-
-.deliveries__search {
-  flex: 1 1 14rem;
-}
-
-.deliveries__btn {
-  min-height: 2.75rem;
-  padding: 0 1rem;
-  border-radius: 0.8rem;
-  border: 1px solid var(--volt-border);
-  background: var(--volt-surface);
-  color: var(--volt-text-primary);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.deliveries__btn--primary {
-  border-color: var(--volt-accent);
-  background: var(--volt-accent);
-  color: #fff;
-}
-
-.deliveries__loading {
-  padding: 2rem;
-  text-align: center;
-  color: var(--volt-text-muted);
-}
-
-.deliveries__panel {
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
   border-radius: var(--volt-radius);
-  border: 1px solid var(--volt-border);
-  background: var(--volt-surface);
-  box-shadow: var(--volt-shadow);
-  overflow: hidden;
-}
-
-.deliveries__table-scroll {
-  overflow-x: auto;
-}
-
-.deliveries__table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 720px;
-}
-
-.deliveries__table thead th {
-  padding: 0.85rem 0.7rem;
-  text-align: center;
-  font-size: 0.7rem;
-  font-weight: 750;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--volt-text-muted);
-  background: var(--volt-surface-muted);
-  border-bottom: 1px solid var(--volt-border);
-}
-
-.deliveries__table tbody td {
-  padding: 0.9rem 0.7rem;
-  vertical-align: middle;
-  text-align: center;
-  border-bottom: 1px solid var(--volt-border);
   font-size: 0.875rem;
-}
-
-.deliveries__empty {
-  padding: 2rem !important;
-  color: var(--volt-text-muted);
-}
-
-.deliveries__badge {
-  display: inline-flex;
-  padding: 0.2rem 0.65rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.deliveries__badge--on {
-  background: rgba(22, 163, 74, 0.12);
-  color: #15803d;
-}
-
-.deliveries__badge--off {
-  background: rgba(107, 114, 128, 0.14);
-  color: #4b5563;
-}
-
-.deliveries__row-actions {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.deliveries__link {
-  border: none;
-  background: none;
-  color: var(--volt-accent);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0;
-  white-space: nowrap;
-}
-
-.deliveries__link--danger {
-  color: #b91c1c;
-}
-
-.deliveries__link:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.deliveries__presence {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 0.8rem;
-  font-weight: 650;
-  text-align: start;
-}
-
-.deliveries__presence small {
-  display: block;
-  font-size: 0.7rem;
   font-weight: 550;
-  color: var(--volt-text-muted);
 }
 
-.deliveries__presence-dot {
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 999px;
+.deliveries__alert-icon {
+  width: 1.15rem;
+  height: 1.15rem;
   flex-shrink: 0;
 }
 
-.deliveries__presence-dot--ok { background: #16a34a; }
-.deliveries__presence-dot--warn { background: #f59e0b; }
-.deliveries__presence-dot--off { background: var(--volt-text-muted); opacity: 0.55; }
-
-/* Cash debt column */
-.deliveries__debt {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.1rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 0.6rem;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+.deliveries__alert--success {
+  background: rgba(19, 138, 74, 0.1);
+  border: 1px solid rgba(19, 138, 74, 0.28);
+  color: var(--volt-ok);
 }
 
-.deliveries__debt strong {
+.deliveries__alert--error {
+  background: rgba(225, 6, 0, 0.1);
+  border: 1px solid rgba(225, 6, 0, 0.28);
+  color: var(--volt-accent);
+}
+
+.deliveries__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  padding: 4rem 1.5rem;
+  color: var(--volt-text-secondary);
+}
+
+.deliveries__spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 3px solid var(--volt-border);
+  border-top-color: var(--volt-accent);
+  animation: deliveries-spin 0.7s linear infinite;
+}
+
+@keyframes deliveries-spin {
+  to { transform: rotate(360deg); }
+}
+
+.deliveries__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  gap: 0.55rem;
+}
+
+.deliveries__empty-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--volt-radius);
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.5rem;
+  background: var(--volt-accent-soft);
+  color: var(--volt-accent);
+}
+
+.deliveries__empty-icon svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.deliveries__empty-title {
+  margin: 0;
+  font-size: 1.15rem;
   font-weight: 750;
 }
 
-.deliveries__debt strong small {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--volt-text-muted);
+.deliveries__empty-text {
+  margin: 0 0 0.85rem;
+  max-width: 22rem;
+  font-size: 0.9rem;
+  color: var(--volt-text-secondary);
 }
 
-.deliveries__debt-limit {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--volt-text-muted);
+@media (max-width: 720px) {
+.deliveries__title {
+    font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-.deliveries__debt--over {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.28);
-  color: #b91c1c;
+.deliveries__header-actions {
+    width: 100%;
+  }
+
+.deliveries__add-btn {
+    flex: 1;
+    justify-content: center;
+  min-height: 2.6rem;
+  border-radius: 0.45rem;
+  font-weight: 700;
 }
 
-.deliveries__debt--over strong small,
-.deliveries__debt--over .deliveries__debt-limit {
-  color: #b91c1c;
 }
 
-/* Cash debt limit dialog */
+@media (prefers-reduced-motion: reduce) {
+.deliveries__spinner {
+    animation: none;
+  }
+
+.deliveries__add-btn {
+    transition: none;
+  min-height: 2.6rem;
+  border-radius: 0.45rem;
+  font-weight: 700;
+}
+
+}
+
+/* Page-specific */
+
 .dl-modal {
   position: fixed;
   inset: 0;
@@ -268,7 +209,7 @@
   place-items: center;
   padding: 1rem;
   background: rgba(10, 17, 16, 0.55);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(2px);
 }
 
 .dl-modal__dialog {
@@ -276,10 +217,10 @@
   max-height: min(90vh, 40rem);
   display: flex;
   flex-direction: column;
-  border-radius: 1.25rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  box-shadow: var(--volt-shadow);
   overflow: hidden;
 }
 
@@ -321,7 +262,7 @@
   width: 2.2rem;
   height: 2.2rem;
   border: 0;
-  border-radius: 0.7rem;
+  border-radius: var(--volt-radius);
   background: var(--volt-surface-muted);
   color: var(--volt-text-secondary);
   cursor: pointer;
@@ -344,11 +285,11 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.7rem 0.9rem;
-  border-radius: 0.8rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface-muted);
   font-size: 0.85rem;
-  font-weight: 650;
+  font-weight: 700;
   color: var(--volt-text-secondary);
 }
 
@@ -358,17 +299,17 @@
 }
 
 .dl-modal__current--over {
-  border-color: rgba(239, 68, 68, 0.28);
-  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(225, 6, 0, 0.28);
+  background: rgba(225, 6, 0, 0.08);
 }
 
 .dl-modal__current--over strong {
-  color: #b91c1c;
+  color: var(--volt-accent);
 }
 
 .dl-modal__remove {
   margin-inline-end: auto;
-  color: #b91c1c;
+  color: var(--volt-accent);
 }
 
 .dl-modal__remove:disabled,
@@ -376,3 +317,4 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+

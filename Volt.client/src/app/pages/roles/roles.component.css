@@ -11,19 +11,21 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--volt-border);
 }
 
 .roles__title {
   margin: 0;
-  font-size: 1.7rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .roles__subtitle {
   margin: 0.35rem 0 0;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   color: var(--volt-text-secondary);
 }
 
@@ -33,14 +35,15 @@
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   border: none;
-  border-radius: 999px;
+  border-radius: 0.45rem;
   background: var(--volt-accent);
   color: #fff;
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
-  box-shadow: 0 8px 18px var(--volt-accent-muted);
+  box-shadow: var(--volt-shadow);
   transition: background 0.15s ease, transform 0.12s ease;
+  min-height: 2.6rem;
 }
 
 .roles__add-btn:hover {
@@ -61,7 +64,7 @@
   align-items: center;
   gap: 0.65rem;
   padding: 0.85rem 1rem;
-  border-radius: 0.9rem;
+  border-radius: var(--volt-radius);
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -73,15 +76,15 @@
 }
 
 .roles__alert--success {
-  border: 1px solid rgba(16, 185, 129, 0.28);
-  background: rgba(16, 185, 129, 0.1);
-  color: #047857;
+  border: 1px solid rgba(19, 138, 74, 0.28);
+  background: rgba(19, 138, 74, 0.1);
+  color: var(--volt-ok);
 }
 
 .roles__alert--error {
-  border: 1px solid rgba(239, 68, 68, 0.28);
-  background: rgba(239, 68, 68, 0.1);
-  color: #b91c1c;
+  border: 1px solid rgba(225, 6, 0, 0.28);
+  background: rgba(225, 6, 0, 0.1);
+  color: var(--volt-accent);
 }
 
 .roles__loading,
@@ -91,7 +94,7 @@
   gap: 0.75rem;
   min-height: 16rem;
   padding: 2rem;
-  border-radius: 1.1rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
   box-shadow: var(--volt-shadow);
@@ -123,17 +126,15 @@
   flex-direction: column;
   gap: 1rem;
   padding: 1.15rem;
-  border-radius: 1.1rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
-  background:
-    linear-gradient(160deg, color-mix(in srgb, var(--volt-accent) 8%, transparent), transparent 50%),
-    var(--volt-surface);
+  background: var(--volt-surface);
   box-shadow: var(--volt-shadow);
   transition: transform 0.18s ease, border-color 0.18s ease;
 }
 
 .roles__card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   border-color: var(--volt-accent-muted);
 }
 
@@ -142,7 +143,7 @@
   place-items: center;
   width: 2.75rem;
   height: 2.75rem;
-  border-radius: 0.85rem;
+  border-radius: var(--volt-radius);
   background: var(--volt-accent-soft);
   color: var(--volt-accent-strong);
 }
@@ -179,7 +180,7 @@
   justify-content: center;
   width: 2.35rem;
   height: 2.35rem;
-  border-radius: 0.75rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-bg);
   color: var(--volt-text-secondary);
@@ -199,9 +200,9 @@
 }
 
 .roles__icon-btn--danger:hover {
-  border-color: rgba(239, 68, 68, 0.35);
-  background: rgba(239, 68, 68, 0.1);
-  color: #dc2626;
+  border-color: rgba(225, 6, 0, 0.35);
+  background: rgba(225, 6, 0, 0.1);
+  color: var(--volt-accent);
 }
 
 .roles__empty-icon {
@@ -209,7 +210,7 @@
   place-items: center;
   width: 3.5rem;
   height: 3.5rem;
-  border-radius: 1rem;
+  border-radius: var(--volt-radius);
   background: var(--volt-accent-soft);
   color: var(--volt-accent-strong);
 }
@@ -241,7 +242,7 @@
   place-items: center;
   padding: 1.25rem;
   background: rgba(15, 26, 23, 0.45);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(2px);
   animation: roles-fade 0.18s ease;
 }
 
@@ -252,10 +253,10 @@
 
 .roles-modal__dialog {
   width: min(28rem, 100%);
-  border-radius: 1.25rem;
+  border-radius: var(--volt-radius);
   border: 1px solid var(--volt-border);
   background: var(--volt-surface);
-  box-shadow: 0 24px 64px rgba(15, 26, 23, 0.22);
+  box-shadow: var(--volt-shadow);
   overflow: hidden;
   animation: roles-pop 0.22s ease;
 }
@@ -273,7 +274,6 @@
   padding: 1.25rem 1.35rem;
   border-bottom: 1px solid var(--volt-border);
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--volt-accent) 10%, transparent), transparent 60%),
     var(--volt-surface);
 }
 
@@ -305,7 +305,7 @@
   width: 2.35rem;
   height: 2.35rem;
   border: 1px solid var(--volt-border);
-  border-radius: 0.75rem;
+  border-radius: var(--volt-radius);
   background: var(--volt-bg);
   color: var(--volt-text-secondary);
   cursor: pointer;
@@ -341,7 +341,7 @@
 }
 
 .roles-modal__req {
-  color: #dc2626;
+  color: var(--volt-accent);
   margin-inline-start: 0.15rem;
 }
 
@@ -350,7 +350,7 @@
   height: 3rem;
   padding: 0 0.95rem;
   border: 1px solid var(--volt-border);
-  border-radius: 0.8rem;
+  border-radius: var(--volt-radius);
   background: var(--volt-bg);
   color: var(--volt-text-primary);
   font: inherit;
@@ -366,13 +366,13 @@
 }
 
 .roles-modal__input--error {
-  border-color: #ef4444;
+  border-color: var(--volt-accent);
 }
 
 .roles-modal__error {
   font-size: 0.76rem;
   font-weight: 600;
-  color: #dc2626;
+  color: var(--volt-accent);
 }
 
 .roles-modal__hint {
@@ -393,7 +393,7 @@
   justify-content: center;
   min-height: 2.65rem;
   padding: 0 1.15rem;
-  border-radius: 0.8rem;
+  border-radius: var(--volt-radius);
   font: inherit;
   font-size: 0.875rem;
   font-weight: 700;
@@ -421,7 +421,7 @@
   border: none;
   background: var(--volt-accent);
   color: #fff;
-  box-shadow: 0 8px 18px var(--volt-accent-muted);
+  box-shadow: var(--volt-shadow);
 }
 
 .roles-modal__btn--primary:hover:not(:disabled) {

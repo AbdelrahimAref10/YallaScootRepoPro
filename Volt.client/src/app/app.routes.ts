@@ -149,6 +149,14 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/shifts/shifts.component').then(m => m.ShiftsComponent)
       },
       {
+        path: 'shifts/new',
+        loadComponent: () => import('./pages/shifts/shift-form/shift-form.component').then(m => m.ShiftFormComponent)
+      },
+      {
+        path: 'shifts/:id/edit',
+        loadComponent: () => import('./pages/shifts/shift-form/shift-form.component').then(m => m.ShiftFormComponent)
+      },
+      {
         path: 'reports',
         loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent)
       },

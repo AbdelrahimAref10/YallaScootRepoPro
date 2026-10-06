@@ -20,6 +20,14 @@ namespace Domain.Enums
         /// <summary>Company debit for full order total (cash first customer delivery, or PayPal capture).</summary>
         OrderTotalDebitedToCompany = 14,
         /// <summary>Fault party debit after non-delivery (vehicle or whole order).</summary>
-        NonDeliveryFaultDebit = 15
+        NonDeliveryFaultDebit = 15,
+        /// <summary>Company credit for the vehicle delivery fee minus the delivery-leg rider commission (on customer delivery).</summary>
+        CompanyDeliveryFeeRemainderAccrued = 16,
+        /// <summary>Company debit for the return-leg rider commission (posted with that rider's credit).</summary>
+        CompanyReturnLegCommissionCharged = 17,
+        /// <summary>Merchant debit for the company's percentage of the vehicle rental (on customer delivery).</summary>
+        MerchantCompanyCommissionCharged = 18,
+        /// <summary>Company credit for its percentage of the merchant's vehicle rental (on customer delivery).</summary>
+        CompanyMerchantCommissionAccrued = 19
     }
 }

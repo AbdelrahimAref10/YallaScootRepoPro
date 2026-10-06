@@ -208,6 +208,10 @@ namespace Infrastructure.MappingConfiguration
 
             builder.HasIndex(o => o.CreatedDate)
                 .HasDatabaseName("IX_VO_Order_CreatedDate");
+
+            // Dashboard: state + period filters (revenue, pipeline).
+            builder.HasIndex(o => new { o.OrderState, o.CreatedDate })
+                .HasDatabaseName("IX_VO_Order_OrderState_CreatedDate");
         }
     }
 }

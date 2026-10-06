@@ -4,752 +4,426 @@
   <p>{{ 'orders.loadingOrder' | t }}</p>
 </div>
 
-<div class="od" *ngIf="order && !isLoading">
-  <!-- Hero -->
-  <header class="od__hero">
-    <div class="od__hero-main">
-      <button
-        type="button"
-        class="od__back"
-        (click)="onBack()"
-        [attr.title]="'orders.backToOrders' | t"
-        [attr.aria-label]="'orders.backToOrders' | t"
-      >
+<div class="ox" *ngIf="order && !isLoading">
+  <!-- ── Header: number, statuses, actions ───────────────────────── -->
+  <header class="ox-head">
+    <div class="ox-head__main">
+      <button type="button" class="ox-head__back" (click)="onBack()">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 19l-7-7 7-7"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
+        {{ 'nav.orders' | t }}
       </button>
-
-      <div class="od__hero-copy">
-        <p class="od__eyebrow">{{ 'orders.detail' | t }}</p>
-        <div class="od__title-row">
-          <h1 class="od__code">{{ order.orderCode }}</h1>
-          <span class="od__status" [ngClass]="getStateClass(displayState)">
-            <span class="od__status-dot" aria-hidden="true"></span>
-            {{ getStateLabel(displayState) }}
-          </span>
-          <span *ngIf="order.isUrgent" class="od__chip od__chip--danger">{{ 'orders.urgent' | t }}</span>
-        </div>
-        <p class="od__subtitle">
-          {{ order.customerName }}
-          <span aria-hidden="true">·</span>
-          {{ order.cityName }}
-          <span *ngIf="order.destinationZoneName" aria-hidden="true">·</span>
-          <span *ngIf="order.destinationZoneName">{{ order.destinationZoneName }}</span>
-          <span aria-hidden="true">·</span>
-          {{ 'orders.createdOn' | t }} {{ order.createdDate | date:'MMM d, y · h:mm a' }}
-        </p>
+      <div class="ox-head__title-row">
+        <h1 class="ox-head__title">#{{ order.orderCode }}</h1>
+        <span class="ox-badge" [ngClass]="'ox-badge--' + paymentBadge.tone">{{ paymentBadge.labelKey | t }}</span>
+        <span class="ox-badge" [ngClass]="'ox-badge--' + stateTone(displayState)">{{ getStateLabel(displayState) }}</span>
+        <span *ngIf="order.isUrgent" class="ox-badge ox-badge--red">{{ 'orders.urgent' | t }}</span>
       </div>
+      <p class="ox-head__meta">
+        {{ order.createdDate | date:'d MMMM y \'at\' HH:mm' }}
+        <span aria-hidden="true">·</span> {{ order.subCategoryName }}
+        <span aria-hidden="true">·</span> {{ order.cityName }}
+      </p>
     </div>
 
-    <div class="od__hero-actions">
-      <button *ngIf="canEdit()" type="button" class="od__btn od__btn--ghost" (click)="onEdit()">
+    <div class="ox-head__actions">
+      <button type="button" class="ox-btn" (click)="onPrint()">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
         </svg>
-        <span>{{ 'common.edit' | t }}</span>
+        {{ 'orders.printReceipt' | t }}
       </button>
-      <button type="button" class="od__btn od__btn--ghost" (click)="onGoSettlements()">
-        <span>{{ 'orders.openSettlements' | t }}</span>
-      </button>
+
+      <div class="ox-menu">
+        <button type="button" class="ox-btn" (click)="showMoreMenu = !showMoreMenu" [attr.aria-expanded]="showMoreMenu">
+          {{ 'orders.moreActions' | t }}
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div class="ox-menu__backdrop" *ngIf="showMoreMenu" (click)="showMoreMenu = false"></div>
+        <div class="ox-menu__list" *ngIf="showMoreMenu" role="menu">
+          <button *ngIf="canEdit()" type="button" role="menuitem" (click)="showMoreMenu = false; onEdit()">{{ 'common.edit' | t }}</button>
+          <button type="button" role="menuitem" (click)="showMoreMenu = false; onGoSettlements()">{{ 'orders.openSettlements' | t }}</button>
+          <button
+            *ngIf="canCancel()"
+            type="button"
+            role="menuitem"
+            class="ox-menu__danger"
+            (click)="showMoreMenu = false; onCancelOrder()"
+            [disabled]="isActionLoading('cancel')"
+          >{{ 'orders.cancelOrder' | t }}</button>
+        </div>
+      </div>
+
       <button
         *ngIf="canSendToMerchants()"
         type="button"
-        class="od__btn od__btn--primary"
+        class="ox-btn ox-btn--primary"
         (click)="onOpenSendToMerchants()"
         [disabled]="isActionLoading('sendMerchants')"
-      >
-        {{ isActionLoading('sendMerchants') ? ('orders.processing' | t) : ('orders.sendToMerchants' | t) }}
-      </button>
+      >{{ isActionLoading('sendMerchants') ? ('orders.processing' | t) : ('orders.sendToMerchants' | t) }}</button>
       <button
         *ngIf="canConfirm()"
         type="button"
-        class="od__btn od__btn--primary"
+        class="ox-btn ox-btn--primary"
         (click)="onConfirmOrder()"
         [disabled]="isActionLoading('confirm')"
-      >
-        {{ isActionLoading('confirm') ? ('orders.confirming' | t) : ('orders.confirmOrder' | t) }}
-      </button>
-      <button
-        *ngIf="canAssignAnyVehicle"
-        type="button"
-        class="od__btn od__btn--ghost"
-        (click)="onOpenAssignDelivery()"
-        [disabled]="isActionLoading('assignDelivery')"
-      >
-        {{ (hasAnyLegRider ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
-      </button>
-      <button
-        *ngIf="canMarkHandover()"
-        type="button"
-        class="od__btn od__btn--ghost"
-        (click)="onOpenHandover()"
-        [disabled]="isActionLoading('handover')"
-      >
-        {{ isActionLoading('handover') ? ('orders.processing' | t) : ('orders.markHandover' | t) }}
-      </button>
-      <button
-        *ngIf="canCancel()"
-        type="button"
-        class="od__btn od__btn--danger"
-        (click)="onCancelOrder()"
-        [disabled]="isActionLoading('cancel')"
-      >
-        {{ isActionLoading('cancel') ? ('orders.cancelling' | t) : ('orders.cancelOrder' | t) }}
-      </button>
+      >{{ isActionLoading('confirm') ? ('orders.confirming' | t) : ('orders.confirmOrder' | t) }}</button>
     </div>
   </header>
 
-  <!-- KPI strip -->
-  <section class="od__kpis" aria-label="Order highlights">
-    <article class="od__kpi od__kpi--accent">
-      <span class="od__kpi-label">{{ 'orders.orderTotal' | t }}</span>
-      <strong class="od__kpi-value">{{ order.orderTotal | number:'1.2-2' }} <small>{{ 'common.currency' | t }}</small></strong>
-    </article>
-    <article class="od__kpi">
-      <span class="od__kpi-label">{{ 'orders.reservationFrom' | t }}</span>
-      <strong class="od__kpi-value od__kpi-value--sm">{{ order.reservationDateFrom | date:'MMM d' }} → {{ order.reservationDateTo | date:'MMM d, y' }}</strong>
-      <span class="od__kpi-hint" *ngIf="reservationDays">{{ 'orders.daysCount' | t:{ n: reservationDays } }}</span>
-    </article>
-    <article class="od__kpi">
-      <span class="od__kpi-label">{{ 'orders.colSubcategory' | t }}</span>
-      <strong class="od__kpi-value od__kpi-value--sm">{{ order.subCategoryName }}</strong>
-      <span class="od__kpi-hint">{{ order.vehiclesCount }} {{ 'orders.vehiclesCount' | t }}</span>
-    </article>
-    <article class="od__kpi">
-      <span class="od__kpi-label">{{ 'orders.paymentMethod' | t }}</span>
-      <strong class="od__kpi-value od__kpi-value--sm">{{ getPaymentMethodLabel(order.paymentMethod) }}</strong>
-    </article>
-  </section>
+  <div *ngIf="successMessage" class="ox-alert ox-alert--ok" role="status">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="ox-alert ox-alert--err" role="alert">{{ errorMessage }}</div>
 
-  <!-- Pipeline -->
-  <nav class="od__pipeline" *ngIf="showPipeline" [attr.aria-label]="'orders.pipelineAria' | t">
-    <ng-container *ngFor="let step of pipelineSteps; let i = index; let last = last">
-      <div
-        class="od__pipe-step"
-        [class.od__pipe-step--done]="getStepStatus(step.state) === 'done'"
-        [class.od__pipe-step--active]="getStepStatus(step.state) === 'active'"
+  <!-- ── Progress ────────────────────────────────────────────────── -->
+  <section class="ox-progress" *ngIf="showPipeline">
+    <ol class="ox-stepper" [attr.aria-label]="'orders.pipelineAria' | t">
+      <li
+        *ngFor="let step of pipelineSteps; let i = index"
+        class="ox-stepper__step"
+        [class.ox-stepper__step--done]="getStepStatus(step.state) === 'done'"
+        [class.ox-stepper__step--now]="getStepStatus(step.state) === 'active'"
       >
-        <span class="od__pipe-dot">
+        <span class="ox-stepper__dot">
           <svg *ngIf="getStepStatus(step.state) === 'done'" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M5 13l4 4L19 7"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
           </svg>
-          <span *ngIf="getStepStatus(step.state) !== 'done'">{{ i + 1 }}</span>
+          <ng-container *ngIf="getStepStatus(step.state) !== 'done'">{{ i + 1 }}</ng-container>
         </span>
-        <span class="od__pipe-label">{{ step.key | t }}</span>
+        <span class="ox-stepper__label">{{ step.key | t }}</span>
+      </li>
+    </ol>
+    <div class="ox-next" *ngIf="nextStepKey || canAssignAnyVehicle || canMarkHandover()">
+      <div class="ox-next__text">
+        <span class="ox-next__label">{{ 'orders.nextStep' | t }}</span>
+        <p *ngIf="nextStepKey">{{ nextStepKey | t }}</p>
       </div>
-      <span
-        *ngIf="!last"
-        class="od__pipe-line"
-        [class.od__pipe-line--done]="getStepStatus(step.state) === 'done'"
-      ></span>
-    </ng-container>
-  </nav>
-
-  <!-- Alerts -->
-  <div *ngIf="successMessage" class="od__alert od__alert--ok" role="status">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M5 13l4 4L19 7"/>
-    </svg>
-    <span>{{ successMessage }}</span>
-  </div>
-  <div *ngIf="errorMessage" class="od__alert od__alert--err" role="alert">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
-    </svg>
-    <span>{{ errorMessage }}</span>
-  </div>
-
-  <!-- Rejected receipt banner -->
-  <section class="od__card od__card--warn" *ngIf="isRejectedReceipt">
-    <header class="od__card-head">
-      <div>
-        <p class="od__card-kicker">{{ 'common.rejectedReceipt' | t }}</p>
-        <h2 class="od__card-title">{{ getFaultPartyLabel(order.receiptFaultParty) }}</h2>
+      <div class="ox-next__actions">
+        <button *ngIf="canAssignAnyVehicle" type="button" class="ox-btn" (click)="onOpenAssignDelivery()" [disabled]="isActionLoading('assignDelivery')">
+          {{ (hasAnyLegRider ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
+        </button>
+        <button *ngIf="canMarkHandover()" type="button" class="ox-btn ox-btn--primary" (click)="onOpenHandover()" [disabled]="isActionLoading('handover')">
+          {{ isActionLoading('handover') ? ('orders.processing' | t) : ('orders.markHandover' | t) }}
+        </button>
       </div>
-    </header>
-    <p class="od__card-text" *ngIf="order.receiptRejectNote">{{ order.receiptRejectNote }}</p>
+    </div>
   </section>
 
-  <p *ngIf="order.orderState === OrderState.MerchantPending" class="od__banner">
-    {{ hasDeclinedVehicles ? ('orders.declinedVehiclesBanner' | t) : ('orders.waitingMerchants' | t) }}
-  </p>
-  <p *ngIf="order.orderState === OrderState.Confirmed" class="od__banner">
-    {{ 'orders.assignPerVehicleHint' | t }}
-  </p>
-  <p *ngIf="order.orderState === OrderState.DeliveryAssigned" class="od__banner">
-    {{ 'orders.pickupHint' | t }}
-  </p>
-  <p *ngIf="order.orderState === OrderState.CustomerReceived" class="od__banner">
-    {{ 'orders.returnHint' | t }}
-  </p>
-
-  <div class="od__main">
-      <!-- Trip snapshot -->
-      <section class="od__facts">
-        <article class="od__fact">
-          <span>{{ 'orders.customer' | t }}</span>
-          <strong>{{ order.customerName }}</strong>
-          <small>{{ order.customerMobileNumber || '—' }}</small>
-        </article>
-        <article class="od__fact">
-          <span>{{ 'orders.destinationZone' | t }}</span>
-          <strong>{{ order.destinationZoneName || order.cityName }}</strong>
-          <small>{{ order.cityName }}</small>
-        </article>
-        <article class="od__fact">
-          <span>{{ 'orders.hotelName' | t }}</span>
-          <strong>{{ order.hotelName }}</strong>
-          <small>{{ order.hotelAddress }}</small>
-        </article>
-        <article class="od__fact" *ngIf="order.hotelPhone">
-          <span>{{ 'common.phone' | t }}</span>
-          <strong>{{ order.hotelPhone }}</strong>
-        </article>
+  <div class="ox-grid">
+    <!-- ════════════ Main column ════════════ -->
+    <div class="ox-main">
+      <section class="ox-notice ox-notice--warn" *ngIf="isRejectedReceipt">
+        <strong>{{ 'common.rejectedReceipt' | t }} · {{ getFaultPartyLabel(order.receiptFaultParty) }}</strong>
+        <p *ngIf="order.receiptRejectNote">{{ order.receiptRejectNote }}</p>
       </section>
 
-      <!-- Vehicles grouped by merchant -->
-      <section class="od__card" *ngIf="order.orderVehicles?.length">
-        <header class="od__card-head">
-          <div>
-            <p class="od__card-kicker">{{ 'orders.assignedVehicles' | t }}</p>
-            <h2 class="od__card-title">{{ 'orders.nVehicles' | t:{ n: order.orderVehicles.length } }}</h2>
-            <p class="od__kpi-hint" *ngIf="order.orderState === OrderState.Confirmed || order.orderState === OrderState.DeliveryAssigned">
-              {{ 'orders.assignedCourierCount' | t:{ assigned: assignedVehicleCount(), total: assignableVehicles.length } }}
-            </p>
-          </div>
-        </header>
-
-        <div class="od__fleet">
-          <section class="od__merchant-block" *ngFor="let group of vehiclesByMerchant">
-            <header class="od__merchant-head">
-              <div class="od__merchant-copy">
-                <p class="od__merchant-kicker">{{ 'orders.vehicleMerchant' | t }}</p>
-                <h3 class="od__merchant-name">{{ group.merchantName }}</h3>
-                <div class="od__merchant-meta">
-                  <span
-                    class="od__chip"
-                    [class.od__chip--ok]="group.cashOnReceive"
-                    [class.od__chip--muted]="!group.cashOnReceive"
-                  >
-                    {{ group.cashOnReceive ? ('orders.cashOnReceiveYes' | t) : ('orders.cashOnReceiveNo' | t) }}
-                  </span>
-                  <span class="od__merchant-zone" *ngIf="group.zoneName">
-                    {{ 'orders.merchantZone' | t }}: {{ group.zoneName }}
-                  </span>
-                </div>
-              </div>
-              <span class="od__merchant-count">{{ 'orders.nVehicles' | t:{ n: group.vehicles.length } }}</span>
-            </header>
-
-            <div class="od__tickets">
-              <article
-                class="od__ticket"
-                [class.od__ticket--assigned]="!!deliveryFor(vehicle.vehicleId)"
-                [class.od__ticket--declined]="vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Declined || vehicle.deliveryFailed"
-                *ngFor="let vehicle of group.vehicles"
-              >
-                <div class="od__ticket-grid">
-                  <div class="od__invoice-main">
-                    <div class="od__invoice-thumb">
-                      <img *ngIf="vehicle.imageUrl" [src]="vehicle.imageUrl" [alt]="vehicle.vehicleName" />
-                      <div *ngIf="!vehicle.imageUrl" class="od__invoice-fallback" aria-hidden="true">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                      </div>
-                    </div>
-
-                    <div class="od__invoice-info">
-                      <div class="od__invoice-title-row">
-                        <strong class="od__invoice-name">{{ vehicle.vehicleName }}</strong>
-                        <span class="od__vehicle-badge" [ngClass]="getVehicleStatusBadgeClass(vehicle.status)">
-                          {{ getVehicleStatusLabel(vehicle.status) }}
-                        </span>
-                      </div>
-                      <span class="od__invoice-code">#{{ vehicle.vehicleCode }}</span>
-                      <app-vehicle-specs
-                        [compact]="true"
-                        [showPrice]="false"
-                        [color]="vehicle.color"
-                        [type]="vehicle.type"
-                        [model]="vehicle.model"
-                        [speedKmh]="vehicle.speedKmh"
-                        [engineCapacityCc]="vehicle.engineCapacityCc"
-                      ></app-vehicle-specs>
-                    </div>
-
-                    <div class="od__invoice-rate">
-                      <strong>{{ vehicle.price | number:'1.2-2' }}</strong>
-                      <span>{{ 'common.currency' | t }} / {{ 'vehicles.perDay' | t }}</span>
-                      <span class="od__invoice-delivery">
-                        {{ 'orders.deliveryFees' | t }}:
-                        <b>{{ vehicle.deliveryFee | number:'1.2-2' }} {{ 'common.currency' | t }}</b>
-                      </span>
-                      <span
-                        class="od__chip"
-                        [class.od__chip--ok]="vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Confirmed"
-                        [class.od__chip--danger]="vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Declined"
-                        [class.od__chip--warn]="vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Pending"
-                      >
-                        {{ merchantVehicleResponseLabel(vehicle.merchantResponseStatus) }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div
-                    class="od__courier"
-                    [class.od__courier--on]="!!deliveryFor(vehicle.vehicleId)"
-                    [class.od__courier--off]="!deliveryFor(vehicle.vehicleId)"
-                  >
-                    <div class="od__legs">
-                      <div class="od__courier-copy od__leg">
-                        <p class="od__courier-kicker">{{ 'orders.legDelivery' | t }} · {{ 'orders.legDeliveryRoute' | t }}</p>
-                        <ng-container *ngIf="deliveryFor(vehicle.vehicleId) as courier; else noDeliveryRider">
-                          <strong>{{ courier.deliveryName }}</strong>
-                          <span
-                            class="od__chip"
-                            [class.od__chip--ok]="vehicle.receivedFromOwner || courier.deliveryReceivedFromMerchant"
-                            [class.od__chip--warn]="!vehicle.receivedFromOwner && !courier.deliveryReceivedFromMerchant"
-                          >
-                            {{ (vehicle.deliveredToCustomer
-                              ? 'orders.cycleDeliveredToCustomer'
-                              : (vehicle.receivedFromOwner || courier.deliveryReceivedFromMerchant ? 'orders.handoverDone' : 'orders.handoverPending')) | t }}
-                          </span>
-                        </ng-container>
-                        <ng-template #noDeliveryRider>
-                          <strong class="od__leg-empty">{{ 'orders.unassignedCourier' | t }}</strong>
-                        </ng-template>
-                      </div>
-                      <div class="od__courier-copy od__leg">
-                        <p class="od__courier-kicker">{{ 'orders.legReturn' | t }} · {{ 'orders.legReturnRoute' | t }}</p>
-                        <ng-container *ngIf="returnFor(vehicle.vehicleId) as courier; else noReturnRider">
-                          <strong>{{ courier.deliveryName }}</strong>
-                          <span
-                            class="od__chip"
-                            [class.od__chip--ok]="vehicle.receivedFromCustomer"
-                            [class.od__chip--muted]="!vehicle.receivedFromCustomer"
-                          >
-                            {{ (vehicle.deliveredToOwner
-                              ? 'orders.cycleReturnedToOwner'
-                              : (vehicle.receivedFromCustomer ? 'orders.cycleReceivedFromCustomer' : 'orders.legReturnWaiting')) | t }}
-                          </span>
-                        </ng-container>
-                        <ng-template #noReturnRider>
-                          <strong class="od__leg-empty">{{ 'orders.unassignedCourier' | t }}</strong>
-                        </ng-template>
-                      </div>
-                    </div>
-                    <button
-                      *ngIf="canAssignVehicle(vehicle)"
-                      type="button"
-                      class="od__btn od__btn--primary od__btn--sm"
-                      (click)="onOpenAssignDelivery(vehicle)"
-                      [disabled]="isActionLoading('assignDelivery')"
-                    >
-                      {{ (hasAnyRider(vehicle.vehicleId) ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
-                    </button>
-                  </div>
-
-                  <div
-                    class="od__vehicle-actions"
-                    *ngIf="nextVehicleAction(vehicle) || canFailVehicle(vehicle) || canReplaceVehicle() || canRemoveVehicle(vehicle)"
-                  >
-                    <button
-                      *ngIf="nextVehicleAction(vehicle) as step"
-                      type="button"
-                      class="od__btn od__btn--primary od__btn--sm od__vehicle-action"
-                      (click)="openLifecycleModal(vehicle, step)"
-                    >
-                      {{ lifecycleActionLabel(step) }}
-                    </button>
-                    <button
-                      *ngIf="canFailVehicle(vehicle)"
-                      type="button"
-                      class="od__btn od__btn--danger od__btn--sm od__vehicle-action"
-                      (click)="openVehicleNotReceived(vehicle)"
-                    >
-                      {{ 'orders.cancelVehicle' | t }}
-                    </button>
-                    <button
-                      *ngIf="canReplaceVehicle()"
-                      type="button"
-                      class="od__btn od__btn--ghost od__btn--sm od__vehicle-action"
-                      (click)="onOpenReplaceVehicle(vehicle.vehicleId)"
-                    >
-                      {{ 'orders.replaceVehicle' | t }}
-                    </button>
-                    <button
-                      *ngIf="canRemoveVehicle(vehicle)"
-                      type="button"
-                      class="od__btn od__btn--danger od__btn--sm od__vehicle-action"
-                      (click)="onOpenRemoveVehicle(vehicle.vehicleId)"
-                    >
-                      {{ 'orders.removeVehicle' | t }}
-                    </button>
-                  </div>
-                </div>
-
-                <ol class="od__cycle" *ngIf="order.orderState >= OrderState.DeliveryAssigned">
-                  <li
-                    *ngFor="let step of lifecycleSteps"
-                    class="od__cycle-step"
-                    [class.od__cycle-step--done]="isCycleStepDone(vehicle, step.id)"
-                  >
-                    <span class="od__cycle-dot" aria-hidden="true"></span>
-                    <span>{{ step.labelKey | t }}</span>
-                    <a
-                      *ngIf="cycleProofUrl(vehicle, step.id)"
-                      class="od__cycle-proof"
-                      [href]="cycleProofUrl(vehicle, step.id)"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      <img [src]="cycleProofUrl(vehicle, step.id)" alt="" />
-                    </a>
-                    <ng-container *ngIf="stepImages(vehicle, step.id) as photos">
-                      <span class="od__cycle-photos" *ngIf="photos.length">
-                        <button
-                          *ngFor="let photo of photos; let i = index"
-                          type="button"
-                          class="od__cycle-proof od__cycle-photo"
-                          (click)="openGallery(vehicle, step.id, i)"
-                          [attr.title]="positionLabelKey(photo.position) | t"
-                          [attr.aria-label]="(step.labelKey | t) + ' · ' + (positionLabelKey(photo.position) | t)"
-                        >
-                          <img [src]="photo.imageUrl" alt="" />
-                        </button>
-                      </span>
-                    </ng-container>
-                  </li>
-                </ol>
-
-                <p class="od__vehicle-fail" *ngIf="vehicle.deliveryFailed">
-                  {{ 'orders.vehicleCancelled' | t }}
-                </p>
-              </article>
-            </div>
-          </section>
-        </div>
-      </section>
-
-      <!-- Merchant invitations -->
-      <section class="od__card" *ngIf="order.merchantOrders?.length">
-        <header class="od__card-head">
-          <div>
-            <p class="od__card-kicker">{{ 'orders.merchantsPanel' | t }}</p>
-            <h2 class="od__card-title">{{ order.merchantOrders.length }} {{ 'orders.merchantInvites' | t }}</h2>
-            <p class="od__kpi-hint" *ngIf="order.orderState === OrderState.MerchantPending">
-              {{ 'orders.merchantResponsesHint' | t }}
-            </p>
-          </div>
-        </header>
-        <div class="od__list">
-          <div class="od__row" *ngFor="let mo of order.merchantOrders">
-            <div>
-              <strong>{{ mo.merchantName }}</strong>
-              <span class="od__kpi-hint" *ngIf="mo.rejectReason">{{ mo.rejectReason }}</span>
-              <span class="od__kpi-hint" *ngIf="mo.declinedVehicleCodes?.length">
-                {{ 'orders.declinedVehicleCodes' | t:{ codes: mo.declinedVehicleCodes.join(', ') } }}
-              </span>
-            </div>
-            <div class="od__row-actions">
-              <span
-                class="od__chip"
-                [class.od__chip--ok]="mo.responseStatus === MerchantOrderResponseStatus.Accepted"
-                [class.od__chip--danger]="mo.responseStatus === MerchantOrderResponseStatus.Rejected"
-                [class.od__chip--warn]="mo.responseStatus === MerchantOrderResponseStatus.PartiallyAccepted"
-                [class.od__chip--soft]="mo.responseStatus === MerchantOrderResponseStatus.Pending"
-              >
-                {{ getMerchantStatusLabel(mo.responseStatus) }}
-              </span>
-              <button
-                *ngIf="mo.responseStatus === MerchantOrderResponseStatus.Rejected && order.orderState === OrderState.MerchantPending"
-                type="button"
-                class="od__btn od__btn--ghost od__btn--sm"
-                (click)="onOpenReassign(mo.merchantId)"
-              >
-                {{ 'orders.reassignMerchant' | t }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Merchant payment details -->
-      <section class="od__card" *ngIf="order.merchantOrderPaymentDetails?.length">
-        <header class="od__card-head">
-          <div>
-            <p class="od__card-kicker">{{ 'orders.paymentDetailsMerchant' | t }}</p>
-            <h2 class="od__card-title">{{ 'orders.merchantPayouts' | t }}</h2>
-          </div>
-        </header>
-        <div class="od__table-wrap">
-          <table class="od__table">
-            <thead>
-              <tr>
-                <th>{{ 'orders.partyMerchant' | t }}</th>
-                <th>{{ 'orders.vehicleCode' | t }}</th>
-                <th>{{ 'orders.vehicleRental' | t }}</th>
-                <th>{{ 'orders.netAmount' | t }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of order.merchantOrderPaymentDetails">
-                <td>{{ row.merchantName }}</td>
-                <td>{{ row.vehicleCode }}</td>
-                <td>{{ row.vehicleRental | number:'1.2-2' }}</td>
-                <td><strong>{{ row.netAmount | number:'1.2-2' }}</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Merchant payment details -->
-      <section class="od__card" *ngIf="order.deliveryOrderPaymentDetails?.length">
-        <header class="od__card-head">
-          <div>
-            <p class="od__card-kicker">{{ 'orders.paymentDetailsDelivery' | t }}</p>
-            <h2 class="od__card-title">{{ 'orders.deliveryPayouts' | t }}</h2>
-          </div>
-        </header>
-        <div class="od__table-wrap">
-          <table class="od__table">
-            <thead>
-              <tr>
-                <th>{{ 'orders.partyDelivery' | t }}</th>
-                <th>{{ 'orders.vehicleCode' | t }}</th>
-                <th>{{ 'orders.legCol' | t }}</th>
-                <th>{{ 'orders.commissionPercentCol' | t }}</th>
-                <th>{{ 'orders.deliveryFeeShare' | t }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of order.deliveryOrderPaymentDetails">
-                <td>{{ row.deliveryName }}</td>
-                <td>{{ row.vehicleCode }}</td>
-                <td>{{ legLabelKey(payoutLeg(row.deliveryOrderPaymentDetailId)?.leg) | t }}</td>
-                <td>
-                  <ng-container *ngIf="payoutLeg(row.deliveryOrderPaymentDetailId)?.commissionPercent != null; else noPercent">
-                    {{ payoutLeg(row.deliveryOrderPaymentDetailId)?.commissionPercent | number:'1.0-2' }}%
-                  </ng-container>
-                  <ng-template #noPercent>—</ng-template>
-                </td>
-                <td><strong>{{ row.deliveryFeeShare | number:'1.2-2' }}</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Journal -->
-      <section class="od__card" *ngIf="order.orderJournals?.length">
-        <header class="od__card-head">
-          <div>
-            <p class="od__card-kicker">{{ 'orders.journalPanel' | t }}</p>
-            <h2 class="od__card-title">{{ 'orders.journalEntries' | t }}</h2>
-          </div>
-        </header>
-        <div class="od__table-wrap">
-          <table class="od__table">
-            <thead>
-              <tr>
-                <th>{{ 'orders.journalKindCol' | t }}</th>
-                <th>{{ 'orders.vehicleCode' | t }}</th>
-                <th>{{ 'orders.journalDirection' | t }}</th>
-                <th>{{ 'common.amount' | t }}</th>
-                <th>{{ 'orders.journalParty' | t }}</th>
-                <th>{{ 'orders.journalCreatedBy' | t }}</th>
-                <th>{{ 'common.date' | t }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let j of order.orderJournals">
-                <td>{{ getJournalKindLabel(j.entryKind) }}</td>
-                <td>{{ j.vehicleCode || '—' }}</td>
-                <td>{{ getJournalDirectionLabel(j.direction) }}</td>
-                <td><strong>{{ j.amount | number:'1.2-2' }}</strong></td>
-                <td>{{ getPartyTypeLabel(j.partyType) }} #{{ j.partyId }}</td>
-                <td>{{ j.createdBy || '—' }}</td>
-                <td>{{ j.createdDate | date:'MMM d, y · HH:mm' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Financial + Payments -->
-      <div class="od__grid-2">
-        <section class="od__card" *ngIf="order.orderTotals">
-          <header class="od__card-head">
-            <div>
-              <p class="od__card-kicker">{{ 'orders.financialDetails' | t }}</p>
-              <h2 class="od__card-title">{{ 'orders.liveQuote' | t }}</h2>
-            </div>
-          </header>
-          <div class="od__receipt">
-            <div class="od__receipt-row">
-              <span>{{ 'orders.subTotal' | t }}</span>
-              <strong>{{ order.orderTotals.subTotal | number:'1.2-2' }}</strong>
-            </div>
-            <div class="od__receipt-row">
-              <span>{{ 'orders.serviceFees' | t }}</span>
-              <strong>{{ order.orderTotals.serviceFees | number:'1.2-2' }}</strong>
-            </div>
-            <div class="od__receipt-row">
-              <span>{{ 'orders.deliveryFees' | t }}</span>
-              <strong>{{ order.orderTotals.deliveryFees | number:'1.2-2' }}</strong>
-            </div>
-            <div class="od__receipt-row" *ngIf="order.orderTotals.urgentFees > 0">
-              <span>{{ 'orders.urgentFees' | t }}</span>
-              <strong>{{ order.orderTotals.urgentFees | number:'1.2-2' }}</strong>
-            </div>
-            <div class="od__receipt-row" *ngIf="order.orderTotals.tieredDiscount">
-              <span>{{ 'orders.tieredDiscount' | t }}</span>
-              <strong>−{{ order.orderTotals.tieredDiscount | number:'1.2-2' }}</strong>
-            </div>
-            <div class="od__receipt-row" *ngIf="order.previousDebt > 0">
-              <span>{{ 'orders.previousDebt' | t }}</span>
-              <strong>{{ order.previousDebt | number:'1.2-2' }}</strong>
-            </div>
-            <div class="od__receipt-total">
-              <span>{{ 'orders.totalAfterFees' | t }}</span>
-              <strong>{{ order.orderTotals.totalAfterAllFees | number:'1.2-2' }} <small>{{ 'common.currency' | t }}</small></strong>
-            </div>
-          </div>
-        </section>
-
-        <section class="od__card" *ngIf="order.orderPayments?.length">
-          <header class="od__card-head">
-            <div>
-              <p class="od__card-kicker">{{ 'orders.paymentDetails' | t }}</p>
-              <h2 class="od__card-title">{{ 'orders.paymentInfo' | t }}</h2>
-            </div>
-          </header>
-          <div class="od__payments">
-            <article class="od__payment" *ngFor="let payment of order.orderPayments">
-              <div class="od__payment-top">
-                <strong>{{ payment.total | number:'1.2-2' }} {{ 'common.currency' | t }}</strong>
-                <span class="od__pay" [ngClass]="getPaymentStateClass(payment.state)">
-                  {{ getPaymentStateLabel(payment.state) }}
-                </span>
-              </div>
-              <p class="od__payment-meta">{{ getPaymentMethodLabel(payment.paymentMethod) }}</p>
-            </article>
-          </div>
-        </section>
-      </div>
-
-      <!-- Cancellation / rejection -->
-      <section class="od__card od__card--warn" *ngIf="order.orderCancellationFee">
-        <header class="od__card-head">
-          <div>
-            <p class="od__card-kicker">{{ 'orders.orderCancellation' | t }}</p>
-            <h2 class="od__card-title">
-              {{ order.orderCancellationFee.amount > 0 ? ('orders.cancellationFee' | t) : ('orders.rejectedByAdmin' | t) }}
-            </h2>
-          </div>
-          <span
-            class="od__chip"
-            [class.od__chip--warn]="order.orderCancellationFee.state === 0 && order.orderCancellationFee.amount > 0"
-            [class.od__chip--ok]="order.orderCancellationFee.state !== 0 || order.orderCancellationFee.amount === 0"
-          >
-            {{ order.orderCancellationFee.amount > 0
-              ? (order.orderCancellationFee.state === 0 ? ('common.pending' | t) : ('common.paid' | t))
-              : ('orders.noFee' | t) }}
+      <!-- One card per merchant (like a fulfilment group) -->
+      <section class="ox-panel ox-fulfil" *ngFor="let group of vehiclesByMerchant">
+        <header class="ox-fulfil__head">
+          <span class="ox-badge" [ngClass]="'ox-badge--' + groupTone(group.vehicles)">{{ groupLabelKey(group.vehicles) | t }}</span>
+          <h2 class="ox-fulfil__title">{{ group.merchantName }}</h2>
+          <span class="ox-fulfil__meta">
+            <ng-container *ngIf="group.zoneName">{{ group.zoneName }} · </ng-container>{{ 'orders.nVehicles' | t:{ n: group.vehicles.length } }}
           </span>
+          <span class="ox-chip" *ngIf="group.cashOnReceive">{{ 'orders.cashOnReceiveYes' | t }}</span>
         </header>
-        <div class="od__fee-row" *ngIf="order.orderCancellationFee.amount > 0; else adminRejectNote">
-          <strong>{{ order.orderCancellationFee.amount | number:'1.2-2' }} {{ 'common.currency' | t }}</strong>
-          <button
-            *ngIf="order.orderCancellationFee.state === 0"
-            type="button"
-            class="od__btn od__btn--primary"
-            (click)="onMarkCancellationFeePaid()"
-            [disabled]="isActionLoading('markFeePaid')"
+
+        <article
+          *ngFor="let vehicle of group.vehicles"
+          class="ox-line"
+          [class.ox-line--void]="vehicle.deliveryFailed || vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Declined"
+        >
+          <div class="ox-line__row">
+            <div class="ox-line__thumb">
+              <img *ngIf="vehicle.imageUrl" [src]="vehicle.imageUrl" alt="" />
+              <svg *ngIf="!vehicle.imageUrl" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M5.5 20a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm13 0a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 17.5h6l2.5-6H19M14 6h2.5l2 5.5M8 17.5L11 11h3.5"/>
+              </svg>
+            </div>
+            <div class="ox-line__info">
+              <a class="ox-line__name">{{ vehicle.vehicleName }}</a>
+              <div class="ox-line__sub">
+                <span class="ox-line__code">#{{ vehicle.vehicleCode }}</span>
+                <span *ngIf="vehicle.model">{{ vehicle.model }}</span>
+                <span *ngIf="vehicle.color">{{ vehicle.color }}</span>
+              </div>
+              <div class="ox-line__legs">
+                <span><b>{{ 'orders.legOut' | t }}</b> {{ deliveryFor(vehicle.vehicleId)?.deliveryName || ('orders.unassignedCourier' | t) }}</span>
+                <span><b>{{ 'orders.legBack' | t }}</b> {{ returnFor(vehicle.vehicleId)?.deliveryName || ('orders.unassignedCourier' | t) }}</span>
+              </div>
+            </div>
+            <div class="ox-line__qty">{{ vehicle.price | number:'1.2-2' }} × {{ reservationDays }}</div>
+            <div class="ox-line__total">{{ (vehicle.price || 0) * reservationDays | number:'1.2-2' }}</div>
+          </div>
+
+          <div class="ox-line__track" *ngIf="order.orderState >= OrderState.DeliveryAssigned">
+            <div
+              *ngFor="let step of lifecycleSteps"
+              class="ox-track"
+              [class.ox-track--done]="isCycleStepDone(vehicle, step.id)"
+            >
+              <span class="ox-track__bar"></span>
+              <span class="ox-track__label">{{ step.labelKey | t }}</span>
+              <span class="ox-track__photos" *ngIf="stepImages(vehicle, step.id) as photos">
+                <button
+                  *ngFor="let photo of photos; let i = index"
+                  type="button"
+                  class="ox-track__photo"
+                  (click)="openGallery(vehicle, step.id, i)"
+                  [attr.aria-label]="(step.labelKey | t) + ' · ' + (positionLabelKey(photo.position) | t)"
+                ><img [src]="photo.imageUrl" alt="" /></button>
+              </span>
+              <a
+                *ngIf="cycleProofUrl(vehicle, step.id)"
+                class="ox-track__photo"
+                [href]="cycleProofUrl(vehicle, step.id)"
+                target="_blank"
+                rel="noopener"
+              ><img [src]="cycleProofUrl(vehicle, step.id)" alt="" /></a>
+            </div>
+          </div>
+
+          <div
+            class="ox-line__actions"
+            *ngIf="nextVehicleAction(vehicle) || canAssignVehicle(vehicle) || canFailVehicle(vehicle) || canReplaceVehicle() || canRemoveVehicle(vehicle)"
           >
+            <button *ngIf="nextVehicleAction(vehicle) as step" type="button" class="ox-btn ox-btn--primary ox-btn--sm" (click)="openLifecycleModal(vehicle, step)">
+              {{ lifecycleActionLabel(step) }}
+            </button>
+            <button *ngIf="canAssignVehicle(vehicle)" type="button" class="ox-btn ox-btn--sm" (click)="onOpenAssignDelivery(vehicle)" [disabled]="isActionLoading('assignDelivery')">
+              {{ (hasAnyRider(vehicle.vehicleId) ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
+            </button>
+            <button *ngIf="canReplaceVehicle()" type="button" class="ox-btn ox-btn--sm" (click)="onOpenReplaceVehicle(vehicle.vehicleId)">{{ 'orders.replaceVehicle' | t }}</button>
+            <span class="ox-line__spacer"></span>
+            <button *ngIf="canFailVehicle(vehicle)" type="button" class="ox-btn ox-btn--sm ox-btn--link-danger" (click)="openVehicleNotReceived(vehicle)">{{ 'orders.cancelVehicle' | t }}</button>
+            <button *ngIf="canRemoveVehicle(vehicle)" type="button" class="ox-btn ox-btn--sm ox-btn--link-danger" (click)="onOpenRemoveVehicle(vehicle.vehicleId)">{{ 'orders.removeVehicle' | t }}</button>
+          </div>
+          <p class="ox-line__fail" *ngIf="vehicle.deliveryFailed">{{ 'orders.vehicleCancelled' | t }}</p>
+        </article>
+
+        <footer class="ox-fulfil__foot">
+          <span>{{ 'orders.merchantResponse' | t }}: <b>{{ merchantInviteLabel(group.merchantId) }}</b></span>
+          <button
+            *ngIf="merchantInviteRejected(group.merchantId) && order.orderState === OrderState.MerchantPending"
+            type="button"
+            class="ox-btn ox-btn--sm"
+            (click)="onOpenReassign(group.merchantId)"
+          >{{ 'orders.reassignMerchant' | t }}</button>
+        </footer>
+      </section>
+
+      <p class="ox-panel ox-empty" *ngIf="!order.orderVehicles?.length">{{ 'common.noData' | t }}</p>
+
+      <!-- Payment -->
+      <section class="ox-panel">
+        <header class="ox-panel__head">
+          <div class="ox-panel__title-row">
+            <span class="ox-badge" [ngClass]="'ox-badge--' + paymentBadge.tone">{{ paymentBadge.labelKey | t }}</span>
+            <h2 class="ox-panel__title">{{ 'orders.payment' | t }}</h2>
+          </div>
+          <div class="ox-panel__head-actions">
+            <span class="ox-muted">{{ getPaymentMethodLabel(order.paymentMethod) }}</span>
+            <button
+              *ngIf="canChangeToCash()"
+              type="button"
+              class="ox-btn ox-btn--sm"
+              (click)="onChangeToCash()"
+              [disabled]="isActionLoading('changeToCash')"
+            >
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+              </svg>
+              {{ 'orders.changeToCash' | t }}
+            </button>
+          </div>
+        </header>
+        <div class="ox-pay-table" *ngIf="order.orderTotals as totals">
+          <div><span>{{ 'orders.subTotal' | t }}</span><span class="ox-muted">{{ 'orders.nVehicles' | t:{ n: order.vehiclesCount } }} · {{ 'orders.daysCount' | t:{ n: reservationDays } }}</span><b>{{ totals.subTotal | number:'1.2-2' }}</b></div>
+          <div><span>{{ 'orders.deliveryFees' | t }}</span><span></span><b>{{ totals.deliveryFees | number:'1.2-2' }}</b></div>
+          <div><span>{{ 'orders.serviceFees' | t }}</span><span></span><b>{{ totals.serviceFees | number:'1.2-2' }}</b></div>
+          <div *ngIf="totals.urgentFees > 0"><span>{{ 'orders.urgentFees' | t }}</span><span></span><b>{{ totals.urgentFees | number:'1.2-2' }}</b></div>
+          <div *ngIf="totals.tieredDiscount"><span>{{ 'orders.tieredDiscount' | t }}</span><span></span><b>−{{ totals.tieredDiscount | number:'1.2-2' }}</b></div>
+          <div *ngIf="order.previousDebt > 0"><span>{{ 'orders.previousDebt' | t }}</span><span></span><b>{{ order.previousDebt | number:'1.2-2' }}</b></div>
+          <div class="ox-pay-table__total"><span>{{ 'common.total' | t }}</span><span></span><b>{{ order.orderTotal | number:'1.2-2' }} {{ 'common.currency' | t }}</b></div>
+        </div>
+        <div class="ox-pay-table ox-pay-table--split">
+          <div><span>{{ 'orders.paidByCustomer' | t }}</span><span></span><b>{{ paidAmount | number:'1.2-2' }}</b></div>
+          <div class="ox-pay-table__due" *ngIf="order.orderTotal - paidAmount > 0"><span>{{ 'orders.balanceDue' | t }}</span><span></span><b>{{ order.orderTotal - paidAmount | number:'1.2-2' }}</b></div>
+        </div>
+
+        <!-- Cancellation fee -->
+        <div class="ox-pay-extra" *ngIf="order.orderCancellationFee as fee">
+          <div>
+            <strong>{{ fee.amount > 0 ? ('orders.cancellationFee' | t) : ('orders.rejectedByAdmin' | t) }}</strong>
+            <span class="ox-muted" *ngIf="fee.amount > 0">{{ fee.amount | number:'1.2-2' }} {{ 'common.currency' | t }} · {{ (fee.state === 0 ? 'common.pending' : 'common.paid') | t }}</span>
+            <span class="ox-muted" *ngIf="fee.amount === 0">{{ 'orders.rejectedByAdminHint' | t }}</span>
+          </div>
+          <button *ngIf="fee.amount > 0 && fee.state === 0" type="button" class="ox-btn ox-btn--sm ox-btn--primary" (click)="onMarkCancellationFeePaid()" [disabled]="isActionLoading('markFeePaid')">
             {{ isActionLoading('markFeePaid') ? ('orders.updating' | t) : ('orders.markAsPaid' | t) }}
           </button>
         </div>
-        <ng-template #adminRejectNote>
-          <p class="od__card-text">{{ 'orders.rejectedByAdminHint' | t }}</p>
-        </ng-template>
-      </section>
 
-      <!-- PayPal refund -->
-      <section class="od__card od__card--warn" *ngIf="order.refundablePaypalAmount as refund">
-        <header class="od__card-head">
+        <!-- PayPal refund -->
+        <div class="ox-pay-extra" *ngIf="order.refundablePaypalAmount as refund">
           <div>
-            <p class="od__card-kicker">{{ 'orders.paypalRefund' | t }}</p>
-            <h2 class="od__card-title">{{ 'orders.refundDetails' | t }}</h2>
+            <strong>{{ 'orders.paypalRefund' | t }} · {{ refund.refundableAmount | number:'1.2-2' }} {{ 'common.currency' | t }}</strong>
+            <span class="ox-muted">{{ (order.moneyRefunded ? 'orders.moneyRefunded' : 'orders.refundPending') | t }}</span>
           </div>
-          <span
-            class="od__chip"
-            [class.od__chip--warn]="!order.moneyRefunded"
-            [class.od__chip--ok]="order.moneyRefunded"
-          >
-            {{ order.moneyRefunded ? ('orders.moneyRefunded' | t) : ('orders.refundPending' | t) }}
-          </span>
-        </header>
-
-        <div class="od__receipt od__receipt--compact">
-          <div class="od__receipt-row">
-            <span>{{ 'orders.orderTotal' | t }}</span>
-            <strong>{{ refund.orderTotal | number:'1.2-2' }}</strong>
-          </div>
-          <div class="od__receipt-row" *ngIf="order.previousDebt > 0">
-            <span>{{ 'orders.previousDebt' | t }}</span>
-            <strong>−{{ order.previousDebt | number:'1.2-2' }}</strong>
-          </div>
-          <div class="od__receipt-row" *ngIf="refund.cancellationFees > 0">
-            <span>{{ 'orders.cancellationFee' | t }}</span>
-            <strong>−{{ refund.cancellationFees | number:'1.2-2' }}</strong>
-          </div>
-          <div class="od__receipt-total">
-            <span>{{ 'orders.refundableAmount' | t }}</span>
-            <strong>{{ refund.refundableAmount | number:'1.2-2' }} <small>{{ 'common.currency' | t }}</small></strong>
-          </div>
-        </div>
-
-        <div class="od__fee-row" *ngIf="canMarkMoneyRefunded()" style="margin-top: 1rem;">
-          <p class="od__card-text" style="margin: 0;">{{ 'orders.markRefundedHint' | t }}</p>
-          <button
-            type="button"
-            class="od__btn od__btn--primary"
-            (click)="onMarkMoneyRefunded()"
-            [disabled]="isActionLoading('markRefunded')"
-          >
+          <button *ngIf="canMarkMoneyRefunded()" type="button" class="ox-btn ox-btn--sm ox-btn--primary" (click)="onMarkMoneyRefunded()" [disabled]="isActionLoading('markRefunded')">
             {{ isActionLoading('markRefunded') ? ('orders.updating' | t) : ('orders.markAsRefunded' | t) }}
           </button>
         </div>
       </section>
 
-      <!-- Notes + Passport -->
-      <div class="od__grid-2" *ngIf="order.notes || order.passportImage">
-        <section class="od__card" *ngIf="order.notes">
-          <header class="od__card-head">
-            <div>
-              <p class="od__card-kicker">{{ 'common.details' | t }}</p>
-              <h2 class="od__card-title">{{ 'common.notes' | t }}</h2>
-            </div>
-          </header>
-          <p class="od__notes">{{ order.notes }}</p>
-        </section>
+      <!-- Payouts -->
+      <section class="ox-panel" *ngIf="order.merchantOrderPaymentDetails?.length || order.deliveryOrderPaymentDetails?.length">
+        <header class="ox-panel__head">
+          <h2 class="ox-panel__title">{{ 'orders.payouts' | t }}</h2>
+          <span class="ox-muted">{{ 'orders.companyNetOnOrder' | t }}: <b class="ox-strong">{{ companyLedger.credit - companyLedger.debit | number:'1.2-2' }}</b></span>
+        </header>
+        <table class="ox-table">
+          <thead>
+            <tr>
+              <th>{{ 'orders.payee' | t }}</th>
+              <th>{{ 'orders.vehicleCode' | t }}</th>
+              <th>{{ 'orders.basis' | t }}</th>
+              <th class="ox-num">{{ 'common.amount' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of order.merchantOrderPaymentDetails">
+              <td><span class="ox-tag ox-tag--merchant">{{ 'orders.partyMerchant' | t }}</span> {{ row.merchantName }}</td>
+              <td>{{ row.vehicleCode }}</td>
+              <td class="ox-muted">
+                {{ row.vehicleRental | number:'1.2-2' }}
+                <ng-container *ngIf="row.companyCommissionAmount"> − {{ row.companyCommissionAmount | number:'1.2-2' }} ({{ row.companyCommissionPercent | number:'1.0-2' }}%)</ng-container>
+              </td>
+              <td class="ox-num"><strong>{{ row.netAmount | number:'1.2-2' }}</strong></td>
+            </tr>
+            <tr *ngFor="let row of order.deliveryOrderPaymentDetails">
+              <td><span class="ox-tag ox-tag--rider">{{ 'orders.partyDelivery' | t }}</span> {{ row.deliveryName }}</td>
+              <td>{{ row.vehicleCode }}</td>
+              <td class="ox-muted">
+                {{ legLabelKey(payoutLeg(row.deliveryOrderPaymentDetailId)?.leg) | t }}
+                <ng-container *ngIf="payoutLeg(row.deliveryOrderPaymentDetailId)?.commissionPercent != null"> · {{ payoutLeg(row.deliveryOrderPaymentDetailId)?.commissionPercent | number:'1.0-2' }}%</ng-container>
+              </td>
+              <td class="ox-num"><strong>{{ row.deliveryFeeShare | number:'1.2-2' }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
-        <section class="od__card" *ngIf="order.passportImage">
-          <header class="od__card-head">
-            <div>
-              <p class="od__card-kicker">{{ 'common.media' | t }}</p>
-              <h2 class="od__card-title">{{ 'orders.passportImage' | t }}</h2>
+      <!-- Timeline -->
+      <section class="ox-panel">
+        <header class="ox-panel__head">
+          <h2 class="ox-panel__title">{{ 'orders.timeline' | t }}</h2>
+          <button type="button" class="ox-btn ox-btn--sm" (click)="showJournal = !showJournal" *ngIf="order.orderJournals?.length">
+            {{ (showJournal ? 'orders.hideJournal' : 'orders.showJournal') | t }}
+          </button>
+        </header>
+
+        <div class="ox-journal" *ngIf="showJournal && order.orderJournals?.length">
+          <table class="ox-table">
+            <thead>
+              <tr>
+                <th>{{ 'orders.journalKindCol' | t }}</th>
+                <th>{{ 'orders.journalParty' | t }}</th>
+                <th>{{ 'orders.vehicleCode' | t }}</th>
+                <th class="ox-num">{{ 'orders.journalDebit' | t }}</th>
+                <th class="ox-num">{{ 'orders.journalCredit' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let j of order.orderJournals">
+                <td>{{ getJournalKindLabel(j.entryKind) }}</td>
+                <td>{{ getPartyTypeLabel(j.partyType) }} <span class="ox-muted">· {{ journalPartyName(j) }}</span></td>
+                <td>{{ j.vehicleCode || '—' }}</td>
+                <td class="ox-num ox-dr">{{ j.direction === JournalDirection.Debit ? (j.amount | number:'1.2-2') : '' }}</td>
+                <td class="ox-num ox-cr">{{ j.direction === JournalDirection.Credit ? (j.amount | number:'1.2-2') : '' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ol class="ox-timeline">
+          <li *ngFor="let ev of timeline" class="ox-timeline__item" [ngClass]="'ox-timeline__item--' + ev.tone">
+            <span class="ox-timeline__dot" aria-hidden="true"></span>
+            <div class="ox-timeline__body">
+              <p class="ox-timeline__text">{{ ev.text }}</p>
+              <span class="ox-timeline__meta" *ngIf="ev.detail">{{ ev.detail }}</span>
             </div>
-          </header>
-          <a class="od__passport" [href]="order.passportImage" target="_blank" rel="noopener">
-            <img [src]="order.passportImage" alt="" />
-          </a>
-        </section>
-      </div>
+            <time class="ox-timeline__time">{{ ev.date | date:'d MMM, HH:mm' }}</time>
+          </li>
+        </ol>
+      </section>
     </div>
+
+    <!-- ════════════ Sidebar ════════════ -->
+    <aside class="ox-side">
+      <section class="ox-panel" *ngIf="order.notes">
+        <header class="ox-panel__head"><h2 class="ox-panel__title">{{ 'common.notes' | t }}</h2></header>
+        <p class="ox-panel__body ox-notes">{{ order.notes }}</p>
+      </section>
+
+      <section class="ox-panel">
+        <header class="ox-panel__head"><h2 class="ox-panel__title">{{ 'orders.customer' | t }}</h2></header>
+        <div class="ox-panel__body ox-card-lines">
+          <a class="ox-link" [routerLink]="['/main/customers', order.customerId]">{{ order.customerName }}</a>
+          <h3 class="ox-card-lines__label">{{ 'orders.contactInfo' | t }}</h3>
+          <div class="ox-copyline" *ngIf="order.customerMobileNumber">
+            <span class="ox-ltr">{{ order.customerMobileNumber }}</span>
+            <button type="button" class="ox-copy" (click)="copy(order.customerMobileNumber, 'mobile')" [attr.aria-label]="'orders.copy' | t">
+              <svg *ngIf="copiedKey !== 'mobile'" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              <svg *ngIf="copiedKey === 'mobile'" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M5 13l4 4L19 7"/></svg>
+            </button>
+          </div>
+          <a *ngIf="order.passportImage" class="ox-passport" [href]="order.passportImage" target="_blank" rel="noopener">
+            <img [src]="order.passportImage" alt="" />
+            <span>{{ 'orders.passportImage' | t }}</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="ox-panel">
+        <header class="ox-panel__head"><h2 class="ox-panel__title">{{ 'orders.deliverTo' | t }}</h2></header>
+        <div class="ox-panel__body ox-card-lines">
+          <div class="ox-copyline">
+            <address class="ox-address">
+              <strong>{{ order.hotelName || '—' }}</strong>
+              <span *ngIf="order.hotelAddress">{{ order.hotelAddress }}</span>
+              <span>{{ order.destinationZoneName }}<ng-container *ngIf="order.destinationZoneName">, </ng-container>{{ order.cityName }}</span>
+              <span *ngIf="order.hotelPhone" class="ox-ltr">{{ order.hotelPhone }}</span>
+            </address>
+            <button type="button" class="ox-copy" (click)="copy(addressText, 'address')" [attr.aria-label]="'orders.copy' | t">
+              <svg *ngIf="copiedKey !== 'address'" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              <svg *ngIf="copiedKey === 'address'" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M5 13l4 4L19 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="ox-panel">
+        <header class="ox-panel__head"><h2 class="ox-panel__title">{{ 'orders.rentalPeriod' | t }}</h2></header>
+        <div class="ox-panel__body">
+          <div class="ox-period">
+            <div>
+              <span>{{ 'orders.from' | t }}</span>
+              <strong>{{ order.reservationDateFrom | date:'d MMM' }}</strong>
+              <small>{{ order.reservationDateFrom | date:'EEE, y' }}</small>
+            </div>
+            <i aria-hidden="true">{{ 'orders.daysCount' | t:{ n: reservationDays } }}</i>
+            <div>
+              <span>{{ 'orders.to' | t }}</span>
+              <strong>{{ order.reservationDateTo | date:'d MMM' }}</strong>
+              <small>{{ order.reservationDateTo | date:'EEE, y' }}</small>
+            </div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
 </div>
 
 <!-- Send to merchants modal -->
@@ -1235,6 +909,18 @@
   [cancelText]="'common.cancel' | t"
   (confirm)="onConfirmCancelOrder()"
   (cancel)="onCancelCancelDialog()"
+></app-confirm-dialog>
+
+<app-confirm-dialog
+  [isVisible]="showCashDialog"
+  [title]="'orders.changeToCash' | t"
+  [message]="'orders.changeToCashConfirm' | t"
+  [type]="'warning'"
+  [isLoading]="cashDialogLoading"
+  [confirmText]="'orders.changeToCash' | t"
+  [cancelText]="'common.cancel' | t"
+  (confirm)="onConfirmChangeToCash()"
+  (cancel)="showCashDialog = false"
 ></app-confirm-dialog>
 
 <app-confirm-dialog

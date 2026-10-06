@@ -11,14 +11,15 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
   imports: [CommonModule, RouterModule, TranslatePipe],
   templateUrl: './merchant-home.component.html',
   styleUrls: [
-    './merchant-home.component.css',
-    '../dashboard/dashboard.component.css'
+    '../dashboard/dashboard.component.css',
+    './merchant-home.component.css'
   ]
 })
 export class MerchantHomeComponent implements OnInit {
   private readonly localeService = inject(LocaleService);
   private readonly merchantProfileClient = inject(MerchantProfileClient);
 
+  readonly today = new Date();
   summary: MerchantDashboardSummaryDto | null = null;
   isLoading = false;
   errorMessage = '';
@@ -43,6 +44,17 @@ export class MerchantHomeComponent implements OnInit {
           this.localeService.translate('merchant.loadFailed');
       }
     });
+  }
+
+  formatAmount(value: number | undefined): string {
+    return new Intl.NumberFormat(this.localeService.locale() === 'ar' ? 'ar-EG' : 'en-EG', {
+      maximumFractionDigits: 2
+    }).format(Number(value || 0));
+  }
+
+  formatPercent(value: number | undefined): string {
+    const n = Number(value || 0);
+    return n % 1 === 0 ? String(n) : n.toFixed(2).replace(/0$/, '');
   }
 
   formatMoney(value: number | undefined): string {

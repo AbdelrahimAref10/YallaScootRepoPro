@@ -1,0 +1,428 @@
+/* Shared record form (create/edit pages): header, numbered section cards, two-option choices,
+   documents, sticky summary. Inputs, uploads and buttons come from entity-form.css. */
+
+.rf {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  color: var(--volt-text-primary);
+  font-family: var(--volt-font);
+  animation: rf-in 0.25s ease both;
+}
+
+@keyframes rf-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.rf-ltr {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+/* Header */
+.rf-head {
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--volt-border);
+}
+
+.rf-head__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.6rem;
+  padding: 0;
+  border: 0;
+  background: none !important;
+  color: var(--volt-text-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rf-head__back:hover {
+  color: var(--volt-accent);
+}
+
+.rf-head__back svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+:host-context([dir='rtl']) .rf-head__back svg {
+  transform: scaleX(-1);
+}
+
+.rf-head__title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.rf-head__sub {
+  margin: 0.3rem 0 0;
+  max-width: 40rem;
+  color: var(--volt-text-secondary);
+  font-size: 0.88rem;
+}
+
+/* Layout */
+.rf-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: 1.1rem;
+  align-items: start;
+}
+
+.rf-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* Section card */
+.rf-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem 1.35rem;
+  border: 1px solid var(--volt-border);
+  border-radius: var(--volt-radius);
+  background: var(--volt-surface);
+  box-shadow: var(--volt-shadow);
+  transition: box-shadow 0.2s ease;
+}
+
+.rf-card:hover {
+  box-shadow: var(--volt-shadow-hover);
+}
+
+/* Open dropdowns sit above the next card. */
+.rf-card:has(.ms-host--open) {
+  z-index: 60;
+}
+
+.rf-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--volt-border);
+}
+
+.rf-card__step {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--volt-border-strong);
+  border-radius: 0.35rem;
+  color: var(--volt-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.rf-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.rf-card__hint {
+  margin: 0.15rem 0 0;
+  color: var(--volt-text-muted);
+  font-size: 0.82rem;
+}
+
+.rf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+/* Two-option choice (register as / verify by) */
+.rf-choices {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0.5rem;
+}
+
+.rf-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.65rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--volt-border-strong);
+  border-radius: 0.45rem;
+  background: var(--volt-surface) !important;
+  color: var(--volt-text-secondary);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.rf-choice:hover {
+  background: var(--volt-surface-hover) !important;
+}
+
+.rf-choice__mark {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  border: 1.5px solid var(--volt-border-strong);
+  border-radius: 50%;
+  transition: border 0.15s ease;
+}
+
+.rf-choice--on {
+  border-color: var(--volt-text-primary);
+  color: var(--volt-text-primary);
+}
+
+.rf-choice--on .rf-choice__mark {
+  border: 5px solid var(--volt-text-primary);
+}
+
+/* Documents */
+.rf-docs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.rf-docs--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rf-doc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* Summary */
+.rf-side {
+  position: sticky;
+  top: 5rem;
+}
+
+.rf-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.2rem;
+  border: 1px solid var(--volt-border);
+  border-radius: var(--volt-radius);
+  background: var(--volt-surface);
+  box-shadow: var(--volt-shadow);
+}
+
+.rf-summary__kicker {
+  margin: 0;
+  color: var(--volt-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rf-summary__id {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.rf-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3.1rem;
+  height: 3.1rem;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--volt-brand-ink);
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+html.dark .rf-avatar {
+  background: var(--volt-surface-muted);
+  color: var(--volt-text-primary);
+}
+
+.rf-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rf-cover {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid var(--volt-border);
+  border-radius: 0.45rem;
+  background: var(--volt-surface-hover);
+  color: var(--volt-border-strong);
+}
+
+.rf-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+}
+
+.rf-cover svg {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.rf-summary__name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rf-summary__name strong {
+  overflow: hidden;
+  font-size: 1.05rem;
+  font-weight: 800;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rf-summary__name span {
+  color: var(--volt-text-muted);
+  font-size: 0.84rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rf-summary__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  border: 1px solid var(--volt-border);
+  border-radius: 0.45rem;
+  overflow: hidden;
+}
+
+.rf-summary__facts div {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--volt-border);
+  min-width: 0;
+}
+
+.rf-summary__facts div:nth-child(odd) {
+  border-inline-end: 1px solid var(--volt-border);
+}
+
+.rf-summary__facts div:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.rf-summary__facts dt {
+  color: var(--volt-text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rf-summary__facts dd {
+  margin: 0.15rem 0 0;
+  overflow: hidden;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rf-summary__facts dd.rf-on {
+  color: var(--volt-ok);
+}
+
+.rf-summary__progress-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--volt-text-secondary);
+  font-size: 0.8rem;
+}
+
+.rf-summary__progress-top strong {
+  color: var(--volt-text-primary);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rf-meter {
+  height: 0.4rem;
+  margin-top: 0.45rem;
+  border-radius: 999px;
+  background: var(--volt-surface-muted);
+  overflow: hidden;
+}
+
+.rf-meter span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--volt-ok);
+  transition: width 0.3s ease;
+}
+
+.rf-summary__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.rf-summary__actions .entity-form__btn {
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 1180px) {
+  .rf-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rf-side {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .rf-grid,
+  .rf-docs--two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rf-card {
+    padding: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rf {
+    animation: none;
+  }
+}

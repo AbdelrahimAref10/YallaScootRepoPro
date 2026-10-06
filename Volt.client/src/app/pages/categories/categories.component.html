@@ -274,7 +274,7 @@
   <div class="categories__actions">
     <button
       type="button"
-      class="categories__action"
+      class="categories__action va-act va-act--view"
       (click)="onViewSubCategories(category.categoryId)"
       [attr.title]="'categories.viewSubcategories' | t"
       [attr.aria-label]="'categories.viewSubcategories' | t"
@@ -286,7 +286,7 @@
     </button>
     <button
       type="button"
-      class="categories__action"
+      class="categories__action va-act va-act--edit"
       (click)="onEdit(category)"
       [attr.title]="'categories.editCategory' | t"
       [attr.aria-label]="'categories.editCategory' | t"
@@ -298,7 +298,7 @@
     <button
       *ngIf="category.isActive"
       type="button"
-      class="categories__action categories__action--warn"
+      class="categories__action categories__action--warn va-act va-act--off"
       (click)="onDeactivate(category.categoryId)"
       [attr.title]="'categories.deactivateCategory' | t"
       [attr.aria-label]="'categories.deactivateCategory' | t"
@@ -310,7 +310,7 @@
     <button
       *ngIf="!category.isActive"
       type="button"
-      class="categories__action categories__action--success"
+      class="categories__action categories__action--success va-act va-act--on"
       (click)="onActivate(category.categoryId)"
       [attr.title]="'categories.activateCategory' | t"
       [attr.aria-label]="'categories.activateCategory' | t"
@@ -321,7 +321,7 @@
     </button>
     <button
       type="button"
-      class="categories__action categories__action--danger"
+      class="categories__action categories__action--danger va-act va-act--delete"
       (click)="onDelete(category.categoryId)"
       [attr.title]="'categories.deleteCategory' | t"
       [attr.aria-label]="'categories.deleteCategory' | t"

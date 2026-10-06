@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure
 {
-    public class DatabaseContext : IdentityDbContext<ApplicationUser, ApplicationRole, int>
+    public partial class DatabaseContext : IdentityDbContext<ApplicationUser, ApplicationRole, int>
     {
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IDomainEventDispatcher? _domainEventDispatcher;

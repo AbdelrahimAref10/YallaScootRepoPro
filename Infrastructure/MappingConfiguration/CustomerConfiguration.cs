@@ -142,6 +142,10 @@ namespace Infrastructure.MappingConfiguration
             builder.HasIndex(c => c.UserId)
                 .IsUnique()
                 .HasDatabaseName("IX_Customer_UserId");
+
+            // Dashboard: new customers per period.
+            builder.HasIndex(c => c.CreatedDate)
+                .HasDatabaseName("IX_Customer_CreatedDate");
         }
     }
 }

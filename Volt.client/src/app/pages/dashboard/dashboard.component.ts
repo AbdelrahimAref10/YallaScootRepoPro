@@ -18,6 +18,7 @@ import {
   HomeTreasurySnapshotDto
 } from '../../core/services/clientAPI';
 import { LocaleService } from '../../core/services/locale.service';
+import { AuthService } from '../../core/services/auth.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { VoltChartComponent, VoltChartDataset } from '../../shared/components/volt-chart/volt-chart.component';
 
@@ -38,6 +39,13 @@ interface DateRange {
   to: string;
 }
 
+type PresetKey = '7d' | '30d' | '90d' | 'ytd';
+
+interface Sparkline {
+  line: string;
+  area: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -47,6 +55,23 @@ interface DateRange {
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private readonly localeService = inject(LocaleService);
+  private readonly authService = inject(AuthService);
+
+  readonly today = new Date();
+  readonly userName: string = this.authService.getUserData()?.userName || '';
+  readonly presets: { key: PresetKey; labelKey: string }[] = [
+    { key: '7d', labelKey: 'dashboard.preset7d' },
+    { key: '30d', labelKey: 'dashboard.preset30d' },
+    { key: '90d', labelKey: 'dashboard.preset90d' },
+    { key: 'ytd', labelKey: 'dashboard.presetYtd' }
+  ];
+  /** One period drives every section on the page. */
+  globalRange: DateRange = this.defaultRange();
+  activePreset: PresetKey | null = '30d';
+  revenueSpark: Sparkline | null = null;
+  /** Which headline metric the main chart shows. */
+  activeMetric: 'revenue' | 'orders' | 'customers' = 'revenue';
+  ordersDatasets: VoltChartDataset[] = [];
   private readonly subs = new Map<SectionKey, Subscription>();
 
   ranges: Record<Exclude<SectionKey, 'recent'>, DateRange> = {
@@ -112,6 +137,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.subs.clear();
   }
 
+  applyPreset(key: PresetKey): void {
+    const to = new Date();
+    const from = new Date();
+    if (key === 'ytd') {
+      from.setMonth(0, 1);
+    } else {
+      from.setDate(from.getDate() - ({ '7d': 6, '30d': 29, '90d': 89 }[key]));
+    }
+    this.globalRange = { from: this.toInputDate(from), to: this.toInputDate(to) };
+    this.activePreset = key;
+    this.reloadAll();
+  }
+
+  onGlobalRangeChange(): void {
+    this.activePreset = null;
+    this.reloadAll();
+  }
+
+  private reloadAll(): void {
+    if (!this.resolveRange(this.globalRange)) return;
+    (Object.keys(this.ranges) as Exclude<SectionKey, 'recent'>[]).forEach(key => {
+      this.ranges[key] = { ...this.globalRange };
+      this.onRangeChange(key);
+    });
+  }
+
   onRangeChange(section: Exclude<SectionKey, 'recent'>): void {
     switch (section) {
       case 'summary': this.loadSummary(); break;
@@ -144,8 +195,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.revenueDatasets = [{
         label: this.localeService.translate('dashboard.revenue'),
         data: series.map(p => p.value || 0),
-        color: '#c4161c',
+        color: '#e10600',
         fill: true
+      }];
+      this.revenueSpark = this.buildSpark(series.map(p => p.value || 0));
+      this.ordersDatasets = [{
+        label: this.localeService.translate('dashboard.orders'),
+        data: series.map(p => p.count || 0),
+        color: '#2459c7'
       }];
     });
   }
@@ -174,7 +231,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.customerDatasets = [{
         label: this.localeService.translate('dashboard.newCustomers'),
         data: series.map(p => p.count || p.value || 0),
-        color: '#d4a017',
+        color: '#2459c7',
         fill: true
       }];
     });
@@ -205,12 +262,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
         {
           label: this.localeService.translate('dashboard.debit'),
           data: series.map(p => p.debit || 0),
-          color: '#ef4444'
+          color: '#e10600'
         },
         {
           label: this.localeService.translate('dashboard.credit'),
           data: series.map(p => p.credit || 0),
-          color: '#10b981'
+          color: '#138a4a'
         }
       ];
     });
@@ -226,7 +283,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.cancelDatasets = [{
         label: this.localeService.translate('dashboard.cancellationFees'),
         data: series.map(p => p.value || 0),
-        color: '#f59e0b',
+        color: '#b26b00',
         fill: true
       }];
     });
@@ -250,7 +307,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.cityDatasets = [{
         label: this.localeService.translate('dashboard.revenue'),
         data: cities.map(c => c.revenue || 0),
-        color: '#d4a017'
+        color: '#e10600'
       }];
     });
   }
@@ -268,6 +325,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount)} ${currency}`;
+  }
+
+  /** Amount without the currency label (the template renders it smaller). */
+  formatAmount(amount: number | null | undefined): string {
+    return new Intl.NumberFormat(this.localeService.locale() === 'ar' ? 'ar-EG' : 'en-EG', {
+      maximumFractionDigits: 0
+    }).format(amount ?? 0);
+  }
+
+  formatPlainPercent(value: number | null | undefined): string {
+    return (value ?? 0).toFixed(value != null && value % 1 !== 0 ? 1 : 0);
+  }
+
+  clampPercent(value: number | null | undefined): number {
+    return Math.max(0, Math.min(100, value ?? 0));
+  }
+
+  cityBarWidth(revenue: number | null | undefined): number {
+    const max = Math.max(1, ...(this.cityPerformance?.cities || []).map(c => c.revenue || 0));
+    return Math.max(3, Math.round(((revenue || 0) / max) * 100));
   }
 
   formatNumber(value: number | null | undefined): string {
@@ -315,6 +392,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const s = (stateName || '').toLowerCase();
     if (s.includes('pending')) return 'home-badge--pending';
     if (s.includes('confirm')) return 'home-badge--confirmed';
+    if (s.includes('assign')) return 'home-badge--assigned';
     if (s.includes('way') || s.includes('deliver')) return 'home-badge--onway';
     if (s.includes('receiv') || s.includes('rent')) return 'home-badge--active';
     if (s.includes('complete')) return 'home-badge--completed';
@@ -353,6 +431,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.loadErrorNotified = false;
     }, 4000);
+  }
+
+  /** Points for a 200×40 sparkline; null when there is nothing to draw. */
+  private buildSpark(values: number[]): Sparkline | null {
+    if (values.length < 2) return null;
+    const max = Math.max(...values);
+    const min = Math.min(...values);
+    const span = max - min || 1;
+    const pts = values.map((v, i) => `${((i / (values.length - 1)) * 200).toFixed(1)},${(36 - ((v - min) / span) * 30).toFixed(1)}`);
+    const line = pts.join(' ');
+    return { line, area: `0,40 ${line} 200,40` };
   }
 
   private resolveRange(range: DateRange): { from: Date; to: Date } | null {
