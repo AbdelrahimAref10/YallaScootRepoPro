@@ -66,8 +66,10 @@ namespace Presentation.Services
                         CreatedDate = notification.CreatedDate
                     };
 
-                    // Broadcast to all; merchant clients filter by their merchantId.
-                    await _hubContext.Clients.All.SendAsync("NewMerchantNotification", dto);
+                    // Only the merchant's owner and staff are in this group.
+                    await _hubContext.Clients
+                        .Group(MerchantNotificationHub.GroupName(notification.MerchantId))
+                        .SendAsync("NewMerchantNotification", dto);
                 }
             }
             catch (Exception ex)

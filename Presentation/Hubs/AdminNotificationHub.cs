@@ -1,9 +1,12 @@
+using Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;
 
 namespace Presentation.Hubs
 {
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class AdminNotificationHub : Hub
     {
         public override async Task OnConnectedAsync()
