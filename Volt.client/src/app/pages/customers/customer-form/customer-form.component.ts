@@ -13,6 +13,7 @@ import {
 } from '../../../core/services/clientAPI';
 import { LocaleService } from '../../../core/services/locale.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { PhoneInputComponent } from '../../../shared/components/phone-input/phone-input.component';
 import {
   MultiSelectComponent,
   MultiSelectOption
@@ -21,7 +22,7 @@ import {
 @Component({
   selector: 'app-customer-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent, PhoneInputComponent],
   templateUrl: './customer-form.component.html',
   styleUrls: ['./customer-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
@@ -55,7 +56,7 @@ export class CustomerFormComponent implements OnInit {
     private fb: FormBuilder
   ) {
     this.customerForm = this.fb.group({
-      mobileNumber: ['', [Validators.required, Validators.pattern(/^[0-9]+$/)]],
+      mobileNumber: ['', [Validators.required, Validators.pattern(/^\+[1-9]\d{6,14}$/)]],
       fullName: ['', [Validators.required, Validators.minLength(2)]],
       gender: ['', [Validators.required]],
       cityId: [null, [Validators.required]],

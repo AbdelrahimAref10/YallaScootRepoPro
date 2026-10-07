@@ -41,9 +41,9 @@
           </div>
           <div class="entity-form__field">
             <label class="entity-form__label" for="rf-mobile">{{ 'customers.mobile' | t }}<span class="entity-form__req">*</span></label>
-            <input id="rf-mobile" type="text" formControlName="mobileNumber" class="entity-form__input rf-ltr" [placeholder]="'customers.mobilePlaceholder' | t" />
+            <app-phone-input inputId="rf-mobile" formControlName="mobileNumber" [placeholder]="'customers.mobilePlaceholder' | t"></app-phone-input>
             <p *ngIf="customerForm.get('mobileNumber')?.invalid && customerForm.get('mobileNumber')?.touched" class="entity-form__error">
-              {{ 'customers.mobileRequired' | t }}
+              {{ (customerForm.get('mobileNumber')?.hasError('required') ? 'customers.mobileRequired' : 'customers.mobileInvalid') | t }}
             </p>
           </div>
           <div class="entity-form__field">

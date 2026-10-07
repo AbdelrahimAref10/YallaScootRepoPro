@@ -644,7 +644,7 @@
     "fullNameRequired": "الاسم الكامل مطلوب ويجب أن يكون حرفين على الأقل",
     "mobile": "رقم الجوال",
     "mobilePlaceholder": "أدخل رقم الجوال",
-    "mobileRequired": "رقم الجوال مطلوب ويجب أن يحتوي على أرقام فقط",
+    "mobileRequired": "رقم الجوال مطلوب",
     "empty": "لا يوجد عملاء",
     "emptyHint": "جرّب تعديل الفلاتر أو أضف عميلاً جديداً.",
     "tableCaption": "قائمة العملاء",
@@ -724,7 +724,8 @@
     "cashBlockedSuccessfully": "تم حظر الدفع نقداً بنجاح",
     "cashUnblockedSuccessfully": "تم إلغاء حظر الدفع نقداً بنجاح",
     "wallet": "المحفظة",
-    "orderHistory": "سجل الطلبات"
+    "orderHistory": "سجل الطلبات",
+    "mobileInvalid": "أدخل رقم جوال صحيح للدولة المختارة"
   },
   "users": {
     "title": "مستخدمو النظام",
@@ -1991,5 +1992,10 @@
     "Home": "الرئيسية",
     "Payments": "المدفوعات",
     "Staff": "الموظفون"
+  },
+  "phone": {
+    "countryCode": "كود الدولة",
+    "searchCountry": "ابحث باسم الدولة أو الكود",
+    "noCountry": "لا توجد دولة مطابقة"
   }
 }

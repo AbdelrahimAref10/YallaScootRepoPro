@@ -1,0 +1,179 @@
+:host {
+  display: block;
+  position: relative;
+  width: 100%;
+}
+
+.pi {
+  position: relative;
+}
+
+/* Number is always left-to-right, also in Arabic. */
+.pi__field {
+  direction: ltr;
+  display: flex;
+  align-items: stretch;
+  height: 2.65rem;
+  border: 1px solid var(--volt-border-strong);
+  border-radius: 0.45rem;
+  background: var(--volt-surface);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pi__field:focus-within,
+.pi--open .pi__field {
+  border-color: var(--volt-text-primary);
+  box-shadow: 0 0 0 3px rgba(22, 19, 22, 0.06);
+}
+
+.pi--disabled {
+  opacity: 0.6;
+}
+
+.pi__code {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.6rem 0 0.75rem;
+  border: none;
+  border-right: 1px solid var(--volt-border);
+  background: var(--volt-surface-muted);
+  color: var(--volt-text-primary);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pi__code:hover:not(:disabled) {
+  background: var(--volt-surface-hover);
+}
+
+.pi__code:disabled {
+  cursor: default;
+}
+
+.pi__iso {
+  display: inline-block;
+  min-width: 1.6rem;
+  padding: 0.05rem 0.25rem;
+  border-radius: 0.25rem;
+  background: var(--volt-accent-soft);
+  color: var(--volt-accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+.pi__dial {
+  font-variant-numeric: tabular-nums;
+}
+
+.pi__chev {
+  width: 0.9rem;
+  height: 0.9rem;
+  color: var(--volt-text-muted);
+  transition: transform 0.15s ease;
+}
+
+.pi--open .pi__chev {
+  transform: rotate(180deg);
+}
+
+.pi__number {
+  flex: 1;
+  min-width: 0;
+  padding: 0 0.8rem;
+  border: none;
+  background: transparent;
+  color: var(--volt-text-primary);
+  font: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.pi__number::placeholder {
+  color: var(--volt-text-muted);
+}
+
+.pi__menu {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 0.3rem);
+  inset-inline-start: 0;
+  width: min(20rem, 100%);
+  min-width: 15rem;
+  padding: 0.4rem;
+  border: 1px solid var(--volt-border);
+  border-radius: 0.55rem;
+  background: var(--volt-surface);
+  box-shadow: var(--volt-shadow-pop);
+}
+
+.pi__search {
+  width: 100%;
+  height: 2.2rem;
+  padding: 0 0.65rem;
+  margin-bottom: 0.35rem;
+  border: 1px solid var(--volt-border-strong);
+  border-radius: 0.4rem;
+  background: var(--volt-surface);
+  color: var(--volt-text-primary);
+  font: inherit;
+  font-size: 0.84rem;
+  outline: none;
+}
+
+.pi__search:focus {
+  border-color: var(--volt-text-primary);
+}
+
+.pi__list {
+  max-height: 15rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.pi__option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 0.35rem;
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+
+.pi__option:hover {
+  background: var(--volt-surface-hover);
+}
+
+.pi__option--active {
+  background: var(--volt-accent-soft);
+  font-weight: 700;
+}
+
+.pi__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pi__option .pi__dial {
+  color: var(--volt-text-secondary);
+  direction: ltr;
+}
+
+.pi__empty {
+  padding: 0.6rem 0.5rem;
+  color: var(--volt-text-muted);
+  font-size: 0.84rem;
+}

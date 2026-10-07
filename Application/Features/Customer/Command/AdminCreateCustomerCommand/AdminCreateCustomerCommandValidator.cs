@@ -7,6 +7,8 @@ namespace Application.Features.Customer.Command.AdminCreateCustomerCommand
 {
     public class AdminCreateCustomerCommandValidator
     {
+        private static readonly System.Text.RegularExpressions.Regex InternationalMobile = new(@"^\+[1-9]\d{6,14}$");
+
         private readonly DatabaseContext _context;
 
         public AdminCreateCustomerCommandValidator(DatabaseContext context)
@@ -18,6 +20,11 @@ namespace Application.Features.Customer.Command.AdminCreateCustomerCommand
         {
             if (string.IsNullOrWhiteSpace(request.MobileNumber))
                 return Result.Failure("Mobile number is required");
+
+            // Stored with the country code in international format, e.g. +201001234567.
+            request.MobileNumber = request.MobileNumber.Replace(" ", "").Replace("-", "").Trim();
+            if (!InternationalMobile.IsMatch(request.MobileNumber))
+                return Result.Failure("Mobile number must include the country code, e.g. +201001234567");
 
             if (string.IsNullOrWhiteSpace(request.FullName))
                 return Result.Failure("Full name is required");
