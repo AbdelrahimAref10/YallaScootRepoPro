@@ -18,12 +18,12 @@
           <div class="oz-hero__actions">
             <ng-container *appHasPermission="'Merchant.Orders.Edit'">
               @if (order.canReject) {
-                <button type="button" class="oz-btn oz-btn--glass" [disabled]="!!actionLoading" (click)="openReject()">{{ 'merchant.rejectWholeOrder' | t }}</button>
+                <button type="button" class="oz-btn" [disabled]="!!actionLoading" (click)="openReject()">{{ 'merchant.rejectWholeOrder' | t }}</button>
               }
             </ng-container>
             <ng-container *appHasPermission="'Merchant.Orders.Edit'">
               @if (order.canHandover) {
-                <button type="button" class="oz-btn oz-btn--glass" [disabled]="!!actionLoading" (click)="openHandover()">{{ 'orders.markHandover' | t }}</button>
+                <button type="button" class="oz-btn" [disabled]="!!actionLoading" (click)="openHandover()">{{ 'orders.markHandover' | t }}</button>
               }
             </ng-container>
             <ng-container *appHasPermission="'Merchant.Orders.Edit'">
@@ -42,10 +42,10 @@
           <p class="oz-hero__eyebrow">{{ order.subCategoryName }} · {{ order.cityName }}</p>
           <h1 class="oz-hero__code">#{{ order.orderCode }}</h1>
           <div class="oz-hero__badges">
-            <span class="oz-badge oz-badge--glass" [ngClass]="'oz-badge--' + stateTone(order.orderState)"><i></i>{{ getStateLabel(order.orderState) }}</span>
-            <span class="oz-badge oz-badge--glass" [ngClass]="'oz-badge--' + responseTone(order.myResponseStatus)"><i></i>{{ getResponseLabel(order.myResponseStatus) }}</span>
+            <span class="oz-badge" [ngClass]="'oz-badge--' + stateTone(order.orderState)"><i></i>{{ getStateLabel(order.orderState) }}</span>
+            <span class="oz-badge" [ngClass]="'oz-badge--' + responseTone(order.myResponseStatus)"><i></i>{{ getResponseLabel(order.myResponseStatus) }}</span>
             @if (order.isUrgent) {
-              <span class="oz-badge oz-badge--glass oz-badge--urgent">
+              <span class="oz-badge oz-badge--urgent">
                 <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>
                 {{ 'orders.urgent' | t }}
               </span>

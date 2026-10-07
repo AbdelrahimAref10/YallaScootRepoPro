@@ -72,13 +72,13 @@
           <small>{{ 'common.currency' | t }}</small>
         </p>
         <div class="dsh-hero__meta">
-          <span class="dsh-delta dsh-delta--onink" [ngClass]="deltaClass(profit()?.netProfitChangePercent)">{{ delta(profit()?.netProfitChangePercent) }}</span>
+          <span class="dsh-delta" [ngClass]="deltaClass(profit()?.netProfitChangePercent)">{{ delta(profit()?.netProfitChangePercent) }}</span>
           <span>{{ 'dash.vsPrevious' | t: { period: previousLabel() } }}</span>
         </div>
         <dl class="dsh-hero__facts">
           <div>
             <dt>{{ 'dash.grossBookings' | t }}</dt>
-            <dd>{{ money(profit()?.grossBookings) }} <span class="dsh-delta dsh-delta--onink dsh-delta--sm" [ngClass]="deltaClass(profit()?.grossBookingsChangePercent)">{{ delta(profit()?.grossBookingsChangePercent) }}</span></dd>
+            <dd>{{ money(profit()?.grossBookings) }} <span class="dsh-delta dsh-delta--sm" [ngClass]="deltaClass(profit()?.grossBookingsChangePercent)">{{ delta(profit()?.grossBookingsChangePercent) }}</span></dd>
           </div>
           <div>
             <dt>{{ 'dash.margin' | t }}</dt>
