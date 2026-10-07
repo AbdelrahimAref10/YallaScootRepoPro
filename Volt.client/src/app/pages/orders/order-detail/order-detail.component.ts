@@ -262,6 +262,21 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return [...groups.values()];
   }
 
+  // The getters above build new objects on every change detection. Without a stable identity
+  // ngFor would rebuild each card every pass, and the *appHasPermission effects inside them
+  // schedule another pass: an endless microtask loop that freezes the tab.
+  trackGroup(_: number, group: { merchantId: number }): number {
+    return group.merchantId;
+  }
+
+  trackVehicle(_: number, vehicle: OrderVehicleDto): number {
+    return vehicle.vehicleId;
+  }
+
+  trackEvent(_: number, ev: { date: Date; text: string }): string {
+    return `${ev.date.getTime()}|${ev.text}`;
+  }
+
   showLifecycleModal = false;
   lifecycleVehicle: OrderVehicleDto | null = null;
   lifecycleStep: VehicleLifecycleStep | null = null;

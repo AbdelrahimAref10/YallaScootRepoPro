@@ -114,6 +114,11 @@ export class VehiclesComponent implements OnInit {
     }));
   }
 
+  /** statusOptions builds new objects on every check; keep the chips by value. */
+  trackOption(_: number, opt: MultiSelectOption): MultiSelectOption['value'] {
+    return opt.value;
+  }
+
   get statusOptions(): MultiSelectOption[] {
     return [
       { value: VehicleStatus.Available, label: this.localeService.translate('vehicles.available') },

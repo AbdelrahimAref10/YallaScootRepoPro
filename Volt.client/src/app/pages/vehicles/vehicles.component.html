@@ -120,7 +120,7 @@
       {{ 'common.all' | t }}
     </button>
     <button
-      *ngFor="let opt of statusOptions"
+      *ngFor="let opt of statusOptions; trackBy: trackOption"
       type="button"
       class="vehicles__pill"
       [class.vehicles__pill--active]="isStatusSelected(opt.value)"

@@ -134,7 +134,7 @@
       </section>
 
       <!-- One card per merchant (like a fulfilment group) -->
-      <section class="ox-panel ox-fulfil" *ngFor="let group of vehiclesByMerchant">
+      <section class="ox-panel ox-fulfil" *ngFor="let group of vehiclesByMerchant; trackBy: trackGroup">
         <header class="ox-fulfil__head">
           <span class="ox-badge" [ngClass]="'ox-badge--' + groupTone(group.vehicles)">{{ groupLabelKey(group.vehicles) | t }}</span>
           <h2 class="ox-fulfil__title">{{ group.merchantName }}</h2>
@@ -145,7 +145,7 @@
         </header>
 
         <article
-          *ngFor="let vehicle of group.vehicles"
+          *ngFor="let vehicle of group.vehicles; trackBy: trackVehicle"
           class="ox-line"
           [class.ox-line--void]="vehicle.deliveryFailed || vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Declined"
         >
@@ -378,7 +378,7 @@
         </div>
 
         <ol class="ox-timeline">
-          <li *ngFor="let ev of timeline" class="ox-timeline__item" [ngClass]="'ox-timeline__item--' + ev.tone">
+          <li *ngFor="let ev of timeline; trackBy: trackEvent" class="ox-timeline__item" [ngClass]="'ox-timeline__item--' + ev.tone">
             <span class="ox-timeline__dot" aria-hidden="true"></span>
             <div class="ox-timeline__body">
               <p class="ox-timeline__text">{{ ev.text }}</p>

@@ -114,6 +114,11 @@ export class SettlementsComponent implements OnInit {
   }
 
   /** Same allocation the server does: the smaller delivery side is offset, the rest goes oldest first. */
+  /** preview builds new lines on every check; keep the rows by their open item. */
+  trackPreviewLine(_: number, line: PreviewLine): SettlementOpenItemDto {
+    return line.item;
+  }
+
   get preview(): PreviewLine[] {
     if (!this.summary?.direction || this.amountError) return [];
     const collecting = this.isCollecting;

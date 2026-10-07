@@ -92,7 +92,7 @@
             <div class="st-preview" *ngIf="preview.length">
               <span class="st-panel__kicker">{{ 'settlements.previewTitle' | t }}</span>
               <ul>
-                <li *ngFor="let line of preview">
+                <li *ngFor="let line of preview; trackBy: trackPreviewLine">
                   <span>{{ line.item.orderCode || (line.item.orderId ? '#' + line.item.orderId : ('settlements.noOrder' | t)) }}
                     · {{ itemLabel(line.item.kind) }}</span>
                   <span class="st-num">
