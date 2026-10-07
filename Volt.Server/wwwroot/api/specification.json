@@ -6733,168 +6733,6 @@
         }
       }
     },
-    "/api/admin/AdminOrder/{orderId}/DeliveryRemittance": {
-      "post": {
-        "tags": [
-          "Admin / AdminOrder"
-        ],
-        "operationId": "AdminOrder_DeliveryRemittance",
-        "parameters": [
-          {
-            "name": "orderId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeliveryRemittanceToCompanyCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminOrder/{orderId}/SettleMerchant": {
-      "post": {
-        "tags": [
-          "Admin / AdminOrder"
-        ],
-        "operationId": "AdminOrder_SettleMerchant",
-        "parameters": [
-          {
-            "name": "orderId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SettleMerchantPayoutCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminOrder/{orderId}/SettleDelivery": {
-      "post": {
-        "tags": [
-          "Admin / AdminOrder"
-        ],
-        "operationId": "AdminOrder_SettleDelivery",
-        "parameters": [
-          {
-            "name": "orderId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SettleDeliveryPayoutCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/admin/AdminOrder/{orderId}/RejectOrder": {
       "post": {
         "tags": [
@@ -8486,31 +8324,38 @@
         }
       }
     },
-    "/api/admin/AdminSettlement/PayDelivery": {
-      "post": {
+    "/api/admin/AdminSettlement/Summary": {
+      "get": {
         "tags": [
           "Admin / AdminSettlement"
         ],
-        "operationId": "AdminSettlement_PayDelivery",
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdminPayDeliveryCommand"
-              }
-            }
+        "operationId": "AdminSettlement_GetSummary",
+        "parameters": [
+          {
+            "name": "partyType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LedgerPartyType"
+            },
+            "x-position": 1
           },
-          "required": true,
-          "x-position": 1
-        },
+          {
+            "name": "partyId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SettlementResultDto"
+                  "$ref": "#/components/schemas/SettlementSummaryDto"
                 }
               }
             }
@@ -8528,18 +8373,18 @@
         }
       }
     },
-    "/api/admin/AdminSettlement/CollectFromDelivery": {
+    "/api/admin/AdminSettlement/Vouchers": {
       "post": {
         "tags": [
           "Admin / AdminSettlement"
         ],
-        "operationId": "AdminSettlement_CollectFromDelivery",
+        "operationId": "AdminSettlement_CreateVoucher",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AdminCollectFromDeliveryCommand"
+                "$ref": "#/components/schemas/CreateSettlementVoucherCommand"
               }
             }
           },
@@ -8552,7 +8397,78 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SettlementResultDto"
+                  "$ref": "#/components/schemas/SettlementVoucherDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Admin / AdminSettlement"
+        ],
+        "operationId": "AdminSettlement_GetVouchers",
+        "parameters": [
+          {
+            "name": "PartyType",
+            "in": "query",
+            "schema": {
+              "nullable": true,
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/LedgerPartyType"
+                }
+              ]
+            },
+            "x-position": 1
+          },
+          {
+            "name": "PartyId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            },
+            "x-position": 2
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 3
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 4
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfSettlementVoucherDto"
                 }
               }
             }
@@ -8570,31 +8486,31 @@
         }
       }
     },
-    "/api/admin/AdminSettlement/PayMerchant": {
-      "post": {
+    "/api/admin/AdminSettlement/Vouchers/{settlementVoucherId}": {
+      "get": {
         "tags": [
           "Admin / AdminSettlement"
         ],
-        "operationId": "AdminSettlement_PayMerchant",
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdminPayMerchantCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
+        "operationId": "AdminSettlement_GetVoucher",
+        "parameters": [
+          {
+            "name": "settlementVoucherId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SettlementResultDto"
+                  "$ref": "#/components/schemas/SettlementVoucherDetailDto"
                 }
               }
             }
@@ -12417,7 +12333,10 @@
           "CompanyDeliveryFeeRemainderAccrued",
           "CompanyReturnLegCommissionCharged",
           "MerchantCompanyCommissionCharged",
-          "CompanyMerchantCommissionAccrued"
+          "CompanyMerchantCommissionAccrued",
+          "CompanyCashReceivedFromDelivery",
+          "CompanyPaidMerchant",
+          "CompanyPaidDelivery"
         ],
         "enum": [
           1,
@@ -12438,7 +12357,10 @@
           16,
           17,
           18,
-          19
+          19,
+          20,
+          21,
+          22
         ]
       },
       "PartyLedgerDto": {
@@ -17528,71 +17450,6 @@
           }
         }
       },
-      "DeliveryRemittanceToCompanyCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "orderId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "deliveryId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "amount": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
-          },
-          "reason": {
-            "type": "string",
-            "nullable": true
-          },
-          "note": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "SettleMerchantPayoutCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "orderId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "merchantId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "amount": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
-          }
-        }
-      },
-      "SettleDeliveryPayoutCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "orderId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "deliveryId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "amount": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
-          }
-        }
-      },
       "OrdersDetailsReportDto": {
         "type": "object",
         "additionalProperties": false,
@@ -18138,126 +17995,245 @@
           }
         }
       },
-      "SettlementResultDto": {
+      "SettlementSummaryDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "success": {
+          "partyType": {
+            "$ref": "#/components/schemas/LedgerPartyType"
+          },
+          "partyId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "partyName": {
+            "type": "string"
+          },
+          "cashOwedToCompany": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "owedByCompany": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "net": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "direction": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SettlementDirection"
+              }
+            ]
+          },
+          "maxAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "openItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SettlementOpenItemDto"
+            }
+          }
+        }
+      },
+      "SettlementDirection": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "CollectFromParty",
+          "PayToParty"
+        ],
+        "enum": [
+          1,
+          2
+        ]
+      },
+      "SettlementOpenItemDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "orderCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SettlementAllocationKind"
+          },
+          "open": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "SettlementAllocationKind": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "DeliveryCash",
+          "DeliveryCommission",
+          "MerchantEarnings",
+          "DeliveryLegacyFloat"
+        ],
+        "enum": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "SettlementVoucherDetailDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SettlementVoucherDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "allocations": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SettlementAllocationDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "SettlementAllocationDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "orderCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SettlementAllocationKind"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "SettlementVoucherDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "settlementVoucherId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "voucherNo": {
+            "type": "string"
+          },
+          "partyType": {
+            "$ref": "#/components/schemas/LedgerPartyType"
+          },
+          "partyId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "partyName": {
+            "type": "string"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/SettlementDirection"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateSettlementVoucherCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "partyType": {
+            "$ref": "#/components/schemas/LedgerPartyType"
+          },
+          "partyId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "PagedResultOfSettlementVoucherDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SettlementVoucherDto"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
             "type": "boolean"
           },
-          "postedAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "partyBalanceAfter": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      },
-      "AdminPayDeliveryCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "deliveryId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "kind": {
-            "$ref": "#/components/schemas/AdminPayDeliveryKind"
-          },
-          "orderId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "amount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "note": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "AdminPayDeliveryKind": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "CashFloat",
-          "OrderPayout"
-        ],
-        "enum": [
-          1,
-          2
-        ]
-      },
-      "AdminCollectFromDeliveryCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "deliveryId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "kind": {
-            "$ref": "#/components/schemas/AdminCollectFromDeliveryKind"
-          },
-          "orderId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "amount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "reason": {
-            "type": "string",
-            "nullable": true
-          },
-          "note": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "AdminCollectFromDeliveryKind": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "OrderCashRemittance",
-          "FloatReturn"
-        ],
-        "enum": [
-          1,
-          2
-        ]
-      },
-      "AdminPayMerchantCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "merchantId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "orderId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "amount": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
-          },
-          "note": {
-            "type": "string",
-            "nullable": true
+          "hasNextPage": {
+            "type": "boolean"
           }
         }
       },

@@ -61,6 +61,8 @@ namespace Infrastructure
         public DbSet<DeliveryMenOrder> DeliveryMenOrders { get; set; }
         public DbSet<DeliveryOrderPaymentDetail> DeliveryOrderPaymentDetails { get; set; }
         public DbSet<OrderJournal> OrderJournals { get; set; }
+        public DbSet<SettlementVoucher> SettlementVouchers { get; set; }
+        public DbSet<SettlementAllocation> SettlementAllocations { get; set; }
         public DbSet<ZoneGroup> ZoneGroups { get; set; }
         public DbSet<Zone> Zones { get; set; }
         public DbSet<ZoneDeliveryRate> ZoneDeliveryRates { get; set; }

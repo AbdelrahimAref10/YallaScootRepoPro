@@ -433,3 +433,37 @@ textarea.st-input {
     border-top: 0;
   }
 }
+
+/* ── Vouchers ─────────────────────────────────────────────── */
+.st-hint { font-size: 0.75rem; color: var(--volt-text-muted); }
+.st-hint--err { color: var(--volt-accent); font-weight: 600; }
+
+.st-preview {
+  border: 1px dashed var(--volt-border);
+  border-radius: var(--volt-radius);
+  padding: 0.75rem 1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+.st-preview ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+.st-preview li,
+.st-alloc div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+.st-tag {
+  margin-inline-start: 0.35rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--volt-ok-soft);
+  color: var(--volt-ok);
+}
+.st-tag--part { background: var(--volt-warn-soft); color: var(--volt-warn); }
+.st-click { cursor: pointer; }
+.st-click:hover { background: var(--volt-bg); }
+.st-alloc { background: var(--volt-bg); display: grid; gap: 0.3rem; }
+.st-statement > .st-panel__kicker { display: block; padding: 0.9rem 1.1rem 0.5rem; }

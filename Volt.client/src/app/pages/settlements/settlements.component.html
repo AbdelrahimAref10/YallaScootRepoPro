@@ -9,237 +9,157 @@
   <div *ngIf="successMessage" class="st-alert st-alert--ok" role="status">{{ successMessage }}</div>
   <div *ngIf="errorMessage" class="st-alert st-alert--err" role="alert">{{ errorMessage }}</div>
 
-  <!-- Operation type -->
-  <nav class="st-types" role="tablist" aria-label="Settlement actions">
-    <button
-      type="button"
-      role="tab"
-      class="st-type"
-      [class.st-type--on]="activeTab === 'payDelivery'"
-      [attr.aria-selected]="activeTab === 'payDelivery'"
-      (click)="setTab('payDelivery')"
-    >
-      <span class="st-type__icon st-type__icon--out" aria-hidden="true">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M12 19V5m0 0l-6 6m6-6l6 6"/></svg>
-      </span>
-      <span class="st-type__text">
-        <strong>{{ 'settlements.tabPayDelivery' | t }}</strong>
-        <small>{{ 'settlements.typePayDeliveryHint' | t }}</small>
-      </span>
-    </button>
-    <button
-      type="button"
-      role="tab"
-      class="st-type"
-      [class.st-type--on]="activeTab === 'collect'"
-      [attr.aria-selected]="activeTab === 'collect'"
-      (click)="setTab('collect')"
-    >
+  <nav class="st-types" role="tablist" aria-label="Settlement party">
+    <button type="button" role="tab" class="st-type" [class.st-type--on]="activeTab === 'delivery'"
+            [attr.aria-selected]="activeTab === 'delivery'" (click)="setTab('delivery')">
       <span class="st-type__icon st-type__icon--in" aria-hidden="true">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M12 5v14m0 0l6-6m-6 6l-6-6"/></svg>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
       </span>
       <span class="st-type__text">
-        <strong>{{ 'settlements.tabCollect' | t }}</strong>
-        <small>{{ 'settlements.typeCollectHint' | t }}</small>
+        <strong>{{ 'settlements.tabDelivery' | t }}</strong>
+        <small>{{ 'settlements.tabDeliveryHint' | t }}</small>
       </span>
     </button>
-    <button
-      type="button"
-      role="tab"
-      class="st-type"
-      [class.st-type--on]="activeTab === 'payMerchant'"
-      [attr.aria-selected]="activeTab === 'payMerchant'"
-      (click)="setTab('payMerchant')"
-    >
+    <button type="button" role="tab" class="st-type" [class.st-type--on]="activeTab === 'merchant'"
+            [attr.aria-selected]="activeTab === 'merchant'" (click)="setTab('merchant')">
       <span class="st-type__icon st-type__icon--merchant" aria-hidden="true">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M3 9l1.5-5h15L21 9M3 9h18M3 9a3 3 0 006 0 3 3 0 006 0 3 3 0 006 0M5 12v8h14v-8M10 20v-5h4v5"/></svg>
       </span>
       <span class="st-type__text">
-        <strong>{{ 'settlements.tabPayMerchant' | t }}</strong>
-        <small>{{ 'settlements.typePayMerchantHint' | t }}</small>
+        <strong>{{ 'settlements.tabMerchant' | t }}</strong>
+        <small>{{ 'settlements.tabMerchantHint' | t }}</small>
       </span>
     </button>
   </nav>
 
   <div class="st-grid">
-    <!-- ── Transaction form ───────────────────────────────────── -->
+    <!-- ── New voucher ─────────────────────────────────────────── -->
     <section class="st-panel">
       <header class="st-panel__head">
-        <h2>{{ 'settlements.newTransaction' | t }}</h2>
+        <h2>{{ 'settlements.newVoucher' | t }}</h2>
       </header>
 
-      <!-- Pay rider -->
-      <div *ngIf="activeTab === 'payDelivery'" class="st-form">
+      <div class="st-form">
         <div class="st-field">
-          <label>{{ 'settlements.kind' | t }}</label>
-          <div class="st-seg">
-            <button
-              *ngFor="let o of payDeliveryKindOptions"
-              type="button"
-              class="st-seg__btn"
-              [class.st-seg__btn--on]="payDeliveryKind === o.value"
-              (click)="payDeliveryKind = $any(o.value)"
-            >{{ o.label }}</button>
-          </div>
-        </div>
-        <div class="st-field">
-          <label>{{ 'settlements.delivery' | t }}</label>
+          <label>{{ (activeTab === 'merchant' ? 'settlements.merchant' : 'settlements.delivery') | t }}</label>
           <app-multi-select
             [multiple]="false"
             layout="table"
             [disabled]="isLoadingLookups"
-            [options]="deliveryOptions"
-            [ngModel]="payDeliveryId"
-            (ngModelChange)="payDeliveryId = $event; onPartySelected('delivery', $event)"
+            [options]="partyOptions"
+            [ngModel]="partyId"
+            (ngModelChange)="onPartySelected($event)"
             [placeholder]="'common.select' | t"
             [primaryColumnLabel]="'common.name' | t"
             [secondaryColumnLabel]="'common.mobile' | t"
           ></app-multi-select>
         </div>
-        <div class="st-row">
-          <div class="st-field" *ngIf="needsPayDeliveryOrderId">
-            <label>{{ 'settlements.orderId' | t }}</label>
-            <input class="st-input" type="number" [(ngModel)]="payDeliveryOrderId" min="1" />
-          </div>
-          <div class="st-field">
-            <label>{{ 'common.amount' | t }}</label>
-            <div class="st-money">
-              <input class="st-input" type="number" [(ngModel)]="payDeliveryAmount" min="0" step="0.01" />
-              <span>{{ 'common.currency' | t }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="st-field">
-          <label>{{ 'common.notes' | t }}</label>
-          <textarea class="st-input" rows="3" [(ngModel)]="payDeliveryNote"></textarea>
-        </div>
-        <ng-container *appHasPermission="'Admin.Settlements.Create'">
-          <button type="button" class="st-submit" (click)="onSubmitPayDelivery()" [disabled]="isSubmitting">
-            {{ isSubmitting ? ('common.saving' | t) : ('settlements.submit' | t) }}
-          </button>
-        </ng-container>
-      </div>
 
-      <!-- Collect from rider -->
-      <div *ngIf="activeTab === 'collect'" class="st-form">
-        <div class="st-field">
-          <label>{{ 'settlements.kind' | t }}</label>
-          <div class="st-seg">
-            <button
-              *ngFor="let o of collectKindOptions"
-              type="button"
-              class="st-seg__btn"
-              [class.st-seg__btn--on]="collectKind === o.value"
-              (click)="collectKind = $any(o.value)"
-            >{{ o.label }}</button>
-          </div>
-        </div>
-        <div class="st-field">
-          <label>{{ 'settlements.delivery' | t }}</label>
-          <app-multi-select
-            [multiple]="false"
-            layout="table"
-            [disabled]="isLoadingLookups"
-            [options]="deliveryOptions"
-            [ngModel]="collectDeliveryId"
-            (ngModelChange)="collectDeliveryId = $event; onPartySelected('delivery', $event)"
-            [placeholder]="'common.select' | t"
-            [primaryColumnLabel]="'common.name' | t"
-            [secondaryColumnLabel]="'common.mobile' | t"
-          ></app-multi-select>
-        </div>
-        <div class="st-row">
-          <div class="st-field" *ngIf="needsCollectOrderId">
-            <label>{{ 'settlements.orderId' | t }}</label>
-            <input class="st-input" type="number" [(ngModel)]="collectOrderId" min="1" />
-          </div>
-          <div class="st-field">
-            <label>{{ 'common.amount' | t }}</label>
-            <div class="st-money">
-              <input class="st-input" type="number" [(ngModel)]="collectAmount" min="0" step="0.01" />
-              <span>{{ 'common.currency' | t }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="st-field">
-          <label>{{ 'common.notes' | t }}</label>
-          <textarea class="st-input" rows="3" [(ngModel)]="collectNote"></textarea>
-        </div>
-        <ng-container *appHasPermission="'Admin.Settlements.Create'">
-          <button type="button" class="st-submit" (click)="onSubmitCollect()" [disabled]="isSubmitting">
-            {{ isSubmitting ? ('common.saving' | t) : ('settlements.submit' | t) }}
-          </button>
-        </ng-container>
-      </div>
+        <div *ngIf="isLoadingParty" class="st-empty">{{ 'common.loading' | t }}</div>
 
-      <!-- Pay merchant -->
-      <div *ngIf="activeTab === 'payMerchant'" class="st-form">
-        <div class="st-field">
-          <label>{{ 'settlements.merchant' | t }}</label>
-          <app-multi-select
-            [multiple]="false"
-            layout="table"
-            [disabled]="isLoadingLookups"
-            [options]="merchantOptions"
-            [ngModel]="payMerchantId"
-            (ngModelChange)="payMerchantId = $event; onPartySelected('merchant', $event)"
-            [placeholder]="'common.select' | t"
-            [primaryColumnLabel]="'common.name' | t"
-            [secondaryColumnLabel]="'common.mobile' | t"
-          ></app-multi-select>
-        </div>
-        <div class="st-row">
-          <div class="st-field">
-            <label>{{ 'settlements.orderId' | t }}</label>
-            <input class="st-input" type="number" [(ngModel)]="payMerchantOrderId" min="1" />
-          </div>
-          <div class="st-field">
-            <label>{{ 'settlements.amountOptional' | t }}</label>
-            <div class="st-money">
-              <input class="st-input" type="number" [(ngModel)]="payMerchantAmount" min="0" step="0.01" />
-              <span>{{ 'common.currency' | t }}</span>
+        <ng-container *ngIf="summary && !isLoadingParty">
+          <div class="st-balances">
+            <div class="st-balance" *ngIf="activeTab === 'delivery'">
+              <span>{{ 'settlements.cashOwedToCompany' | t }}</span>
+              <strong>{{ summary.cashOwedToCompany | number:'1.2-2' }}</strong>
+            </div>
+            <div class="st-balance">
+              <span>{{ (activeTab === 'delivery' ? 'settlements.commissionOwed' : 'settlements.owedByCompany') | t }}</span>
+              <strong>{{ summary.owedByCompany | number:'1.2-2' }}</strong>
+            </div>
+            <div class="st-balance st-balance--net" [class.st-balance--neg]="summary.net < 0">
+              <span>{{ summary.direction ? directionLabel(summary.direction) : ('settlements.nothingOpen' | t) }}</span>
+              <strong>{{ summary.maxAmount | number:'1.2-2' }} <small>{{ 'common.currency' | t }}</small></strong>
             </div>
           </div>
-        </div>
-        <div class="st-field">
-          <label>{{ 'common.notes' | t }}</label>
-          <textarea class="st-input" rows="3" [(ngModel)]="payMerchantNote"></textarea>
-        </div>
-        <ng-container *appHasPermission="'Admin.Settlements.Create'">
-          <button type="button" class="st-submit" (click)="onSubmitPayMerchant()" [disabled]="isSubmitting">
-            {{ isSubmitting ? ('common.saving' | t) : ('settlements.payMerchant' | t) }}
-          </button>
+
+          <ng-container *ngIf="summary.direction">
+            <div class="st-field">
+              <label>{{ (isCollecting ? 'settlements.amountCollected' : 'settlements.amountPaid') | t }}</label>
+              <div class="st-money">
+                <input class="st-input" type="number" [(ngModel)]="amount" min="0" [max]="summary.maxAmount" step="0.01" />
+                <span>{{ 'common.currency' | t }}</span>
+              </div>
+              <small class="st-hint" [class.st-hint--err]="amountError">
+                {{ amountError || ('settlements.partialHint' | t) }}
+              </small>
+            </div>
+            <div class="st-field">
+              <label>{{ 'common.notes' | t }}</label>
+              <textarea class="st-input" rows="2" [(ngModel)]="note"></textarea>
+            </div>
+
+            <div class="st-preview" *ngIf="preview.length">
+              <span class="st-panel__kicker">{{ 'settlements.previewTitle' | t }}</span>
+              <ul>
+                <li *ngFor="let line of preview">
+                  <span>{{ line.item.orderCode || (line.item.orderId ? '#' + line.item.orderId : ('settlements.noOrder' | t)) }}
+                    · {{ itemLabel(line.item.kind) }}</span>
+                  <span class="st-num">
+                    {{ line.amount | number:'1.2-2' }}
+                    <small class="st-tag" [class.st-tag--part]="!line.full">{{ (line.full ? 'settlements.full' : 'settlements.partial') | t }}</small>
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <ng-container *appHasPermission="'Admin.Settlements.Create'">
+              <button type="button" class="st-submit" (click)="onSubmit()" [disabled]="isSubmitting || !!amountError">
+                {{ isSubmitting ? ('common.saving' | t) : (isCollecting ? 'settlements.submitCollect' : 'settlements.submitPay') | t }}
+              </button>
+            </ng-container>
+          </ng-container>
         </ng-container>
       </div>
     </section>
 
-    <!-- ── Party statement ────────────────────────────────────── -->
+    <!-- ── Statement + vouchers ────────────────────────────────── -->
     <section class="st-panel st-statement">
       <header class="st-panel__head">
         <div>
           <span class="st-panel__kicker">{{ 'settlements.ledger' | t }}</span>
-          <h2>{{ ledger?.partyName || ('settlements.ledgerEmpty' | t) }}</h2>
+          <h2>{{ summary?.partyName || ('settlements.ledgerEmpty' | t) }}</h2>
         </div>
       </header>
 
-      <div *ngIf="isLoadingLedger" class="st-empty">{{ 'common.loading' | t }}</div>
-
-      <ng-container *ngIf="!isLoadingLedger && ledger">
-        <div class="st-balances">
-          <div class="st-balance">
-            <span>{{ 'settlements.owedByCompany' | t }}</span>
-            <strong>{{ ledger.amountOwedByCompany | number:'1.2-2' }}</strong>
-          </div>
-          <div class="st-balance">
-            <span>{{ 'settlements.owedToCompany' | t }}</span>
-            <strong>{{ ledger.amountOwedToCompany | number:'1.2-2' }}</strong>
-          </div>
-          <div class="st-balance st-balance--net" [class.st-balance--neg]="ledger.balance < 0">
-            <span>{{ 'settlements.balance' | t }}</span>
-            <strong>{{ ledger.balance | number:'1.2-2' }} <small>{{ 'common.currency' | t }}</small></strong>
-          </div>
+      <ng-container *ngIf="vouchers.length">
+        <span class="st-panel__kicker">{{ 'settlements.vouchers' | t }}</span>
+        <div class="st-table-wrap">
+          <table class="st-table">
+            <thead>
+              <tr>
+                <th>{{ 'settlements.voucherNo' | t }}</th>
+                <th>{{ 'common.date' | t }}</th>
+                <th>{{ 'settlements.type' | t }}</th>
+                <th class="st-num">{{ 'common.amount' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let v of vouchers">
+                <tr class="st-click" (click)="toggleVoucher(v)">
+                  <td><strong>{{ v.voucherNo }}</strong><small *ngIf="v.note">{{ v.note }}</small></td>
+                  <td class="st-muted">{{ v.createdDate | date:'d MMM y HH:mm' }}<small>{{ v.createdBy }}</small></td>
+                  <td>{{ directionLabel(v.direction) }}</td>
+                  <td class="st-num" [class.st-cr]="v.direction === SettlementDirection.CollectFromParty" [class.st-dr]="v.direction === SettlementDirection.PayToParty">
+                    {{ v.amount | number:'1.2-2' }}
+                  </td>
+                </tr>
+                <tr *ngIf="openVoucher?.settlementVoucherId === v.settlementVoucherId">
+                  <td colspan="4" class="st-alloc">
+                    <div *ngFor="let a of openVoucher!.allocations">
+                      <span>{{ a.orderCode || (a.orderId ? '#' + a.orderId : ('settlements.noOrder' | t)) }} · {{ itemLabel(a.kind) }}</span>
+                      <span class="st-num">{{ a.amount | number:'1.2-2' }}</span>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
         </div>
+      </ng-container>
 
+            <ng-container *ngIf="ledger">
+        <span class="st-panel__kicker">{{ 'settlements.movements' | t }}</span>
         <div class="st-table-wrap" *ngIf="ledger.entries?.length; else noEntries">
           <table class="st-table">
             <thead>
@@ -271,7 +191,7 @@
         </ng-template>
       </ng-container>
 
-      <div *ngIf="!isLoadingLedger && !ledger" class="st-empty st-empty--hint">
+      <div *ngIf="!summary && !isLoadingParty" class="st-empty st-empty--hint">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>

@@ -32,14 +32,6 @@ namespace Application.Features.Order.DTOs
         public List<OrderJournalDto> Entries { get; set; } = new();
     }
 
-    public class SettlementResultDto
-    {
-        public bool Success { get; set; }
-        public decimal PostedAmount { get; set; }
-        public decimal PartyBalanceAfter { get; set; }
-        public string Message { get; set; } = string.Empty;
-    }
-
     /// <summary>Single journal row for admin movements list (includes party display name).</summary>
     public class OrderJournalMovementDto
     {

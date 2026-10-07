@@ -57,6 +57,13 @@ namespace Infrastructure.MappingConfiguration
                 .HasForeignKey(x => x.VehicleId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false);
+
+            builder.Property(x => x.SettlementVoucherId).HasColumnName("SettlementVoucherId");
+            builder.HasOne(x => x.SettlementVoucher)
+                .WithMany()
+                .HasForeignKey(x => x.SettlementVoucherId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
         }
     }
 }

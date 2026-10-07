@@ -21,8 +21,11 @@ namespace Domain.Models
         public string IdempotencyKey { get; private set; } = string.Empty;
         public FaultParty? FaultParty { get; private set; }
         public string? Note { get; private set; }
+        /// <summary>Settlement voucher that posted this line (collections / payouts).</summary>
+        public int? SettlementVoucherId { get; private set; }
 
         public Order? Order { get; private set; }
+        public SettlementVoucher? SettlementVoucher { get; private set; }
         public Vehicle? Vehicle { get; private set; }
 
         public string? CreatedBy { get; set; }
@@ -43,7 +46,8 @@ namespace Domain.Models
             string? note = null,
             FaultParty? faultParty = null,
             string? createdBy = null,
-            int? vehicleId = null)
+            int? vehicleId = null,
+            int? settlementVoucherId = null)
         {
             if (orderId.HasValue && orderId.Value <= 0)
                 throw new ArgumentException("Order ID must be greater than zero when provided", nameof(orderId));
@@ -56,14 +60,16 @@ namespace Domain.Models
             if (partyType != LedgerPartyType.Company && (!partyId.HasValue || partyId.Value <= 0))
                 throw new ArgumentException("Party ID is required for merchant/delivery entries", nameof(partyId));
 
-            var requiresOrder = entryKind is not (
+            var isFloat = entryKind is
                 OrderJournalEntryKind.DeliveryCashFloatReceived or
-                OrderJournalEntryKind.DeliveryCashFloatReturned);
+                OrderJournalEntryKind.DeliveryCashFloatReturned;
+            // Company cash received from a delivery may settle an order or an old float.
+            var orderOptional = entryKind is OrderJournalEntryKind.CompanyCashReceivedFromDelivery;
 
-            if (requiresOrder && !orderId.HasValue)
+            if (!isFloat && !orderOptional && !orderId.HasValue)
                 throw new ArgumentException($"Entry kind {entryKind} requires an OrderId", nameof(orderId));
 
-            if (!requiresOrder && orderId.HasValue)
+            if (isFloat && orderId.HasValue)
                 throw new ArgumentException($"Entry kind {entryKind} must not have an OrderId", nameof(orderId));
 
             return new OrderJournal
@@ -78,6 +84,7 @@ namespace Domain.Models
                 IdempotencyKey = idempotencyKey.Trim(),
                 Note = note,
                 FaultParty = faultParty,
+                SettlementVoucherId = settlementVoucherId,
                 CreatedBy = createdBy,
                 CreatedDate = DateTime.UtcNow,
                 LastModifiedDate = DateTime.UtcNow
