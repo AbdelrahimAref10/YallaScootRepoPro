@@ -548,6 +548,69 @@
         }
       }
     },
+    "/api/merchant/MerchantProfile/account": {
+      "get": {
+        "tags": [
+          "Merchant / MerchantProfile"
+        ],
+        "operationId": "MerchantProfile_GetMyAccount",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Merchant / MerchantProfile"
+        ],
+        "operationId": "MerchantProfile_UpdateMyAccount",
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMyAccountRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/merchant/MerchantProfile/me": {
       "get": {
         "tags": [
@@ -12615,6 +12678,111 @@
           }
         }
       },
+      "UserDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailConfirmed": {
+            "type": "boolean"
+          },
+          "phoneNumberConfirmed": {
+            "type": "boolean"
+          },
+          "lockoutEnabled": {
+            "type": "boolean"
+          },
+          "lockoutEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "accessFailedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "subRoleId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "subRoleName": {
+            "type": "string",
+            "nullable": true
+          },
+          "subRoleNameAr": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UpdateMyAccountRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "userName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "MerchantDto": {
         "type": "object",
         "additionalProperties": false,
@@ -18438,90 +18606,6 @@
           },
           "hasNextPage": {
             "type": "boolean"
-          }
-        }
-      },
-      "UserDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userName": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "phoneNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "emailConfirmed": {
-            "type": "boolean"
-          },
-          "phoneNumberConfirmed": {
-            "type": "boolean"
-          },
-          "lockoutEnabled": {
-            "type": "boolean"
-          },
-          "lockoutEnd": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "accessFailedCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "active": {
-            "type": "boolean"
-          },
-          "roles": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "nullable": true
-          },
-          "lastModifiedDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "fullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "subRoleId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "subRoleName": {
-            "type": "string",
-            "nullable": true
-          },
-          "subRoleNameAr": {
-            "type": "string",
-            "nullable": true
           }
         }
       },

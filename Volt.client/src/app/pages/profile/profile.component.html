@@ -141,8 +141,9 @@
                 [class.profile-form__input--error]="userForm.get('userName')?.invalid && userForm.get('userName')?.touched"
                 [class.profile-form__input--success]="userForm.get('userName')?.valid && userForm.get('userName')?.touched"
               />
-              <div *ngIf="userForm.get('userName')?.invalid && userForm.get('userName')?.touched" class="profile-form__error">
-                Username is required and must be at least 3 characters
+              <div *ngIf="userForm.get('userName')?.invalid && (userForm.get('userName')?.dirty || userForm.get('userName')?.touched)" class="profile-form__error">
+                <ng-container *ngIf="userForm.get('userName')?.errors?.['userNameChars']; else userNameLength">{{ 'users.userNameInvalidChars' | t }}</ng-container>
+                <ng-template #userNameLength>Username is required and must be at least 3 characters</ng-template>
               </div>
             </div>
 
