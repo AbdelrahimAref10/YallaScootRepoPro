@@ -669,7 +669,7 @@
     "selectType": "اختر النوع",
     "selectVerification": "اختر قناة التواصل",
     "emailPlaceholder": "أدخل البريد الإلكتروني",
-    "emailRequired": "البريد الإلكتروني مطلوب عند اختيار التواصل عبر البريد",
+    "emailRequired": "البريد الإلكتروني مطلوب",
     "password": "كلمة المرور",
     "passwordPlaceholder": "أدخل كلمة المرور (6 أحرف على الأقل)",
     "passwordOptionalHint": "اتركه فارغاً للإبقاء على كلمة المرور الحالية",
@@ -725,7 +725,8 @@
     "cashUnblockedSuccessfully": "تم إلغاء حظر الدفع نقداً بنجاح",
     "wallet": "المحفظة",
     "orderHistory": "سجل الطلبات",
-    "mobileInvalid": "أدخل رقم جوال صحيح للدولة المختارة"
+    "mobileInvalid": "أدخل رقم جوال صحيح للدولة المختارة",
+    "emailInvalid": "أدخل بريداً إلكترونياً صحيحاً"
   },
   "users": {
     "title": "مستخدمو النظام",

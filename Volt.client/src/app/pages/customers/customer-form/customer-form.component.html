@@ -147,11 +147,11 @@
           <div class="entity-form__field">
             <label class="entity-form__label" for="rf-email">
               {{ 'common.email' | t }}
-              <span *ngIf="customerForm.get('verificationBy')?.value === 1" class="entity-form__req">*</span>
+              <span class="entity-form__req">*</span>
             </label>
             <input id="rf-email" type="email" formControlName="email" class="entity-form__input" [placeholder]="'customers.emailPlaceholder' | t" />
             <p *ngIf="customerForm.get('email')?.invalid && customerForm.get('email')?.touched" class="entity-form__error">
-              {{ 'customers.emailRequired' | t }}
+              {{ (customerForm.get('email')?.hasError('required') ? 'customers.emailRequired' : 'customers.emailInvalid') | t }}
             </p>
           </div>
           <div class="entity-form__field">

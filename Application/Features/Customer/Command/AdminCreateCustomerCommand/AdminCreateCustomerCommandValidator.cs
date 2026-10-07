@@ -7,8 +7,6 @@ namespace Application.Features.Customer.Command.AdminCreateCustomerCommand
 {
     public class AdminCreateCustomerCommandValidator
     {
-        private static readonly System.Text.RegularExpressions.Regex InternationalMobile = new(@"^\+[1-9]\d{6,14}$");
-
         private readonly DatabaseContext _context;
 
         public AdminCreateCustomerCommandValidator(DatabaseContext context)
@@ -18,13 +16,10 @@ namespace Application.Features.Customer.Command.AdminCreateCustomerCommand
 
         public async Task<Result> ValidateAsync(AdminCreateCustomerCommand request, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(request.MobileNumber))
-                return Result.Failure("Mobile number is required");
-
-            // Stored with the country code in international format, e.g. +201001234567.
-            request.MobileNumber = request.MobileNumber.Replace(" ", "").Replace("-", "").Trim();
-            if (!InternationalMobile.IsMatch(request.MobileNumber))
-                return Result.Failure("Mobile number must include the country code, e.g. +201001234567");
+            request.MobileNumber = Application.Common.MobileNumberPolicy.Normalize(request.MobileNumber);
+            var mobileResult = Application.Common.MobileNumberPolicy.Validate(request.MobileNumber);
+            if (mobileResult.IsFailure)
+                return mobileResult;
 
             if (string.IsNullOrWhiteSpace(request.FullName))
                 return Result.Failure("Full name is required");
@@ -41,12 +36,16 @@ namespace Application.Features.Customer.Command.AdminCreateCustomerCommand
             if (!Enum.IsDefined(typeof(VerificationBy), request.VerificationBy))
                 return Result.Failure("Invalid VerificationBy value");
 
-            // Preference channel only — still require email if that channel is selected
-            if (request.VerificationBy == (int)VerificationBy.Email && string.IsNullOrWhiteSpace(request.Email))
-                return Result.Failure("Email is required when verification preference is Email");
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return Result.Failure("Email is required");
 
-            if (!string.IsNullOrWhiteSpace(request.Email) && !IsValidEmail(request.Email))
+            request.Email = request.Email.Trim();
+            if (!IsValidEmail(request.Email))
                 return Result.Failure("Invalid email format");
+
+            var normalizedEmail = request.Email.ToUpperInvariant();
+            if (await _context.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken))
+                return Result.Failure("A user with this email already exists");
 
             var passwordResult = Application.Common.PasswordPolicy.Validate(request.Password);
             if (passwordResult.IsFailure)

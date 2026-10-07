@@ -669,7 +669,7 @@
     "selectType": "Select type",
     "selectVerification": "Select preferred contact",
     "emailPlaceholder": "Enter email address",
-    "emailRequired": "Valid email is required when preferred contact is email",
+    "emailRequired": "Email is required",
     "password": "Password",
     "passwordPlaceholder": "Enter password (min 6 characters)",
     "passwordOptionalHint": "Leave blank to keep current password",
@@ -725,7 +725,8 @@
     "cashUnblockedSuccessfully": "Cash payment unblocked successfully",
     "wallet": "Wallet",
     "orderHistory": "Order History",
-    "mobileInvalid": "Enter a valid mobile number for the selected country"
+    "mobileInvalid": "Enter a valid mobile number for the selected country",
+    "emailInvalid": "Enter a valid email address"
   },
   "users": {
     "title": "System Users",
