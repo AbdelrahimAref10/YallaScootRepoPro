@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Order.DTOs;
 using Application.Features.Order.Services;
 using CSharpFunctionalExtensions;
@@ -37,7 +38,8 @@ namespace Application.Features.Order.Query.GetMyMerchantDashboardQuery
         {
             var merchant = await _context.Merchants
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.UserId == _userSession.UserId && !m.IsDeleted, cancellationToken);
+                .OfUser(_context, _userSession.UserId)
+                .FirstOrDefaultAsync(m => !m.IsDeleted, cancellationToken);
 
             if (merchant == null)
                 return Result.Failure<MerchantDashboardSummaryDto>("Merchant profile not found for current user");

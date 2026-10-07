@@ -6,9 +6,12 @@ using Application.Features.Merchant.DTOs;
 using Application.Features.Merchant.Query.GetActiveMerchantsLookupQuery;
 using Application.Features.Merchant.Query.GetAllMerchantsQuery;
 using Application.Features.Merchant.Query.GetMerchantByIdQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 using System.Collections.Generic;
 
@@ -16,7 +19,7 @@ namespace Volt.Server.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class AdminMerchantController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -26,6 +29,7 @@ namespace Volt.Server.Controllers.Admin
             _mediator = mediator;
         }
 
+        [HasPermission(Permissions.Admin.Merchants.View)]
         [HttpGet]
         [ProducesResponseType(typeof(List<MerchantDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -48,6 +52,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Merchants.View)]
         [HttpGet("{merchantId:int}")]
         [ProducesResponseType(typeof(MerchantDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -59,6 +64,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Merchants.Create)]
         [HttpPost]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -70,6 +76,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Merchants.Edit)]
         [HttpPut("{merchantId:int}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -83,6 +90,7 @@ namespace Volt.Server.Controllers.Admin
         }
 
         /// <summary>Soft delete — sets IsDeleted=true; row stays in DB.</summary>
+        [HasPermission(Permissions.Admin.Merchants.Delete)]
         [HttpDelete("{merchantId:int}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -94,6 +102,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Merchants.Edit)]
         [HttpPut("{merchantId:int}/CashOnReceive")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

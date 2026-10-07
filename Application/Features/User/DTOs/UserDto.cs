@@ -18,6 +18,12 @@ namespace Application.Features.User.DTOs
         public DateTime LastModifiedDate { get; set; }
         public string? LastModifiedBy { get; set; }
         public bool IsActive { get; set; }
+        /// <summary>Admin employee or merchant user full name.</summary>
+        public string? FullName { get; set; }
+        /// <summary>Admin / merchant panel sub-role.</summary>
+        public int? SubRoleId { get; set; }
+        public string? SubRoleName { get; set; }
+        public string? SubRoleNameAr { get; set; }
     }
 }
 

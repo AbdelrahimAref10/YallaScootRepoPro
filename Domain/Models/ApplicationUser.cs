@@ -17,6 +17,7 @@ namespace Domain.Models
         public Employee? Employee { get; set; }
         public Merchant? Merchant { get; set; }
         public Delivery? Delivery { get; set; }
+        public MerchantUser? MerchantUser { get; set; }
 
         public void SetPasswordResetCode(string code, IDateTimeProvider dateTimeProvider, int expiryMinutes = 15)
         {

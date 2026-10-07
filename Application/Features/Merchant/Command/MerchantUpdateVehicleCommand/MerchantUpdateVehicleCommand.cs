@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Vehicle.Common;
 using CSharpFunctionalExtensions;
 using Domain.Common;
@@ -53,7 +54,8 @@ namespace Application.Features.Merchant.Command.MerchantUpdateVehicleCommand
 
             var merchant = await _context.Merchants
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.UserId == _userSession.UserId && !m.IsDeleted, cancellationToken);
+                .OfUser(_context, _userSession.UserId)
+                .FirstOrDefaultAsync(m => !m.IsDeleted, cancellationToken);
 
             if (merchant == null)
                 return Result.Failure<int>("Merchant profile not found for current user");

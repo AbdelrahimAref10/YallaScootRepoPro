@@ -7,9 +7,12 @@ using Application.Features.Delivery.Query.GetActiveDeliveriesLookupQuery;
 using Application.Features.Delivery.Query.GetAllDeliveriesQuery;
 using Application.Features.Delivery.Query.GetDeliveriesForAssignQuery;
 using Application.Features.Delivery.Query.GetDeliveryByIdQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 using System.Collections.Generic;
 
@@ -17,7 +20,7 @@ namespace Volt.Server.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class AdminDeliveryController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -27,6 +30,7 @@ namespace Volt.Server.Controllers.Admin
             _mediator = mediator;
         }
 
+        [HasPermission(Permissions.Admin.Deliveries.View)]
         [HttpGet]
         [ProducesResponseType(typeof(List<DeliveryDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -64,6 +68,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Deliveries.View)]
         [HttpGet("{deliveryId:int}")]
         [ProducesResponseType(typeof(DeliveryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -75,6 +80,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Deliveries.Create)]
         [HttpPost]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -86,6 +92,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Deliveries.Edit)]
         [HttpPut("{deliveryId:int}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -99,6 +106,7 @@ namespace Volt.Server.Controllers.Admin
         }
 
         /// <summary>Max collected cash the rider may hold before he must remit. Null removes the limit.</summary>
+        [HasPermission(Permissions.Admin.Deliveries.Edit)]
         [HttpPut("{deliveryId:int}/CashDebtLimit")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -112,6 +120,7 @@ namespace Volt.Server.Controllers.Admin
         }
 
         /// <summary>Soft delete — sets IsDeleted=true; row stays in DB.</summary>
+        [HasPermission(Permissions.Admin.Deliveries.Delete)]
         [HttpDelete("{deliveryId:int}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

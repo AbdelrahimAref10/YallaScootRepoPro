@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Merchant.DTOs;
 using CSharpFunctionalExtensions;
 using Domain.Common;
@@ -30,7 +31,8 @@ namespace Application.Features.Merchant.Query.GetMyMerchantProfileQuery
                 .AsNoTracking()
                 .Include(m => m.City)
                 .Include(m => m.User)
-                .FirstOrDefaultAsync(m => m.UserId == _userSession.UserId && !m.IsDeleted, cancellationToken);
+                .OfUser(_context, _userSession.UserId)
+                .FirstOrDefaultAsync(m => !m.IsDeleted, cancellationToken);
 
             if (merchant == null)
                 return Result.Failure<MerchantDto>("Merchant profile not found for current user");

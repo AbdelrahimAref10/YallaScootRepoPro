@@ -34,6 +34,7 @@ namespace Application.Features.Auth.Command.LoginCommand
         private readonly LoginCommandValidator _validator;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IImageService _imageService;
+        private readonly IPermissionService _permissionService;
 
         public LoginCommandHandler(
             UserManager<ApplicationUser> userManager,
@@ -43,7 +44,8 @@ namespace Application.Features.Auth.Command.LoginCommand
             DatabaseContext context,
             LoginCommandValidator validator,
             IDateTimeProvider dateTimeProvider,
-            IImageService imageService)
+            IImageService imageService,
+            IPermissionService permissionService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -53,6 +55,7 @@ namespace Application.Features.Auth.Command.LoginCommand
             _validator = validator;
             _dateTimeProvider = dateTimeProvider;
             _imageService = imageService;
+            _permissionService = permissionService;
         }
 
         public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -92,8 +95,16 @@ namespace Application.Features.Auth.Command.LoginCommand
             if (profileCheck.IsFailure)
                 return Result.Failure<AuthResponse>(profileCheck.Error);
 
+            UserAccess? access = null;
+            if (appRole is AppRole.SuperAdmin or AppRole.Merchant)
+            {
+                access = await _permissionService.GetUserAccessAsync(user.Id, appRole, cancellationToken);
+                if (!access.IsAllowed)
+                    return Result.Failure<AuthResponse>("Your account has no active role. Please contact the administrator.");
+            }
+
             var roles = await _userManager.GetRolesAsync(user);
-            var token = _jwtTokenService.GenerateToken(user, roles);
+            var token = _jwtTokenService.GenerateToken(user, roles, access);
             var refreshToken = _jwtTokenService.GenerateRefreshToken();
             var refreshTokenExpires = _dateTimeProvider.Now.AddDays(_jwtSettings.RefreshTokenExpirationDays);
 
@@ -115,6 +126,15 @@ namespace Application.Features.Auth.Command.LoginCommand
                 Roles = roles.ToList(),
                 Role = (int)appRole
             };
+
+            if (access != null)
+            {
+                response.SubRoleId = access.SubRoleId;
+                response.SubRoleName = access.SubRoleName;
+                response.SubRoleNameAr = access.SubRoleNameAr;
+                response.IsOwner = access.IsOwner;
+                response.Permissions = access.Permissions.OrderBy(p => p).ToList();
+            }
 
             await EnrichProfileAsync(response, user.Id, appRole, cancellationToken);
             return Result.Success(response);
@@ -180,11 +200,15 @@ namespace Application.Features.Auth.Command.LoginCommand
                 }
                 case AppRole.Merchant:
                 {
-                    var merchant = await _context.Merchants.FirstOrDefaultAsync(m => m.UserId == userId, cancellationToken);
-                    if (merchant == null)
+                    var merchantUser = await _context.MerchantUsers
+                        .Include(mu => mu.Merchant)
+                        .FirstOrDefaultAsync(mu => mu.UserId == userId, cancellationToken);
+                    if (merchantUser == null || merchantUser.IsDeleted)
                         return Result.Failure("Merchant profile not found");
-                    if (merchant.IsDeleted || !merchant.IsActive)
+                    if (merchantUser.Merchant.IsDeleted || !merchantUser.Merchant.IsActive)
                         return Result.Failure("Not Verified");
+                    if (!merchantUser.IsActive)
+                        return Result.Failure("User account is not active");
                     break;
                 }
                 case AppRole.Delivery:
@@ -228,7 +252,10 @@ namespace Application.Features.Auth.Command.LoginCommand
                 }
                 case AppRole.Merchant:
                 {
-                    var merchant = await _context.Merchants.FirstOrDefaultAsync(m => m.UserId == userId, cancellationToken);
+                    var merchant = await _context.MerchantUsers
+                        .Where(mu => mu.UserId == userId)
+                        .Select(mu => mu.Merchant)
+                        .FirstOrDefaultAsync(cancellationToken);
                     if (merchant == null)
                         return;
                     response.MerchantId = merchant.MerchantId;

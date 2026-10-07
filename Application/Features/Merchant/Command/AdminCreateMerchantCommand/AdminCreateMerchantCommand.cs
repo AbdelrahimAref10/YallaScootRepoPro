@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Order.Common;
 using CSharpFunctionalExtensions;
 using Domain.Common;
@@ -169,6 +170,8 @@ namespace Application.Features.Merchant.Command.AdminCreateMerchantCommand
                 companyCommissionPercent: request.CompanyCommissionPercent);
 
             _context.Merchants.Add(merchant);
+            _context.MerchantUsers.Add(Domain.Models.MerchantUser.CreateOwner(
+                merchant, await SubRoleLookup.MerchantOwnerIdAsync(_context, cancellationToken), createdBy));
 
             var saveResult = await _context.SaveChangesAsyncWithResult(cancellationToken);
             if (!saveResult.IsSuccess)

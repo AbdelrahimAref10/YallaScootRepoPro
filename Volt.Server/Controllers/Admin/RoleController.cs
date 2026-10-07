@@ -7,16 +7,19 @@ using Application.Features.Roles.DTOs;
 using Application.Features.Roles.Query.GetAllRolesQuery;
 using Application.Features.Roles.Query.GetRoleByIdQuery;
 using Application.Features.Roles.Query.GetUserRolesQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 
 namespace Volt.Server.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class RoleController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -40,6 +43,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Roles.View)]
         [HttpGet]
         [ProducesResponseType(typeof(RoleDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -54,6 +58,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.SystemUsers.View)]
         [HttpGet]
         [ProducesResponseType(typeof(List<RoleDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -68,11 +73,11 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Roles.Create)]
         [HttpPost]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
         [Route("CreateRole")]
-        [Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> CreateRole(CreateRoleCommand command)
         {
             var result = await _mediator.Send(command);
@@ -83,11 +88,11 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Roles.Edit)]
         [HttpPut]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
         [Route("UpdateRole")]
-        [Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> UpdateRole(UpdateRoleCommand command)
         {
             var result = await _mediator.Send(command);
@@ -98,11 +103,11 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Roles.Delete)]
         [HttpDelete]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
         [Route("DeleteRole/{roleId}")]
-        [Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> DeleteRole(int roleId)
         {
             var result = await _mediator.Send(new DeleteRoleCommand { RoleId = roleId });
@@ -113,11 +118,11 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.SystemUsers.Edit)]
         [HttpPost]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
         [Route("AssignRoleToUser")]
-        [Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> AssignRoleToUser(AssignRoleToUserCommand command)
         {
             var result = await _mediator.Send(command);
@@ -128,11 +133,11 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.SystemUsers.Edit)]
         [HttpPost]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
         [Route("RemoveRoleFromUser")]
-        [Authorize(Roles = "Super Admin")]
         public async Task<IActionResult> RemoveRoleFromUser(RemoveRoleFromUserCommand command)
         {
             var result = await _mediator.Send(command);

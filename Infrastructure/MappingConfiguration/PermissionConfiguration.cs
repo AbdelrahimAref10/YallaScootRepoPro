@@ -33,6 +33,16 @@ namespace Infrastructure.MappingConfiguration
                 .HasMaxLength(100)
                 .IsRequired();
 
+            builder.Property(p => p.Scope)
+                .HasColumnName("Scope")
+                .HasConversion<int>()
+                .IsRequired();
+
+            builder.Property(p => p.Action)
+                .HasColumnName("Action")
+                .HasMaxLength(50)
+                .IsRequired();
+
             builder.Property(p => p.IsActive)
                 .HasColumnName("IsActive")
                 .HasDefaultValue(true)
@@ -56,7 +66,7 @@ namespace Infrastructure.MappingConfiguration
                 .IsRequired();
 
             // Configure relationships
-            builder.HasMany(p => p.RolePermissions)
+            builder.HasMany(p => p.SubRolePermissions)
                 .WithOne(rp => rp.Permission)
                 .HasForeignKey(rp => rp.PermissionId)
                 .OnDelete(DeleteBehavior.Cascade);

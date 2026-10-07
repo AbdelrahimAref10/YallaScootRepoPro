@@ -1,3 +1,4 @@
+using Application.Common;
 using CSharpFunctionalExtensions;
 using Domain.Common;
 using Domain.Enums;
@@ -23,6 +24,8 @@ namespace Application.Features.User.Command.CreateUserCommand
         public int? ZoneId { get; set; }
         /// <summary>Optional; applied when Role is Merchant.</summary>
         public bool? CashOnReceive { get; set; }
+        /// <summary>Admin sub-role; required when Role is SuperAdmin.</summary>
+        public int? SubRoleId { get; set; }
     }
 
     public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<int>>
@@ -85,6 +88,13 @@ namespace Application.Features.User.Command.CreateUserCommand
                     return Result.Failure<int>("Zone must belong to the selected city group");
             }
 
+            if (appRole == AppRole.SuperAdmin)
+            {
+                if (!request.SubRoleId.HasValue
+                    || !await SubRoleLookup.IsActiveInScopeAsync(_context, request.SubRoleId.Value, AppRole.SuperAdmin, cancellationToken))
+                    return Result.Failure<int>("A valid admin sub-role is required");
+            }
+
             var roleName = AppRoleNames.ToRoleName(appRole);
             if (!await _roleManager.RoleExistsAsync(roleName))
                 return Result.Failure<int>($"Role '{roleName}' does not exist");
@@ -136,14 +146,19 @@ namespace Application.Features.User.Command.CreateUserCommand
             switch (appRole)
             {
                 case AppRole.SuperAdmin:
-                    _context.Employees.Add(Employee.Create(user.Id, request.FullName, createdBy));
+                    _context.Employees.Add(Employee.Create(user.Id, request.FullName, createdBy, request.SubRoleId));
                     break;
                 case AppRole.Merchant:
-                    _context.Merchants.Add(Domain.Models.Merchant.Create(
+                {
+                    var merchant = Domain.Models.Merchant.Create(
                         user.Id, request.CityId!.Value, request.ZoneId!.Value, request.FullName, request.PhoneNumber, invitationCode,
                         request.Email, createdBy: createdBy, isActive: true,
-                        cashOnReceive: request.CashOnReceive ?? false));
+                        cashOnReceive: request.CashOnReceive ?? false);
+                    _context.Merchants.Add(merchant);
+                    _context.MerchantUsers.Add(MerchantUser.CreateOwner(
+                        merchant, await SubRoleLookup.MerchantOwnerIdAsync(_context, cancellationToken), createdBy));
                     break;
+                }
                 case AppRole.Delivery:
                     _context.Deliveries.Add(Domain.Models.Delivery.Create(
                         user.Id, request.CityId!.Value, request.ZoneId!.Value, request.FullName, request.PhoneNumber, invitationCode,

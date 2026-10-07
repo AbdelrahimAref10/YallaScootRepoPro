@@ -1,7 +1,9 @@
+using Domain.Authorization;
 using Domain.Enums;
 using Domain.Models;
 using Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -11,6 +13,10 @@ namespace Infrastructure.Data
     {
         private const string AdminUserName = "admin";
         private const string AdminPassword = "Admin@123";
+
+        public const string AdminSubRoleName = "Admin";
+        public const string MerchantOwnerSubRoleName = "Merchant Owner";
+        private const string OperationSubRoleName = "Operation";
 
         public static async Task SeedAdminUserAsync(IServiceProvider serviceProvider)
         {
@@ -66,6 +72,8 @@ namespace Infrastructure.Data
                         logger.LogInformation("{RoleName} role created", roleName);
                     }
                 }
+
+                await SeedPermissionsAsync(dbContext, logger);
 
                 var adminUser = await userManager.FindByNameAsync(AdminUserName);
                 if (adminUser == null)
@@ -140,15 +148,113 @@ namespace Infrastructure.Data
                 if (await userManager.IsInRoleAsync(adminUser, "Admin"))
                     await userManager.RemoveFromRoleAsync(adminUser, "Admin");
 
+                var adminSubRoleId = await dbContext.SubRoles
+                    .Where(r => r.Scope == AppRole.SuperAdmin && r.IsSystem && r.Name == AdminSubRoleName)
+                    .Select(r => r.SubRoleId)
+                    .FirstAsync();
+
                 if (!dbContext.Employees.Any(e => e.UserId == adminUser.Id))
                 {
-                    dbContext.Employees.Add(Employee.Create(adminUser.Id, "System Admin", "System"));
+                    dbContext.Employees.Add(Employee.Create(adminUser.Id, "System Admin", "System", adminSubRoleId));
                     await dbContext.SaveChangesAsync();
                 }
+
+                await BackfillSubRolesAsync(dbContext, adminSubRoleId, logger);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "An error occurred while seeding admin user");
+            }
+        }
+
+        /// <summary>
+        /// Syncs VO_Permission with <see cref="PermissionCatalog"/> and makes sure the system sub-roles exist.
+        /// </summary>
+        private static async Task SeedPermissionsAsync(DatabaseContext dbContext, ILogger logger)
+        {
+            var existing = await dbContext.Permissions.AsTracking().ToListAsync();
+            var byName = existing.ToDictionary(p => p.PermissionName);
+
+            foreach (var definition in PermissionCatalog.All)
+            {
+                if (byName.TryGetValue(definition.Name, out var permission))
+                {
+                    if (!permission.IsActive)
+                        permission.Activate("System");
+                    continue;
+                }
+
+                dbContext.Permissions.Add(Permission.Create(
+                    definition.Name,
+                    $"{definition.Action} {definition.Module}",
+                    definition.Module,
+                    definition.Scope,
+                    definition.Action,
+                    "System"));
+                logger.LogInformation("Permission {Permission} created", definition.Name);
+            }
+
+            foreach (var stale in existing.Where(p => p.IsActive && !PermissionCatalog.Exists(p.PermissionName)))
+                stale.Deactivate("System");
+
+            await EnsureSubRoleAsync(dbContext, AdminSubRoleName, "مدير النظام", AppRole.SuperAdmin, isSystem: true);
+            await EnsureSubRoleAsync(dbContext, MerchantOwnerSubRoleName, "صاحب المتجر", AppRole.Merchant, isSystem: true);
+            await dbContext.SaveChangesAsync();
+
+            if (!await dbContext.SubRoles.AnyAsync(r => r.Scope == AppRole.SuperAdmin && r.Name == OperationSubRoleName))
+            {
+                var operation = SubRole.Create(OperationSubRoleName, "العمليات", AppRole.SuperAdmin, createdBy: "System");
+                string[] operationPermissions =
+                [
+                    Permissions.Admin.Dashboard.View,
+                    Permissions.Admin.Orders.View, Permissions.Admin.Orders.Edit,
+                    Permissions.Admin.Shifts.View, Permissions.Admin.Shifts.Edit,
+                    Permissions.Admin.Deliveries.View, Permissions.Admin.Deliveries.Edit,
+                    Permissions.Admin.Merchants.View, Permissions.Admin.Merchants.Edit,
+                    Permissions.Admin.Customers.View, Permissions.Admin.Customers.Edit
+                ];
+                var ids = await dbContext.Permissions
+                    .Where(p => operationPermissions.Contains(p.PermissionName))
+                    .Select(p => p.PermissionId)
+                    .ToListAsync();
+                operation.SetPermissions(ids, "System");
+                dbContext.SubRoles.Add(operation);
+                await dbContext.SaveChangesAsync();
+                logger.LogInformation("Operation sub-role created");
+            }
+        }
+
+        private static async Task EnsureSubRoleAsync(DatabaseContext dbContext, string name, string nameAr, AppRole scope, bool isSystem)
+        {
+            if (await dbContext.SubRoles.AnyAsync(r => r.Scope == scope && r.Name == name))
+                return;
+
+            dbContext.SubRoles.Add(SubRole.Create(name, nameAr, scope, isSystem, isFullAccess: true, createdBy: "System"));
+        }
+
+        /// <summary>Gives every admin employee and every merchant owner a sub-role.</summary>
+        private static async Task BackfillSubRolesAsync(DatabaseContext dbContext, int adminSubRoleId, ILogger logger)
+        {
+            var employees = await dbContext.Employees.AsTracking().Where(e => e.SubRoleId == null).ToListAsync();
+            foreach (var employee in employees)
+                employee.SetSubRole(adminSubRoleId, "System");
+
+            var ownerSubRoleId = await dbContext.SubRoles
+                .Where(r => r.Scope == AppRole.Merchant && r.IsSystem && r.Name == MerchantOwnerSubRoleName)
+                .Select(r => r.SubRoleId)
+                .FirstAsync();
+
+            var merchantsWithoutOwner = await dbContext.Merchants
+                .Where(m => !dbContext.MerchantUsers.Any(mu => mu.UserId == m.UserId))
+                .Select(m => new { m.MerchantId, m.UserId, m.FullName })
+                .ToListAsync();
+            foreach (var merchant in merchantsWithoutOwner)
+                dbContext.MerchantUsers.Add(MerchantUser.CreateOwner(merchant.MerchantId, merchant.UserId, ownerSubRoleId, merchant.FullName, "System"));
+
+            if (employees.Count > 0 || merchantsWithoutOwner.Count > 0)
+            {
+                await dbContext.SaveChangesAsync();
+                logger.LogInformation("Backfilled sub-roles for {Employees} employees and {Merchants} merchants", employees.Count, merchantsWithoutOwner.Count);
             }
         }
     }

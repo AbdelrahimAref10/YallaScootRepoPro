@@ -5,16 +5,19 @@ using Application.Features.Merchant.Command.MerchantUpdateVehicleCommand;
 using Application.Features.Merchant.Query.GetMyMerchantVehicleByIdQuery;
 using Application.Features.Merchant.Query.GetMyMerchantVehiclesQuery;
 using Application.Features.Vehicle.DTOs;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 
 namespace Volt.Server.Controllers.Merchant
 {
     [Route("api/merchant/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.Merchant)]
     public class MerchantVehicleController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -24,6 +27,7 @@ namespace Volt.Server.Controllers.Merchant
             _mediator = mediator;
         }
 
+        [HasPermission(Permissions.Merchant.Vehicles.View)]
         [HttpGet]
         [ProducesResponseType(typeof(PagedResult<VehicleDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -49,6 +53,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Vehicles.View)]
         [HttpGet("{vehicleId}")]
         [ProducesResponseType(typeof(VehicleDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -60,6 +65,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Vehicles.Create)]
         [HttpPost]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -71,6 +77,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Vehicles.Edit)]
         [HttpPut]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -82,6 +89,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Vehicles.Delete)]
         [HttpDelete("{vehicleId}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

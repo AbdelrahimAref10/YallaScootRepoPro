@@ -1,8 +1,11 @@
+using Application.Common;
 using CSharpFunctionalExtensions;
 using Domain.Common;
+using Domain.Enums;
 using Infrastructure;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +20,8 @@ namespace Application.Features.User.Command.UpdateUserCommand
         public string? PhoneNumber { get; set; }
         public string? Password { get; set; }
         public int RoleId { get; set; }
+        /// <summary>Admin sub-role; required when the user is (or becomes) a Super Admin.</summary>
+        public int? SubRoleId { get; set; }
     }
 
     public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Result>
@@ -25,17 +30,20 @@ namespace Application.Features.User.Command.UpdateUserCommand
         private readonly RoleManager<Domain.Models.ApplicationRole> _roleManager;
         private readonly IUserSession _userSession;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly DatabaseContext _context;
 
         public UpdateUserCommandHandler(
             UserManager<Domain.Models.ApplicationUser> userManager,
             RoleManager<Domain.Models.ApplicationRole> roleManager,
             IUserSession userSession,
-            IDateTimeProvider dateTimeProvider)
+            IDateTimeProvider dateTimeProvider,
+            DatabaseContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _userSession = userSession;
             _dateTimeProvider = dateTimeProvider;
+            _context = context;
         }
 
         public async Task<Result> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
@@ -57,11 +65,25 @@ namespace Application.Features.User.Command.UpdateUserCommand
                 return Result.Failure("Phone number is required");
             }
 
+            // Users editing their own profile keep their role and sub-role.
+            var isSelf = request.UserId == _userSession.UserId;
+
             // Validate that the role exists
             var role = await _roleManager.FindByIdAsync(request.RoleId.ToString());
-            if (role == null)
+            if (role == null && !isSelf)
             {
                 return Result.Failure($"Role with ID '{request.RoleId}' does not exist");
+            }
+
+            Domain.Models.Employee? employee = null;
+            if (!isSelf && role!.Name == AppRoleNames.SuperAdmin)
+            {
+                employee = await _context.Employees.AsTracking().FirstOrDefaultAsync(e => e.UserId == request.UserId, cancellationToken);
+                if (employee == null)
+                    return Result.Failure("Only admin employees can have the Super Admin role");
+                if (request.SubRoleId.HasValue
+                    && !await SubRoleLookup.IsActiveInScopeAsync(_context, request.SubRoleId.Value, AppRole.SuperAdmin, cancellationToken))
+                    return Result.Failure("A valid admin sub-role is required");
             }
 
             // Check if username is taken by another user
@@ -104,6 +126,15 @@ namespace Application.Features.User.Command.UpdateUserCommand
                 }
             }
 
+            if (isSelf)
+                return Result.Success();
+
+            if (employee != null && request.SubRoleId.HasValue && employee.SubRoleId != request.SubRoleId)
+            {
+                employee.SetSubRole(request.SubRoleId.Value, _userSession.UserName);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
             // Update role - remove all current roles and add the new one
             var currentRoles = await _userManager.GetRolesAsync(user);
             if (currentRoles.Any())
@@ -117,7 +148,7 @@ namespace Application.Features.User.Command.UpdateUserCommand
             }
 
             // Add the new role
-            var addResult = await _userManager.AddToRoleAsync(user, role.Name!);
+            var addResult = await _userManager.AddToRoleAsync(user, role!.Name!);
             if (!addResult.Succeeded)
             {
                 var errors = string.Join(", ", addResult.Errors.Select(e => e.Description));

@@ -3,9 +3,12 @@ using Application.Features.MerchantNotification.Command.MarkMerchantNotification
 using Application.Features.MerchantNotification.DTOs;
 using Application.Features.MerchantNotification.Query.GetMyMerchantNotificationsQuery;
 using Application.Features.MerchantNotification.Query.GetMyMerchantUnreadNotificationsCountQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 using System.Collections.Generic;
 
@@ -13,7 +16,7 @@ namespace Volt.Server.Controllers.Merchant
 {
     [Route("api/merchant/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.Merchant)]
     public class MerchantNotificationController : ControllerBase
     {
         private readonly IMediator _mediator;

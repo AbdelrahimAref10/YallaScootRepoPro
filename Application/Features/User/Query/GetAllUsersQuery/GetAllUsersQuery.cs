@@ -103,6 +103,8 @@ namespace Application.Features.User.Query.GetAllUsersQuery
                 });
             }
 
+            await UserSubRoleFiller.FillAsync(_context, userDtos, cancellationToken);
+
             var result = new PagedResult<UserDto>
             {
                 Items = userDtos,

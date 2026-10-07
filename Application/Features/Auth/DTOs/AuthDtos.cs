@@ -16,6 +16,28 @@ namespace Application.Features.Auth.DTOs
         public string? PersonalImage { get; set; }
         public int? CityId { get; set; }
         public string? CityName { get; set; }
+        /// <summary>Admin / merchant panel sub-role (null for customer and delivery).</summary>
+        public int? SubRoleId { get; set; }
+        public string? SubRoleName { get; set; }
+        public string? SubRoleNameAr { get; set; }
+        /// <summary>True for the merchant account owner.</summary>
+        public bool IsOwner { get; set; }
+        /// <summary>Permission names, e.g. "Admin.Orders.View".</summary>
+        public List<string> Permissions { get; set; } = new List<string>();
+    }
+
+    /// <summary>Current sub-role and permissions of the signed-in admin / merchant user.</summary>
+    public class AccessResponse
+    {
+        /// <summary>AppRole enum int of the panel: SuperAdmin=2, Merchant=3.</summary>
+        public int Role { get; set; }
+        public int? SubRoleId { get; set; }
+        public string? SubRoleName { get; set; }
+        public string? SubRoleNameAr { get; set; }
+        public bool IsFullAccess { get; set; }
+        public bool IsOwner { get; set; }
+        public int? MerchantId { get; set; }
+        public List<string> Permissions { get; set; } = new List<string>();
     }
 
     public class RegisterResponse

@@ -16,13 +16,16 @@ namespace Application.Features.User.Query.GetCurrentUserQuery
     {
         private readonly UserManager<Domain.Models.ApplicationUser> _userManager;
         private readonly IUserSession _userSession;
+        private readonly DatabaseContext _context;
 
         public GetCurrentUserQueryHandler(
             UserManager<Domain.Models.ApplicationUser> userManager,
-            IUserSession userSession)
+            IUserSession userSession,
+            DatabaseContext context)
         {
             _userManager = userManager;
             _userSession = userSession;
+            _context = context;
         }
 
         public async Task<Result<UserDto>> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
@@ -60,6 +63,7 @@ namespace Application.Features.User.Query.GetCurrentUserQuery
                 Active = user.Active
             };
 
+            await UserSubRoleFiller.FillAsync(_context, new[] { userDto }, cancellationToken);
             return Result.Success(userDto);
         }
     }
