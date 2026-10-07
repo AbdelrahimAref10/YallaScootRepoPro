@@ -8,7 +8,6 @@ import {
   CustomerDto,
   PagedResultOfCustomerDto,
   CustomerState,
-  CityClient,
   CityDto,
   PagedResultOfCityDto
 } from '../../core/services/clientAPI';
@@ -20,6 +19,8 @@ import {
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { memo } from '../../shared/utils/memo';
+import { LookupService } from '../../core/services/lookup.service';
 
 @Component({
   selector: 'app-customers',
@@ -37,8 +38,12 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
   styleUrls: ['./customers.component.css', '../../shared/styles/list-filters.css']
 })
 export class CustomersComponent implements OnInit, OnDestroy {
+  private readonly lookups = inject(LookupService);
+  private readonly stateOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly typeOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+
   private customerClient = inject(AdminCustomerClient);
-  private cityClient = inject(CityClient);
   private router = inject(Router);
   private localeService = inject(LocaleService);
 
@@ -62,25 +67,28 @@ export class CustomersComponent implements OnInit, OnDestroy {
   cities: CityDto[] = [];
 
   get stateOptions(): MultiSelectOption[] {
-    return [
-      { value: CustomerState.InActive, label: this.localeService.translate('common.inactive') },
-      { value: CustomerState.Active, label: this.localeService.translate('common.active') },
-      { value: CustomerState.Blocked, label: this.localeService.translate('common.blocked') }
-    ];
+    return this.stateOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: CustomerState.InActive, label: this.localeService.translate('common.inactive') },
+        { value: CustomerState.Active, label: this.localeService.translate('common.active') },
+        { value: CustomerState.Blocked, label: this.localeService.translate('common.blocked') }
+      ]);
   }
 
   get typeOptions(): MultiSelectOption[] {
-    return [
-      { value: 0, label: this.localeService.translate('common.individual') },
-      { value: 1, label: this.localeService.translate('common.institution') }
-    ];
+    return this.typeOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 0, label: this.localeService.translate('common.individual') },
+        { value: 1, label: this.localeService.translate('common.institution') }
+      ]);
   }
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(city => ({
-      value: city.cityId,
-      label: city.name
-    }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(city => ({
+        value: city.cityId,
+        label: city.name
+      })));
   }
 
   get activeFilterCount(): number {
@@ -147,7 +155,7 @@ export class CustomersComponent implements OnInit, OnDestroy {
   }
 
   loadCities(): void {
-    this.cityClient.getAll(1, 1000, undefined, true).subscribe({
+    this.lookups.activeCities().subscribe({
       next: (result: PagedResultOfCityDto) => {
         this.cities = result.items || [];
       },

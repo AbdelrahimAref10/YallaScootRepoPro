@@ -27,27 +27,32 @@
       (blur)="onBlur()" />
   </div>
 
-  <div class="pi__menu" *ngIf="open()">
-    <input
-      #searchInput
-      class="pi__search"
-      type="search"
-      [placeholder]="'phone.searchCountry' | t"
-      [ngModel]="search()"
-      (ngModelChange)="search.set($event)" />
-    <ul class="pi__list" role="listbox">
-      <li
-        *ngFor="let c of filtered()"
-        role="option"
-        class="pi__option"
-        [class.pi__option--active]="c.iso === selected().iso"
-        [attr.aria-selected]="c.iso === selected().iso"
-        (click)="choose(c)">
-        <span class="pi__iso">{{ c.iso }}</span>
-        <span class="pi__name">{{ c.name }}</span>
-        <span class="pi__dial">+{{ c.dial }}</span>
-      </li>
-      <li class="pi__empty" *ngIf="!filtered().length">{{ 'phone.noCountry' | t }}</li>
-    </ul>
-  </div>
+  @if (open()) {
+    <div class="pi__menu">
+      <input
+        #searchInput
+        class="pi__search"
+        type="search"
+        [placeholder]="'phone.searchCountry' | t"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)" />
+      <ul class="pi__list" role="listbox">
+        @for (c of filtered(); track c) {
+          <li
+            role="option"
+            class="pi__option"
+            [class.pi__option--active]="c.iso === selected().iso"
+            [attr.aria-selected]="c.iso === selected().iso"
+            (click)="choose(c)">
+            <span class="pi__iso">{{ c.iso }}</span>
+            <span class="pi__name">{{ c.name }}</span>
+            <span class="pi__dial">+{{ c.dial }}</span>
+          </li>
+        }
+        @if (!filtered().length) {
+          <li class="pi__empty">{{ 'phone.noCountry' | t }}</li>
+        }
+      </ul>
+    </div>
+  }
 </div>

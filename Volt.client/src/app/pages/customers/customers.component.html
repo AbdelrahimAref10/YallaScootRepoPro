@@ -31,7 +31,7 @@
         (keyup.enter)="applyFilters()"
         [placeholder]="'customers.searchPlaceholder' | t"
         [attr.aria-label]="'common.search' | t"
-      />
+        />
     </div>
 
     <div class="list-filters__field list-filters__field--sm">
@@ -79,7 +79,7 @@
       (click)="clearFilters()"
       [disabled]="activeFilterCount === 0"
       [attr.title]="'common.clearFilters' | t"
-    >
+      >
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
       </svg>
@@ -87,51 +87,63 @@
     </button>
   </section>
 
-  <div *ngIf="successMessage" class="customers__alert customers__alert--success" role="status">
-    <svg class="customers__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <span>{{ successMessage }}</span>
-  </div>
+  @if (successMessage) {
+    <div class="customers__alert customers__alert--success" role="status">
+      <svg class="customers__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+  }
 
-  <div *ngIf="errorMessage" class="customers__alert customers__alert--error" role="alert">
-    <svg class="customers__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <span>{{ errorMessage }}</span>
-  </div>
+  @if (errorMessage) {
+    <div class="customers__alert customers__alert--error" role="alert">
+      <svg class="customers__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
 
   <section class="customers__cards">
-    <div *ngIf="isLoading" class="customers__loading">
-      <div class="customers__spinner" aria-hidden="true"></div>
-      <p>{{ 'common.loading' | t }}</p>
-    </div>
+    @if (isLoading) {
+      <div class="customers__loading">
+        <div class="customers__spinner" aria-hidden="true"></div>
+        <p>{{ 'common.loading' | t }}</p>
+      </div>
+    }
 
-    <ng-container *ngIf="!isLoading && customers.length > 0">
+    @if (!isLoading && customers.length > 0) {
       <div class="pc-grid">
-        <article *ngFor="let customer of customers" class="pc-card">
-          <header class="pc-card__head">
-            <span class="pc-avatar">
-              <img *ngIf="customer.personalImage" [src]="customer.personalImage" alt="" />
-              <ng-container *ngIf="!customer.personalImage">{{ (customer.fullName || '?').charAt(0) }}</ng-container>
-            </span>
-            <div class="pc-card__id">
-              <span class="pc-card__name">{{ customer.fullName }}</span>
-              <span class="pc-card__handle">{{ getTypeLabel(customer.registerAs) }}</span>
+        @for (customer of customers; track customer.customerId) {
+          <article class="pc-card">
+            <header class="pc-card__head">
+              <span class="pc-avatar">
+                @if (customer.personalImage) {
+                  <img [src]="customer.personalImage" alt="" />
+                }
+                @if (!customer.personalImage) {
+                  {{ (customer.fullName || '?').charAt(0) }}
+                }
+              </span>
+              <div class="pc-card__id">
+                <span class="pc-card__name">{{ customer.fullName }}</span>
+                <span class="pc-card__handle">{{ getTypeLabel(customer.registerAs) }}</span>
+              </div>
+              <span class="pc-status" [ngClass]="customerTone(customer.state)">{{ getStateLabel(customer.state) }}</span>
+            </header>
+            <div class="pc-card__facts">
+              <div class="pc-fact pc-fact--ltr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg><span>{{ customer.mobileNumber }}</span></div>
+              <div class="pc-fact"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>{{ customer.cityName || ('common.noData' | t) }}</span></div>
             </div>
-            <span class="pc-status" [ngClass]="customerTone(customer.state)">{{ getStateLabel(customer.state) }}</span>
-          </header>
-          <div class="pc-card__facts">
-            <div class="pc-fact pc-fact--ltr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg><span>{{ customer.mobileNumber }}</span></div>
-            <div class="pc-fact"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>{{ customer.cityName || ('common.noData' | t) }}</span></div>
-          </div>
-          <footer class="pc-card__foot">
-            <span class="pc-card__since">#{{ customer.customerId }}</span>
-            <div class="pc-card__actions">
-              <button type="button" class="va-act va-act--view" (click)="onView(customer.customerId)" [attr.title]="'customers.viewCustomer' | t" [attr.aria-label]="'customers.viewCustomer' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
-            </div>
-          </footer>
-        </article>
+            <footer class="pc-card__foot">
+              <span class="pc-card__since">#{{ customer.customerId }}</span>
+              <div class="pc-card__actions">
+                <button type="button" class="va-act va-act--view" (click)="onView(customer.customerId)" [attr.title]="'customers.viewCustomer' | t" [attr.aria-label]="'customers.viewCustomer' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+              </div>
+            </footer>
+          </article>
+        }
       </div>
       <div class="customers__pager">
         <app-pagination
@@ -142,24 +154,26 @@
           (pageChange)="onPageChange($event)"
         ></app-pagination>
       </div>
-    </ng-container>
+    }
 
-    <div *ngIf="!isLoading && customers.length === 0" class="customers__empty">
-      <div class="customers__empty-icon" aria-hidden="true">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-        </svg>
-      </div>
-      <h2 class="customers__empty-title">{{ 'customers.empty' | t }}</h2>
-      <p class="customers__empty-text">{{ 'customers.emptyHint' | t }}</p>
-      <ng-container *appHasPermission="'Admin.Customers.Create'">
-        <button type="button" class="customers__add-btn" (click)="onAddNew()">
-          <svg class="customers__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+    @if (!isLoading && customers.length === 0) {
+      <div class="customers__empty">
+        <div class="customers__empty-icon" aria-hidden="true">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
           </svg>
-          <span>{{ 'customers.add' | t }}</span>
-        </button>
-      </ng-container>
-    </div>
+        </div>
+        <h2 class="customers__empty-title">{{ 'customers.empty' | t }}</h2>
+        <p class="customers__empty-text">{{ 'customers.emptyHint' | t }}</p>
+        <ng-container *appHasPermission="'Admin.Customers.Create'">
+          <button type="button" class="customers__add-btn" (click)="onAddNew()">
+            <svg class="customers__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            <span>{{ 'customers.add' | t }}</span>
+          </button>
+        </ng-container>
+      </div>
+    }
   </section>
 </div>

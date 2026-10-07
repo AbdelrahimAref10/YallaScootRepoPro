@@ -1,5 +1,4 @@
-import { Component, ElementRef, HostListener, Input, ViewChild, computed, forwardRef, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, HostListener, Input, ViewChild, computed, forwardRef, inject, signal, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LocaleService } from '../../../core/services/locale.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
@@ -16,14 +15,16 @@ interface Country {
  * number ("+201001234567"); empty while no local number is typed.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-phone-input',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './phone-input.component.html',
   styleUrl: './phone-input.component.css',
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => PhoneInputComponent), multi: true }]
 })
 export class PhoneInputComponent implements ControlValueAccessor {
+  private readonly cdr = inject(ChangeDetectorRef);
   @Input() inputId = '';
   @Input() placeholder = '';
 
@@ -63,6 +64,7 @@ export class PhoneInputComponent implements ControlValueAccessor {
     this.countries().find(c => c.iso === this.iso()) ?? this.countries()[0]);
 
   writeValue(value: string | null): void {
+    this.cdr.markForCheck();
     const raw = (value ?? '').replace(/[\s-]/g, '');
     if (!raw.startsWith('+')) {
       this.localNumber = raw;
@@ -91,6 +93,7 @@ export class PhoneInputComponent implements ControlValueAccessor {
   }
 
   setDisabledState(isDisabled: boolean): void {
+    this.cdr.markForCheck();
     this.disabled = isDisabled;
     if (isDisabled) this.open.set(false);
   }

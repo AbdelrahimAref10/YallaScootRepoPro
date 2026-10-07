@@ -1,6 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   CreateSubRoleCommand,
@@ -27,7 +26,7 @@ type PanelScope = AppRole.SuperAdmin | AppRole.Merchant;
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe, ConfirmDialogComponent, HasPermissionDirective],
+  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, ConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.css'
 })

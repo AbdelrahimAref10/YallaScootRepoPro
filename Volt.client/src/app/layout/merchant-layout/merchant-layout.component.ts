@@ -1,5 +1,4 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { DashboardHeaderComponent } from '../dashboard-header/dashboard-header.component';
@@ -15,12 +14,11 @@ const COMPACT_QUERY = '(max-width: 1024px)';
   selector: 'app-merchant-layout',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     RouterOutlet,
     DashboardHeaderComponent,
     DashboardSidebarComponent
-  ],
+],
   templateUrl: './merchant-layout.component.html',
   styleUrls: [
     './merchant-layout.component.css',

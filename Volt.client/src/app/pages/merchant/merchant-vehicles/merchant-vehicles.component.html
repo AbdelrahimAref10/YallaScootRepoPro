@@ -14,7 +14,7 @@
           [attr.title]="'vehicles.viewTable' | t"
           [attr.aria-label]="'vehicles.viewTable' | t"
           [attr.aria-pressed]="viewMode === 'table'"
-        >
+          >
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
           </svg>
@@ -27,7 +27,7 @@
           [attr.title]="'vehicles.viewGallery' | t"
           [attr.aria-label]="'vehicles.viewGallery' | t"
           [attr.aria-pressed]="viewMode === 'gallery'"
-        >
+          >
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 6a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2h-4a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zm10 0a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2h-4a2 2 0 01-2-2v-4z"/>
           </svg>
@@ -59,7 +59,7 @@
         (keyup.enter)="applyFilters()"
         [placeholder]="'vehicles.searchPlaceholder' | t"
         [attr.aria-label]="'common.search' | t"
-      />
+        />
     </div>
 
     <div class="list-filters__field">
@@ -103,176 +103,194 @@
       class="vehicles__pill"
       [class.vehicles__pill--active]="selectedStatus === null"
       (click)="selectStatus(null)"
-    >
+      >
       {{ 'common.all' | t }}
     </button>
-    <button
-      *ngFor="let opt of statusOptions"
-      type="button"
-      class="vehicles__pill"
-      [class.vehicles__pill--active]="selectedStatus === opt.value"
-      (click)="selectStatus(opt.value)"
-    >
-      {{ opt.key | t }}
-    </button>
+    @for (opt of statusOptions; track opt.value) {
+      <button
+        type="button"
+        class="vehicles__pill"
+        [class.vehicles__pill--active]="selectedStatus === opt.value"
+        (click)="selectStatus(opt.value)"
+        >
+        {{ opt.key | t }}
+      </button>
+    }
   </div>
 
-  <div *ngIf="successMessage" class="vehicles__alert vehicles__alert--success" role="status">
-    <svg class="vehicles__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <span>{{ successMessage }}</span>
-  </div>
-
-  <div *ngIf="errorMessage" class="vehicles__alert vehicles__alert--error" role="alert">
-    <svg class="vehicles__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <span>{{ errorMessage }}</span>
-  </div>
-
-  <div *ngIf="isLoading" class="vehicles__loading">
-    <div class="vehicles__spinner" aria-hidden="true"></div>
-    <p>{{ 'common.loading' | t }}</p>
-  </div>
-
-  <ng-container *ngIf="!isLoading && vehicles.length > 0">
-    <div *ngIf="viewMode === 'gallery'" class="vehicles__gallery">
-      <article class="vehicles__tile" *ngFor="let vehicle of vehicles">
-        <div class="vehicles__tile-media">
-          <img
-            *ngIf="vehicle.imageUrl"
-            [src]="vehicle.imageUrl"
-            [alt]="vehicle.name"
-            class="vehicles__tile-img"
-          />
-          <div *ngIf="!vehicle.imageUrl" class="vehicles__tile-fallback" aria-hidden="true">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-          </div>
-          <span class="vehicles__tile-status" [ngClass]="statusClass(vehicle.status)">
-            {{ statusLabel(vehicle.status) }}
-          </span>
-        </div>
-
-        <div class="vehicles__tile-body">
-          <h3 class="vehicles__tile-title">{{ vehicle.name }}</h3>
-          <p class="vehicles__tile-code">#{{ vehicle.vehicleCode }}</p>
-          <div class="vehicles__tile-meta">
-            <span class="vehicles__tile-subs">{{ vehicle.categoryName }}</span>
-            <span class="vehicles__tile-subs">{{ vehicle.subCategoryName }}</span>
-          </div>
-          <app-vehicle-specs
-            [compact]="true"
-            [showPrice]="false"
-            [color]="vehicle.color"
-            [type]="vehicle.type"
-            [model]="vehicle.model"
-            [speedKmh]="vehicle.speedKmh"
-            [engineCapacityCc]="vehicle.engineCapacityCc"
-          ></app-vehicle-specs>
-        </div>
-
-        <div class="vehicles__tile-footer">
-          <div class="vehicles__tile-price">
-            <span class="vehicles__tile-price-value">{{ vehicle.price | number:'1.2-2' }}</span>
-            <span class="vehicles__tile-price-unit">{{ 'common.currency' | t }} / {{ 'vehicles.perDay' | t }}</span>
-          </div>
-          <div class="vehicles__actions">
-            <ng-container *appHasPermission="'Merchant.Vehicles.Edit'">
-              <button
-                type="button"
-                class="vehicles__action va-act va-act--edit"
-                (click)="onEdit(vehicle)"
-                [attr.title]="'vehicles.editVehicle' | t"
-              >
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-              </button>
-            </ng-container>
-            <ng-container *appHasPermission="'Merchant.Vehicles.Delete'">
-              <button
-                type="button"
-                class="vehicles__action vehicles__action--danger va-act va-act--delete"
-                (click)="onDelete(vehicle.vehicleId)"
-                [attr.title]="'vehicles.deleteVehicle' | t"
-              >
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
-            </ng-container>
-          </div>
-        </div>
-      </article>
+  @if (successMessage) {
+    <div class="vehicles__alert vehicles__alert--success" role="status">
+      <svg class="vehicles__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>{{ successMessage }}</span>
     </div>
+  }
 
-    <section class="vehicles__panel" *ngIf="viewMode === 'table'">
-      <div class="vehicles__table-scroll">
-        <table class="vehicles__table">
-          <caption class="sr-only">{{ 'vehicles.tableCaption' | t }}</caption>
-          <thead>
-            <tr>
-              <th scope="col">{{ 'common.image' | t }}</th>
-              <th scope="col">{{ 'common.name' | t }}</th>
-              <th scope="col">{{ 'vehicles.code' | t }}</th>
-              <th scope="col">{{ 'nav.categories' | t }}</th>
-              <th scope="col">{{ 'vehicles.subCategory' | t }}</th>
-              <th scope="col">{{ 'vehicles.price' | t }}</th>
-              <th scope="col">{{ 'common.status' | t }}</th>
-              <th scope="col">{{ 'common.actions' | t }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let vehicle of vehicles">
-              <td>
-                <div class="vehicles__thumb">
-                  <img *ngIf="vehicle.imageUrl" [src]="vehicle.imageUrl" [alt]="vehicle.name" class="vehicles__thumb-img" />
-                  <div *ngIf="!vehicle.imageUrl" class="vehicles__thumb-fallback" aria-hidden="true">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+  @if (errorMessage) {
+    <div class="vehicles__alert vehicles__alert--error" role="alert">
+      <svg class="vehicles__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  @if (isLoading) {
+    <div class="vehicles__loading">
+      <div class="vehicles__spinner" aria-hidden="true"></div>
+      <p>{{ 'common.loading' | t }}</p>
+    </div>
+  }
+
+  @if (!isLoading && vehicles.length > 0) {
+    @if (viewMode === 'gallery') {
+      <div class="vehicles__gallery">
+        @for (vehicle of vehicles; track vehicle.vehicleId) {
+          <article class="vehicles__tile">
+            <div class="vehicles__tile-media">
+              @if (vehicle.imageUrl) {
+                <img
+                  [src]="vehicle.imageUrl"
+                  [alt]="vehicle.name"
+                  class="vehicles__tile-img"
+                  />
+              }
+              @if (!vehicle.imageUrl) {
+                <div class="vehicles__tile-fallback" aria-hidden="true">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+              }
+              <span class="vehicles__tile-status" [ngClass]="statusClass(vehicle.status)">
+                {{ statusLabel(vehicle.status) }}
+              </span>
+            </div>
+            <div class="vehicles__tile-body">
+              <h3 class="vehicles__tile-title">{{ vehicle.name }}</h3>
+              <p class="vehicles__tile-code">#{{ vehicle.vehicleCode }}</p>
+              <div class="vehicles__tile-meta">
+                <span class="vehicles__tile-subs">{{ vehicle.categoryName }}</span>
+                <span class="vehicles__tile-subs">{{ vehicle.subCategoryName }}</span>
+              </div>
+              <app-vehicle-specs
+                [compact]="true"
+                [showPrice]="false"
+                [color]="vehicle.color"
+                [type]="vehicle.type"
+                [model]="vehicle.model"
+                [speedKmh]="vehicle.speedKmh"
+                [engineCapacityCc]="vehicle.engineCapacityCc"
+              ></app-vehicle-specs>
+            </div>
+            <div class="vehicles__tile-footer">
+              <div class="vehicles__tile-price">
+                <span class="vehicles__tile-price-value">{{ vehicle.price | number:'1.2-2' }}</span>
+                <span class="vehicles__tile-price-unit">{{ 'common.currency' | t }} / {{ 'vehicles.perDay' | t }}</span>
+              </div>
+              <div class="vehicles__actions">
+                <ng-container *appHasPermission="'Merchant.Vehicles.Edit'">
+                  <button
+                    type="button"
+                    class="vehicles__action va-act va-act--edit"
+                    (click)="onEdit(vehicle)"
+                    [attr.title]="'vehicles.editVehicle' | t"
+                    >
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
-                  </div>
-                </div>
-              </td>
-              <td><span class="vehicles__name">{{ vehicle.name }}</span></td>
-              <td><span class="vehicles__code">#{{ vehicle.vehicleCode }}</span></td>
-              <td>{{ vehicle.categoryName }}</td>
-              <td>{{ vehicle.subCategoryName }}</td>
-              <td>
-                <span class="vehicles__price">{{ vehicle.price | number:'1.2-2' }} {{ 'common.currency' | t }}</span>
-              </td>
-              <td>
-                <span class="vehicles__status" [ngClass]="statusClass(vehicle.status)">
-                  {{ statusLabel(vehicle.status) }}
-                </span>
-              </td>
-              <td>
-                <div class="vehicles__actions">
-                  <ng-container *appHasPermission="'Merchant.Vehicles.Edit'">
-                    <button type="button" class="vehicles__action va-act va-act--edit" (click)="onEdit(vehicle)">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                      </svg>
-                    </button>
-                  </ng-container>
-                  <ng-container *appHasPermission="'Merchant.Vehicles.Delete'">
-                    <button type="button" class="vehicles__action vehicles__action--danger va-act va-act--delete" (click)="onDelete(vehicle.vehicleId)">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                    </button>
-                  </ng-container>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                  </button>
+                </ng-container>
+                <ng-container *appHasPermission="'Merchant.Vehicles.Delete'">
+                  <button
+                    type="button"
+                    class="vehicles__action vehicles__action--danger va-act va-act--delete"
+                    (click)="onDelete(vehicle.vehicleId)"
+                    [attr.title]="'vehicles.deleteVehicle' | t"
+                    >
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </ng-container>
+              </div>
+            </div>
+          </article>
+        }
       </div>
-    </section>
-
+    }
+    @if (viewMode === 'table') {
+      <section class="vehicles__panel">
+        <div class="vehicles__table-scroll">
+          <table class="vehicles__table">
+            <caption class="sr-only">{{ 'vehicles.tableCaption' | t }}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ 'common.image' | t }}</th>
+                <th scope="col">{{ 'common.name' | t }}</th>
+                <th scope="col">{{ 'vehicles.code' | t }}</th>
+                <th scope="col">{{ 'nav.categories' | t }}</th>
+                <th scope="col">{{ 'vehicles.subCategory' | t }}</th>
+                <th scope="col">{{ 'vehicles.price' | t }}</th>
+                <th scope="col">{{ 'common.status' | t }}</th>
+                <th scope="col">{{ 'common.actions' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (vehicle of vehicles; track vehicle.vehicleId) {
+                <tr>
+                  <td>
+                    <div class="vehicles__thumb">
+                      @if (vehicle.imageUrl) {
+                        <img [src]="vehicle.imageUrl" [alt]="vehicle.name" class="vehicles__thumb-img" />
+                      }
+                      @if (!vehicle.imageUrl) {
+                        <div class="vehicles__thumb-fallback" aria-hidden="true">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                          </svg>
+                        </div>
+                      }
+                    </div>
+                  </td>
+                  <td><span class="vehicles__name">{{ vehicle.name }}</span></td>
+                  <td><span class="vehicles__code">#{{ vehicle.vehicleCode }}</span></td>
+                  <td>{{ vehicle.categoryName }}</td>
+                  <td>{{ vehicle.subCategoryName }}</td>
+                  <td>
+                    <span class="vehicles__price">{{ vehicle.price | number:'1.2-2' }} {{ 'common.currency' | t }}</span>
+                  </td>
+                  <td>
+                    <span class="vehicles__status" [ngClass]="statusClass(vehicle.status)">
+                      {{ statusLabel(vehicle.status) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="vehicles__actions">
+                      <ng-container *appHasPermission="'Merchant.Vehicles.Edit'">
+                        <button type="button" class="vehicles__action va-act va-act--edit" (click)="onEdit(vehicle)">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                          </svg>
+                        </button>
+                      </ng-container>
+                      <ng-container *appHasPermission="'Merchant.Vehicles.Delete'">
+                        <button type="button" class="vehicles__action vehicles__action--danger va-act va-act--delete" (click)="onDelete(vehicle.vehicleId)">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        </button>
+                      </ng-container>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
     <div class="vehicles__pager">
       <app-pagination
         [currentPage]="currentPage"
@@ -282,25 +300,27 @@
         (pageChange)="onPageChange($event)"
       ></app-pagination>
     </div>
-  </ng-container>
+  }
 
-  <div *ngIf="!isLoading && vehicles.length === 0" class="vehicles__empty">
-    <div class="vehicles__empty-icon" aria-hidden="true">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-      </svg>
-    </div>
-    <h2 class="vehicles__empty-title">{{ 'merchant.vehiclesEmpty' | t }}</h2>
-    <p class="vehicles__empty-text">{{ 'vehicles.emptyHint' | t }}</p>
-    <ng-container *appHasPermission="'Merchant.Vehicles.Create'">
-      <button type="button" class="vehicles__add-btn" (click)="onAddNew()">
-        <svg class="vehicles__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+  @if (!isLoading && vehicles.length === 0) {
+    <div class="vehicles__empty">
+      <div class="vehicles__empty-icon" aria-hidden="true">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
         </svg>
-        <span>{{ 'vehicles.add' | t }}</span>
-      </button>
-    </ng-container>
-  </div>
+      </div>
+      <h2 class="vehicles__empty-title">{{ 'merchant.vehiclesEmpty' | t }}</h2>
+      <p class="vehicles__empty-text">{{ 'vehicles.emptyHint' | t }}</p>
+      <ng-container *appHasPermission="'Merchant.Vehicles.Create'">
+        <button type="button" class="vehicles__add-btn" (click)="onAddNew()">
+          <svg class="vehicles__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          <span>{{ 'vehicles.add' | t }}</span>
+        </button>
+      </ng-container>
+    </div>
+  }
 </div>
 
 <app-confirm-dialog

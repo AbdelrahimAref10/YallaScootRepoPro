@@ -19,258 +19,272 @@
     </div>
   </header>
 
-  <div *ngIf="loadError" class="sf-alert" role="alert">{{ loadError }}</div>
-  <div *ngIf="isLoading" class="sf-loading">{{ 'common.loading' | t }}</div>
+  @if (loadError) {
+    <div class="sf-alert" role="alert">{{ loadError }}</div>
+  }
+  @if (isLoading) {
+    <div class="sf-loading">{{ 'common.loading' | t }}</div>
+  }
 
-  <div *ngIf="!isLoading && !loadError" class="sf-layout">
-    <div class="sf-main">
-      <!-- 1. Basics -->
-      <section class="sf-card">
-        <div class="sf-card__head">
-          <span class="sf-card__step">01</span>
-          <div>
-            <h2 class="sf-card__title">{{ 'shifts.sectionBasics' | t }}</h2>
-            <p class="sf-card__hint">{{ 'shifts.sectionBasicsHint' | t }}</p>
-          </div>
-        </div>
-        <div class="sf-grid">
-          <div class="sf-field">
-            <label class="sf-label">{{ 'common.city' | t }}<span class="sf-req">*</span></label>
-            <app-multi-select
-              [multiple]="false"
-              [searchable]="true"
-              [clearable]="false"
-              [options]="cityOptions"
-              [ngModel]="form.cityId"
-              (ngModelChange)="onCityChange($event)"
-              [placeholder]="'deliveries.selectCity' | t"
-            ></app-multi-select>
-          </div>
-          <div class="sf-field">
-            <label class="sf-label" for="sf-name">{{ 'shifts.name' | t }}<span class="sf-req">*</span></label>
-            <input
-              id="sf-name"
-              type="text"
-              class="sf-input"
-              [(ngModel)]="form.name"
-              [placeholder]="'shifts.namePlaceholder' | t"
-              maxlength="100"
-            />
-          </div>
-        </div>
-        <label class="sf-switch">
-          <input type="checkbox" [(ngModel)]="form.isActive" />
-          <span class="sf-switch__track" aria-hidden="true"><span class="sf-switch__thumb"></span></span>
-          <span class="sf-switch__text">
-            <strong>{{ 'shifts.isActive' | t }}</strong>
-            <small>{{ 'shifts.isActiveHint' | t }}</small>
-          </span>
-        </label>
-      </section>
-
-      <!-- 2. Time -->
-      <section class="sf-card">
-        <div class="sf-card__head">
-          <span class="sf-card__step">02</span>
-          <div>
-            <h2 class="sf-card__title">{{ 'shifts.sectionTime' | t }}</h2>
-            <p class="sf-card__hint">{{ 'shifts.timeZoneHint' | t }}</p>
-          </div>
-        </div>
-
-        <div class="sf-times">
-          <label class="sf-time">
-            <span class="sf-time__label">{{ 'shifts.startTime' | t }}</span>
-            <input type="time" class="sf-time__input" [(ngModel)]="form.startTime" />
-          </label>
-          <div class="sf-times__duration">
-            <span>{{ durationLabel }}</span>
-            <small>{{ 'shifts.duration' | t }}</small>
-          </div>
-          <label class="sf-time">
-            <span class="sf-time__label">{{ 'shifts.endTime' | t }}</span>
-            <input type="time" class="sf-time__input" [(ngModel)]="form.endTime" />
-          </label>
-        </div>
-
-        <div class="sf-timeline" aria-hidden="true">
-          <div class="sf-timeline__bar">
-            <span
-              *ngFor="let seg of timelineSegments"
-              class="sf-timeline__seg"
-              [style.inset-inline-start.%]="seg.left"
-              [style.width.%]="seg.width"
-            ></span>
-          </div>
-          <div class="sf-timeline__ticks">
-            <span *ngFor="let h of hourTicks" [style.inset-inline-start.%]="(h / 24) * 100">{{ h | number: '2.0-0' }}</span>
-          </div>
-        </div>
-
-        <p class="sf-note" [class.sf-note--warn]="crossesMidnight">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l2.5 2.5M12 21a9 9 0 100-18 9 9 0 000 18z" />
-          </svg>
-          {{ (crossesMidnight ? 'shifts.crossesMidnightHint' : 'shifts.sameDayHint') | t }}
-        </p>
-      </section>
-
-      <!-- 3. Days -->
-      <section class="sf-card">
-        <div class="sf-card__head">
-          <span class="sf-card__step">03</span>
-          <div>
-            <h2 class="sf-card__title">{{ 'shifts.days' | t }}</h2>
-            <p class="sf-card__hint">{{ 'shifts.sectionDaysHint' | t }}</p>
-          </div>
-        </div>
-
-        <div class="sf-presets" role="group">
-          <button type="button" class="sf-chip" [class.sf-chip--on]="isPreset(presets.all)" (click)="applyPreset('all')">
-            {{ 'shifts.everyDay' | t }}
-          </button>
-          <button type="button" class="sf-chip" [class.sf-chip--on]="isPreset(presets.work)" (click)="applyPreset('work')">
-            {{ 'shifts.workDays' | t }}
-          </button>
-          <button type="button" class="sf-chip" [class.sf-chip--on]="isPreset(presets.weekend)" (click)="applyPreset('weekend')">
-            {{ 'shifts.weekend' | t }}
-          </button>
-          <button type="button" class="sf-chip sf-chip--ghost" (click)="applyPreset('none')">
-            {{ 'shifts.clearDays' | t }}
-          </button>
-        </div>
-
-        <div class="sf-days" role="group" [attr.aria-label]="'shifts.days' | t">
-          <button
-            *ngFor="let d of days"
-            type="button"
-            class="sf-day"
-            [class.sf-day--on]="isDayOn(d.bit)"
-            [attr.aria-pressed]="isDayOn(d.bit)"
-            (click)="toggleDay(d.bit)"
-          >
-            <span class="sf-day__name">{{ d.key | t }}</span>
-            <span class="sf-day__mark" aria-hidden="true"></span>
-          </button>
-        </div>
-      </section>
-
-      <!-- 4. Riders -->
-      <section class="sf-card">
-        <div class="sf-card__head">
-          <span class="sf-card__step">04</span>
-          <div class="sf-card__head-main">
-            <h2 class="sf-card__title">{{ 'shifts.riders' | t }}</h2>
-            <p class="sf-card__hint">{{ 'shifts.sectionRidersHint' | t }}</p>
-          </div>
-          <span class="sf-count">{{ 'common.selectedCount' | t:{ count: form.deliveryIds.length } }}</span>
-        </div>
-
-        <p *ngIf="!form.cityId" class="sf-empty">{{ 'shifts.pickCityFirst' | t }}</p>
-        <p *ngIf="form.cityId && isLoadingRiders" class="sf-empty">{{ 'common.loading' | t }}</p>
-
-        <ng-container *ngIf="form.cityId && !isLoadingRiders">
-          <div class="sf-riders-toolbar">
-            <div class="sf-search">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
-              </svg>
-              <input type="search" [(ngModel)]="riderSearch" [placeholder]="'shifts.searchRiders' | t" />
+  @if (!isLoading && !loadError) {
+    <div class="sf-layout">
+      <div class="sf-main">
+        <!-- 1. Basics -->
+        <section class="sf-card">
+          <div class="sf-card__head">
+            <span class="sf-card__step">01</span>
+            <div>
+              <h2 class="sf-card__title">{{ 'shifts.sectionBasics' | t }}</h2>
+              <p class="sf-card__hint">{{ 'shifts.sectionBasicsHint' | t }}</p>
             </div>
-            <button type="button" class="sf-btn sf-btn--ghost" (click)="toggleAllFiltered()" [disabled]="!filteredRiders.length">
-              {{ (allFilteredSelected ? 'shifts.unselectAll' : 'shifts.selectAll') | t }}
+          </div>
+          <div class="sf-grid">
+            <div class="sf-field">
+              <label class="sf-label">{{ 'common.city' | t }}<span class="sf-req">*</span></label>
+              <app-multi-select
+                [multiple]="false"
+                [searchable]="true"
+                [clearable]="false"
+                [options]="cityOptions"
+                [ngModel]="form.cityId"
+                (ngModelChange)="onCityChange($event)"
+                [placeholder]="'deliveries.selectCity' | t"
+              ></app-multi-select>
+            </div>
+            <div class="sf-field">
+              <label class="sf-label" for="sf-name">{{ 'shifts.name' | t }}<span class="sf-req">*</span></label>
+              <input
+                id="sf-name"
+                type="text"
+                class="sf-input"
+                [(ngModel)]="form.name"
+                [placeholder]="'shifts.namePlaceholder' | t"
+                maxlength="100"
+                />
+            </div>
+          </div>
+          <label class="sf-switch">
+            <input type="checkbox" [(ngModel)]="form.isActive" />
+            <span class="sf-switch__track" aria-hidden="true"><span class="sf-switch__thumb"></span></span>
+            <span class="sf-switch__text">
+              <strong>{{ 'shifts.isActive' | t }}</strong>
+              <small>{{ 'shifts.isActiveHint' | t }}</small>
+            </span>
+          </label>
+        </section>
+        <!-- 2. Time -->
+        <section class="sf-card">
+          <div class="sf-card__head">
+            <span class="sf-card__step">02</span>
+            <div>
+              <h2 class="sf-card__title">{{ 'shifts.sectionTime' | t }}</h2>
+              <p class="sf-card__hint">{{ 'shifts.timeZoneHint' | t }}</p>
+            </div>
+          </div>
+          <div class="sf-times">
+            <label class="sf-time">
+              <span class="sf-time__label">{{ 'shifts.startTime' | t }}</span>
+              <input type="time" class="sf-time__input" [(ngModel)]="form.startTime" />
+            </label>
+            <div class="sf-times__duration">
+              <span>{{ durationLabel }}</span>
+              <small>{{ 'shifts.duration' | t }}</small>
+            </div>
+            <label class="sf-time">
+              <span class="sf-time__label">{{ 'shifts.endTime' | t }}</span>
+              <input type="time" class="sf-time__input" [(ngModel)]="form.endTime" />
+            </label>
+          </div>
+          <div class="sf-timeline" aria-hidden="true">
+            <div class="sf-timeline__bar">
+              @for (seg of timelineSegments; track seg) {
+                <span
+                  class="sf-timeline__seg"
+                  [style.inset-inline-start.%]="seg.left"
+                  [style.width.%]="seg.width"
+                ></span>
+              }
+            </div>
+            <div class="sf-timeline__ticks">
+              @for (h of hourTicks; track h) {
+                <span [style.inset-inline-start.%]="(h / 24) * 100">{{ h | number: '2.0-0' }}</span>
+              }
+            </div>
+          </div>
+          <p class="sf-note" [class.sf-note--warn]="crossesMidnight">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l2.5 2.5M12 21a9 9 0 100-18 9 9 0 000 18z" />
+            </svg>
+            {{ (crossesMidnight ? 'shifts.crossesMidnightHint' : 'shifts.sameDayHint') | t }}
+          </p>
+        </section>
+        <!-- 3. Days -->
+        <section class="sf-card">
+          <div class="sf-card__head">
+            <span class="sf-card__step">03</span>
+            <div>
+              <h2 class="sf-card__title">{{ 'shifts.days' | t }}</h2>
+              <p class="sf-card__hint">{{ 'shifts.sectionDaysHint' | t }}</p>
+            </div>
+          </div>
+          <div class="sf-presets" role="group">
+            <button type="button" class="sf-chip" [class.sf-chip--on]="isPreset(presets.all)" (click)="applyPreset('all')">
+              {{ 'shifts.everyDay' | t }}
+            </button>
+            <button type="button" class="sf-chip" [class.sf-chip--on]="isPreset(presets.work)" (click)="applyPreset('work')">
+              {{ 'shifts.workDays' | t }}
+            </button>
+            <button type="button" class="sf-chip" [class.sf-chip--on]="isPreset(presets.weekend)" (click)="applyPreset('weekend')">
+              {{ 'shifts.weekend' | t }}
+            </button>
+            <button type="button" class="sf-chip sf-chip--ghost" (click)="applyPreset('none')">
+              {{ 'shifts.clearDays' | t }}
             </button>
           </div>
-
-          <p *ngIf="!filteredRiders.length" class="sf-empty">{{ 'riders.noRiders' | t }}</p>
-
-          <ul class="sf-riders" *ngIf="filteredRiders.length">
-            <li *ngFor="let r of filteredRiders">
+          <div class="sf-days" role="group" [attr.aria-label]="'shifts.days' | t">
+            @for (d of days; track d) {
               <button
                 type="button"
-                class="sf-rider"
-                [class.sf-rider--on]="isRiderSelected(r.deliveryId)"
-                [attr.aria-pressed]="isRiderSelected(r.deliveryId)"
-                (click)="toggleRider(r.deliveryId)"
-              >
-                <span class="sf-rider__check" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                  </svg>
-                </span>
-                <span class="sf-rider__avatar">
-                  {{ initials(r.fullName) }}
-                  <span class="sf-rider__dot" [class.sf-rider__dot--on]="r.isOnline"></span>
-                </span>
-                <span class="sf-rider__info">
-                  <strong>{{ r.fullName }}</strong>
-                  <small>{{ r.mobileNumber || '—' }}<ng-container *ngIf="r.zoneName"> · {{ r.zoneName }}</ng-container></small>
-                </span>
-                <span class="sf-rider__status" [class.sf-rider__status--on]="r.isOnline">
-                  {{ (r.isOnline ? 'riders.online' : 'riders.offline') | t }}
-                </span>
+                class="sf-day"
+                [class.sf-day--on]="isDayOn(d.bit)"
+                [attr.aria-pressed]="isDayOn(d.bit)"
+                (click)="toggleDay(d.bit)"
+                >
+                <span class="sf-day__name">{{ d.key | t }}</span>
+                <span class="sf-day__mark" aria-hidden="true"></span>
               </button>
-            </li>
-          </ul>
-        </ng-container>
-      </section>
-    </div>
-
-    <!-- Summary -->
-    <aside class="sf-side">
-      <div class="sf-summary">
-        <p class="sf-summary__kicker">{{ 'shifts.summary' | t }}</p>
-        <h3 class="sf-summary__name">{{ form.name.trim() || ('shifts.untitled' | t) }}</h3>
-        <p class="sf-summary__city">{{ cityName || ('shifts.noCity' | t) }}</p>
-
-        <div class="sf-summary__window">
-          <span>{{ timesValid ? form.startTime : '--:--' }}</span>
-          <i></i>
-          <span>{{ timesValid ? form.endTime : '--:--' }}</span>
-        </div>
-        <p *ngIf="crossesMidnight" class="sf-summary__flag">{{ 'shifts.crossesMidnight' | t }}</p>
-
-        <dl class="sf-summary__stats">
-          <div>
-            <dt>{{ 'shifts.duration' | t }}</dt>
-            <dd>{{ durationLabel }}</dd>
+            }
           </div>
-          <div>
-            <dt>{{ 'shifts.days' | t }}</dt>
-            <dd>{{ selectedDaysCount }}/7</dd>
+        </section>
+        <!-- 4. Riders -->
+        <section class="sf-card">
+          <div class="sf-card__head">
+            <span class="sf-card__step">04</span>
+            <div class="sf-card__head-main">
+              <h2 class="sf-card__title">{{ 'shifts.riders' | t }}</h2>
+              <p class="sf-card__hint">{{ 'shifts.sectionRidersHint' | t }}</p>
+            </div>
+            <span class="sf-count">{{ 'common.selectedCount' | t:{ count: form.deliveryIds.length } }}</span>
           </div>
-          <div>
-            <dt>{{ 'shifts.riders' | t }}</dt>
-            <dd>{{ form.deliveryIds.length }}</dd>
-          </div>
-          <div>
-            <dt>{{ 'common.status' | t }}</dt>
-            <dd [class.sf-on]="form.isActive">{{ (form.isActive ? 'common.active' : 'common.inactive') | t }}</dd>
-          </div>
-        </dl>
-
-        <div class="sf-summary__days">
-          <span *ngFor="let d of days" [class.on]="isDayOn(d.bit)">{{ d.key | t }}</span>
-        </div>
-
-        <div class="sf-summary__riders" *ngIf="selectedRiders.length">
-          <span
-            *ngFor="let r of selectedRiders.slice(0, 6)"
-            class="sf-summary__avatar"
-            [attr.title]="r.fullName"
-          >{{ initials(r.fullName) }}</span>
-          <span *ngIf="selectedRiders.length > 6" class="sf-summary__avatar sf-summary__avatar--more">+{{ selectedRiders.length - 6 }}</span>
-        </div>
-
-        <p *ngIf="formError" class="sf-summary__error" role="alert">{{ formError }}</p>
-
-        <div class="sf-summary__actions">
-          <button type="button" class="sf-btn sf-btn--primary" (click)="onSave()" [disabled]="isSaving">
-            {{ (isSaving ? 'common.saving' : (isEditMode ? 'shifts.saveChanges' : 'shifts.create')) | t }}
-          </button>
-          <button type="button" class="sf-btn sf-btn--light" (click)="onCancel()">{{ 'common.cancel' | t }}</button>
-        </div>
+          @if (!form.cityId) {
+            <p class="sf-empty">{{ 'shifts.pickCityFirst' | t }}</p>
+          }
+          @if (form.cityId && isLoadingRiders) {
+            <p class="sf-empty">{{ 'common.loading' | t }}</p>
+          }
+          @if (form.cityId && !isLoadingRiders) {
+            <div class="sf-riders-toolbar">
+              <div class="sf-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+                </svg>
+                <input type="search" [(ngModel)]="riderSearch" [placeholder]="'shifts.searchRiders' | t" />
+              </div>
+              <button type="button" class="sf-btn sf-btn--ghost" (click)="toggleAllFiltered()" [disabled]="!filteredRiders.length">
+                {{ (allFilteredSelected ? 'shifts.unselectAll' : 'shifts.selectAll') | t }}
+              </button>
+            </div>
+            @if (!filteredRiders.length) {
+              <p class="sf-empty">{{ 'riders.noRiders' | t }}</p>
+            }
+            @if (filteredRiders.length) {
+              <ul class="sf-riders">
+                @for (r of filteredRiders; track r) {
+                  <li>
+                    <button
+                      type="button"
+                      class="sf-rider"
+                      [class.sf-rider--on]="isRiderSelected(r.deliveryId)"
+                      [attr.aria-pressed]="isRiderSelected(r.deliveryId)"
+                      (click)="toggleRider(r.deliveryId)"
+                      >
+                      <span class="sf-rider__check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                      <span class="sf-rider__avatar">
+                        {{ initials(r.fullName) }}
+                        <span class="sf-rider__dot" [class.sf-rider__dot--on]="r.isOnline"></span>
+                      </span>
+                      <span class="sf-rider__info">
+                        <strong>{{ r.fullName }}</strong>
+                        <small>{{ r.mobileNumber || '—' }}@if (r.zoneName) {
+                          · {{ r.zoneName }}
+                        }</small>
+                      </span>
+                      <span class="sf-rider__status" [class.sf-rider__status--on]="r.isOnline">
+                        {{ (r.isOnline ? 'riders.online' : 'riders.offline') | t }}
+                      </span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        </section>
       </div>
-    </aside>
-  </div>
+      <!-- Summary -->
+      <aside class="sf-side">
+        <div class="sf-summary">
+          <p class="sf-summary__kicker">{{ 'shifts.summary' | t }}</p>
+          <h3 class="sf-summary__name">{{ form.name.trim() || ('shifts.untitled' | t) }}</h3>
+          <p class="sf-summary__city">{{ cityName || ('shifts.noCity' | t) }}</p>
+          <div class="sf-summary__window">
+            <span>{{ timesValid ? form.startTime : '--:--' }}</span>
+            <i></i>
+            <span>{{ timesValid ? form.endTime : '--:--' }}</span>
+          </div>
+          @if (crossesMidnight) {
+            <p class="sf-summary__flag">{{ 'shifts.crossesMidnight' | t }}</p>
+          }
+          <dl class="sf-summary__stats">
+            <div>
+              <dt>{{ 'shifts.duration' | t }}</dt>
+              <dd>{{ durationLabel }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'shifts.days' | t }}</dt>
+              <dd>{{ selectedDaysCount }}/7</dd>
+            </div>
+            <div>
+              <dt>{{ 'shifts.riders' | t }}</dt>
+              <dd>{{ form.deliveryIds.length }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'common.status' | t }}</dt>
+              <dd [class.sf-on]="form.isActive">{{ (form.isActive ? 'common.active' : 'common.inactive') | t }}</dd>
+            </div>
+          </dl>
+          <div class="sf-summary__days">
+            @for (d of days; track d) {
+              <span [class.on]="isDayOn(d.bit)">{{ d.key | t }}</span>
+            }
+          </div>
+          @if (selectedRiders.length) {
+            <div class="sf-summary__riders">
+              @for (r of selectedRiders.slice(0, 6); track r) {
+                <span
+                  class="sf-summary__avatar"
+                  [attr.title]="r.fullName"
+                >{{ initials(r.fullName) }}</span>
+              }
+              @if (selectedRiders.length > 6) {
+                <span class="sf-summary__avatar sf-summary__avatar--more">+{{ selectedRiders.length - 6 }}</span>
+              }
+            </div>
+          }
+          @if (formError) {
+            <p class="sf-summary__error" role="alert">{{ formError }}</p>
+          }
+          <div class="sf-summary__actions">
+            <button type="button" class="sf-btn sf-btn--primary" (click)="onSave()" [disabled]="isSaving">
+              {{ (isSaving ? 'common.saving' : (isEditMode ? 'shifts.saveChanges' : 'shifts.create')) | t }}
+            </button>
+            <button type="button" class="sf-btn sf-btn--light" (click)="onCancel()">{{ 'common.cancel' | t }}</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  }
 </div>

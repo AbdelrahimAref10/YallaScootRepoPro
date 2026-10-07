@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription, debounceTime, filter } from 'rxjs';
@@ -17,7 +16,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 @Component({
   selector: 'app-merchant-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, PaginationComponent],
+  imports: [FormsModule, RouterModule, TranslatePipe, PaginationComponent],
   templateUrl: './merchant-orders.component.html',
   styleUrls: [
     './merchant-orders.component.css',

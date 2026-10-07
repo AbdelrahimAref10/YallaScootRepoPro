@@ -4,11 +4,13 @@
     <div class="dsh-head__text">
       <p class="dsh-eyebrow">{{ 'dash.eyebrow' | t }}</p>
       <h1 class="dsh-title">{{ greetingKey | t: { name: userName } }}</h1>
-      <p class="dsh-sub" *ngIf="data() as d">
-        {{ 'dash.periodLine' | t: { period: periodLabel() } }}
-        <span class="dsh-sub__sep">·</span>
-        {{ 'dash.updatedAt' | t: { time: formatTime(d.generatedAt) } }}
-      </p>
+      @if (data(); as d) {
+        <p class="dsh-sub">
+          {{ 'dash.periodLine' | t: { period: periodLabel() } }}
+          <span class="dsh-sub__sep">·</span>
+          {{ 'dash.updatedAt' | t: { time: formatTime(d.generatedAt) } }}
+        </p>
+      }
     </div>
     <div class="dsh-head__actions">
       <button type="button" class="dsh-btn dsh-btn--ghost" (click)="refresh()" [disabled]="loading()" [attr.aria-label]="'dash.refresh' | t">
@@ -27,13 +29,14 @@
   <!-- ───────────── Filters: one row, scope everything below ───────────── -->
   <section class="dsh-filters" [attr.aria-label]="'dash.filters' | t">
     <div class="dsh-seg" role="group" [attr.aria-label]="'dash.period' | t">
-      <button
-        *ngFor="let p of presets"
-        type="button"
-        class="dsh-seg__btn"
-        [class.dsh-seg__btn--on]="preset() === p.key"
-        [attr.aria-pressed]="preset() === p.key"
+      @for (p of presets; track p.key) {
+        <button
+          type="button"
+          class="dsh-seg__btn"
+          [class.dsh-seg__btn--on]="preset() === p.key"
+          [attr.aria-pressed]="preset() === p.key"
         (click)="applyPreset(p.key)">{{ p.labelKey | t }}</button>
+      }
     </div>
     <div class="dsh-range" [class.dsh-range--on]="preset() === 'custom'">
       <label>
@@ -51,11 +54,13 @@
         [placeholder]="'dash.allCities' | t"
         [options]="cityOptions()"
         [values]="cityIds()"
-        (valuesChange)="onCitiesChange($event)"></app-multi-select>
+      (valuesChange)="onCitiesChange($event)"></app-multi-select>
     </div>
   </section>
 
-  <div class="dsh-alert" *ngIf="error()" role="alert">{{ error() }}</div>
+  @if (error()) {
+    <div class="dsh-alert" role="alert">{{ error() }}</div>
+  }
 
   <div class="dsh-body" [class.dsh-body--loading]="loading() && data()">
     <!-- ───────────── Hero: profit + position ───────────── -->
@@ -122,7 +127,9 @@
         <header class="dsh-card__head">
           <div>
             <h2 class="dsh-card__title">{{ 'dash.trendTitle' | t }}</h2>
-            <p class="dsh-card__sub" *ngIf="data() as d">{{ ('dash.bucket.' + d.bucket) | t }}</p>
+            @if (data(); as d) {
+              <p class="dsh-card__sub">{{ ('dash.bucket.' + d.bucket) | t }}</p>
+            }
           </div>
           <div class="dsh-tabs" role="tablist">
             <button type="button" role="tab" class="dsh-tabs__btn" [class.dsh-tabs__btn--on]="metric() === 'profit'" [attr.aria-selected]="metric() === 'profit'" (click)="metric.set('profit')">{{ 'dash.metric.profit' | t }}</button>
@@ -143,19 +150,25 @@
           </div>
         </header>
         <ul class="dsh-bars">
-          <li *ngFor="let row of incomeRows(); trackBy: trackKey" class="dsh-bars__row">
-            <div class="dsh-bars__top">
-              <span class="dsh-bars__label">{{ row.labelKey | t }}<small *ngIf="row.count"> · {{ count(row.count) }}</small></span>
-              <span class="dsh-bars__value">{{ money(row.amount) }}</span>
-            </div>
-            <span class="dsh-bars__track"><span class="dsh-bars__fill" [style.width.%]="row.share"></span></span>
-          </li>
+          @for (row of incomeRows(); track row.key) {
+            <li class="dsh-bars__row">
+              <div class="dsh-bars__top">
+                <span class="dsh-bars__label">{{ row.labelKey | t }}@if (row.count) {
+                  <small> · {{ count(row.count) }}</small>
+                }</span>
+                <span class="dsh-bars__value">{{ money(row.amount) }}</span>
+              </div>
+              <span class="dsh-bars__track"><span class="dsh-bars__fill" [style.width.%]="row.share"></span></span>
+            </li>
+          }
         </ul>
         <div class="dsh-sum">
           <div class="dsh-sum__row"><span>{{ 'dash.grossIncome' | t }}</span><strong>{{ money(grossIncome()) }}</strong></div>
-          <div class="dsh-sum__row" *ngFor="let row of costRows(); trackBy: trackKey">
-            <span>{{ row.labelKey | t }}</span><strong [class.dsh-neg]="row.amount > 0">{{ row.amount > 0 ? '−' : '' }}{{ money(row.amount) }}</strong>
-          </div>
+          @for (row of costRows(); track row.key) {
+            <div class="dsh-sum__row">
+              <span>{{ row.labelKey | t }}</span><strong [class.dsh-neg]="row.amount > 0">{{ row.amount > 0 ? '−' : '' }}{{ money(row.amount) }}</strong>
+            </div>
+          }
           <div class="dsh-sum__row dsh-sum__row--total"><span>{{ 'dash.netProfit' | t }}</span><strong>{{ money(profit()?.netProfit) }} {{ 'common.currency' | t }}</strong></div>
         </div>
       </article>
@@ -172,21 +185,28 @@
           <strong class="dsh-card__figure">{{ money(position()?.owedToCompany) }}</strong>
         </header>
         <ul class="dsh-split">
-          <li *ngFor="let row of owedRows(); trackBy: trackKey">
-            <span class="dsh-split__label">{{ row.labelKey | t }}</span>
-            <span class="dsh-split__count">{{ plural(row.count, 'dash.accountOne', 'dash.accounts') }}</span>
-            <strong class="dsh-split__value">{{ money(row.amount) }}</strong>
-          </li>
+          @for (row of owedRows(); track row.key) {
+            <li>
+              <span class="dsh-split__label">{{ row.labelKey | t }}</span>
+              <span class="dsh-split__count">{{ plural(row.count, 'dash.accountOne', 'dash.accounts') }}</span>
+              <strong class="dsh-split__value">{{ money(row.amount) }}</strong>
+            </li>
+          }
         </ul>
         <h3 class="dsh-mini-title">{{ 'dash.topDebtors' | t }}</h3>
-        <ol class="dsh-people" *ngIf="position()?.topDebtors?.length; else noDebtors">
-          <li *ngFor="let p of position()!.topDebtors; trackBy: trackId">
-            <span class="dsh-avatar" aria-hidden="true">{{ p.name.charAt(0) }}</span>
-            <span class="dsh-people__name">{{ p.name }}<small>{{ partyKind(p.partyType) | t }}</small></span>
-            <strong>{{ money(p.amount) }}</strong>
-          </li>
-        </ol>
-        <ng-template #noDebtors><p class="dsh-empty">{{ 'dash.nothingOwed' | t }}</p></ng-template>
+        @if (position()?.topDebtors?.length) {
+          <ol class="dsh-people">
+            @for (p of position()!.topDebtors; track p.partyType + '-' + p.partyId) {
+              <li>
+                <span class="dsh-avatar" aria-hidden="true">{{ p.name.charAt(0) }}</span>
+                <span class="dsh-people__name">{{ p.name }}<small>{{ partyKind(p.partyType) | t }}</small></span>
+                <strong>{{ money(p.amount) }}</strong>
+              </li>
+            }
+          </ol>
+        } @else {
+          <p class="dsh-empty">{{ 'dash.nothingOwed' | t }}</p>
+        }
         <a class="dsh-link" routerLink="/main/settlements">{{ 'dash.goSettlements' | t }} →</a>
       </article>
 
@@ -199,21 +219,28 @@
           <strong class="dsh-card__figure">{{ money(position()?.companyOwes) }}</strong>
         </header>
         <ul class="dsh-split">
-          <li *ngFor="let row of oweRows(); trackBy: trackKey">
-            <span class="dsh-split__label">{{ row.labelKey | t }}</span>
-            <span class="dsh-split__count">{{ plural(row.count, 'dash.accountOne', 'dash.accounts') }}</span>
-            <strong class="dsh-split__value">{{ money(row.amount) }}</strong>
-          </li>
+          @for (row of oweRows(); track row.key) {
+            <li>
+              <span class="dsh-split__label">{{ row.labelKey | t }}</span>
+              <span class="dsh-split__count">{{ plural(row.count, 'dash.accountOne', 'dash.accounts') }}</span>
+              <strong class="dsh-split__value">{{ money(row.amount) }}</strong>
+            </li>
+          }
         </ul>
         <h3 class="dsh-mini-title">{{ 'dash.topCreditors' | t }}</h3>
-        <ol class="dsh-people" *ngIf="position()?.topCreditors?.length; else noCreditors">
-          <li *ngFor="let p of position()!.topCreditors; trackBy: trackId">
-            <span class="dsh-avatar" aria-hidden="true">{{ p.name.charAt(0) }}</span>
-            <span class="dsh-people__name">{{ p.name }}<small>{{ partyKind(p.partyType) | t }}</small></span>
-            <strong>{{ money(p.amount) }}</strong>
-          </li>
-        </ol>
-        <ng-template #noCreditors><p class="dsh-empty">{{ 'dash.nothingOwedByYou' | t }}</p></ng-template>
+        @if (position()?.topCreditors?.length) {
+          <ol class="dsh-people">
+            @for (p of position()!.topCreditors; track p.partyType + '-' + p.partyId) {
+              <li>
+                <span class="dsh-avatar" aria-hidden="true">{{ p.name.charAt(0) }}</span>
+                <span class="dsh-people__name">{{ p.name }}<small>{{ partyKind(p.partyType) | t }}</small></span>
+                <strong>{{ money(p.amount) }}</strong>
+              </li>
+            }
+          </ol>
+        } @else {
+          <p class="dsh-empty">{{ 'dash.nothingOwedByYou' | t }}</p>
+        }
         <a class="dsh-link" routerLink="/main/reports/merchant-balances">{{ 'dash.goBalances' | t }} →</a>
       </article>
     </section>
@@ -262,11 +289,13 @@
           </div>
         </header>
         <ul class="dsh-pipe">
-          <li *ngFor="let s of orders()?.pipeline">
-            <span class="dsh-pipe__label">{{ stateLabel(s.state) }}</span>
-            <span class="dsh-pipe__track"><span class="dsh-pipe__fill" [style.width.%]="s.count ? (s.count / pipelineMax()) * 100 : 0"></span></span>
-            <strong class="dsh-pipe__value">{{ count(s.count) }}</strong>
-          </li>
+          @for (s of orders()?.pipeline; track s) {
+            <li>
+              <span class="dsh-pipe__label">{{ stateLabel(s.state) }}</span>
+              <span class="dsh-pipe__track"><span class="dsh-pipe__fill" [style.width.%]="s.count ? (s.count / pipelineMax()) * 100 : 0"></span></span>
+              <strong class="dsh-pipe__value">{{ count(s.count) }}</strong>
+            </li>
+          }
         </ul>
         <a class="dsh-link" routerLink="/main/orders">{{ 'dash.goOrders' | t }} →</a>
       </article>
@@ -279,11 +308,14 @@
           </div>
         </header>
         <p class="dsh-big">{{ money(paymentsTotal()) }} <small>{{ 'common.currency' | t }}</small></p>
-        <div class="dsh-stack" *ngIf="paymentsTotal() > 0; else noPay" role="img" [attr.aria-label]="'dash.paymentsTitle' | t">
-          <span class="dsh-stack__seg dsh-stack__seg--a" [style.width.%]="cashShare()"></span>
-          <span class="dsh-stack__seg dsh-stack__seg--b" [style.width.%]="100 - cashShare()"></span>
-        </div>
-        <ng-template #noPay><div class="dsh-stack dsh-stack--empty"></div></ng-template>
+        @if (paymentsTotal() > 0) {
+          <div class="dsh-stack" role="img" [attr.aria-label]="'dash.paymentsTitle' | t">
+            <span class="dsh-stack__seg dsh-stack__seg--a" [style.width.%]="cashShare()"></span>
+            <span class="dsh-stack__seg dsh-stack__seg--b" [style.width.%]="100 - cashShare()"></span>
+          </div>
+        } @else {
+          <div class="dsh-stack dsh-stack--empty"></div>
+        }
         <ul class="dsh-legend">
           <li><span class="dsh-key dsh-key--a"></span>{{ 'dash.cash' | t }}<strong>{{ money(data()?.payments?.cashPaid) }}</strong></li>
           <li><span class="dsh-key dsh-key--b"></span>PayPal<strong>{{ money(data()?.payments?.payPalPaid) }}</strong></li>
@@ -344,28 +376,35 @@
 
     <!-- ───────────── Leaders ───────────── -->
     <section class="dsh-grid dsh-grid--three">
-      <article class="dsh-card" *ngFor="let board of boards(); trackBy: trackKey">
-        <header class="dsh-card__head">
-          <div>
-            <h2 class="dsh-card__title">{{ board.titleKey | t }}</h2>
-            <p class="dsh-card__sub">{{ board.subKey | t }}</p>
-          </div>
-        </header>
-        <ol class="dsh-rank" *ngIf="board.list.length; else emptyBoard">
-          <li *ngFor="let r of board.list; let i = index; trackBy: trackId">
-            <span class="dsh-rank__pos">{{ i + 1 }}</span>
-            <div class="dsh-rank__main">
-              <div class="dsh-rank__top">
-                <span class="dsh-rank__name">{{ r.name }}</span>
-                <strong>{{ money(r.amount) }}</strong>
-              </div>
-              <span class="dsh-rank__track"><span class="dsh-rank__fill" [style.width.%]="rankShare(r.amount, board.list)"></span></span>
-              <small>{{ plural(r.count, 'dash.orderOne', 'dash.ordersUnit') }}</small>
+      @for (board of boards(); track board.key) {
+        <article class="dsh-card">
+          <header class="dsh-card__head">
+            <div>
+              <h2 class="dsh-card__title">{{ board.titleKey | t }}</h2>
+              <p class="dsh-card__sub">{{ board.subKey | t }}</p>
             </div>
-          </li>
-        </ol>
-        <ng-template #emptyBoard><p class="dsh-empty">{{ 'dash.noActivity' | t }}</p></ng-template>
-      </article>
+          </header>
+          @if (board.list.length) {
+            <ol class="dsh-rank">
+              @for (r of board.list; track r.id; let i = $index) {
+                <li>
+                  <span class="dsh-rank__pos">{{ i + 1 }}</span>
+                  <div class="dsh-rank__main">
+                    <div class="dsh-rank__top">
+                      <span class="dsh-rank__name">{{ r.name }}</span>
+                      <strong>{{ money(r.amount) }}</strong>
+                    </div>
+                    <span class="dsh-rank__track"><span class="dsh-rank__fill" [style.width.%]="rankShare(r.amount, board.list)"></span></span>
+                    <small>{{ plural(r.count, 'dash.orderOne', 'dash.ordersUnit') }}</small>
+                  </div>
+                </li>
+              }
+            </ol>
+          } @else {
+            <p class="dsh-empty">{{ 'dash.noActivity' | t }}</p>
+          }
+        </article>
+      }
     </section>
 
     <!-- ───────────── Recent orders ───────────── -->
@@ -377,31 +416,36 @@
         </div>
         <a class="dsh-btn dsh-btn--ghost dsh-btn--sm" routerLink="/main/orders">{{ 'dash.viewAll' | t }}</a>
       </header>
-      <div class="dsh-table-wrap" *ngIf="data()?.recentOrders?.length; else noRecent">
-        <table class="dsh-table">
-          <thead>
-            <tr>
-              <th>{{ 'reports.col.orderCode' | t }}</th>
-              <th>{{ 'reports.col.customer' | t }}</th>
-              <th>{{ 'reports.col.city' | t }}</th>
-              <th>{{ 'reports.col.orderState' | t }}</th>
-              <th>{{ 'reports.col.date' | t }}</th>
-              <th class="dsh-num">{{ 'reports.col.orderTotal' | t }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let o of data()!.recentOrders; trackBy: trackId" [routerLink]="['/main/orders', o.orderId]" tabindex="0">
-              <td><span class="dsh-code">{{ o.orderCode }}</span></td>
-              <td>{{ o.customer }}</td>
-              <td>{{ o.city }}</td>
-              <td><span class="dsh-chip" [ngClass]="stateTone(o.state)">{{ stateLabel(o.state) }}</span></td>
-              <td class="dsh-muted">{{ formatDateTime(o.createdDate) }}</td>
-              <td class="dsh-num"><strong>{{ money(o.total) }}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <ng-template #noRecent><p class="dsh-empty">{{ 'dash.noOrders' | t }}</p></ng-template>
+      @if (data()?.recentOrders?.length) {
+        <div class="dsh-table-wrap">
+          <table class="dsh-table">
+            <thead>
+              <tr>
+                <th>{{ 'reports.col.orderCode' | t }}</th>
+                <th>{{ 'reports.col.customer' | t }}</th>
+                <th>{{ 'reports.col.city' | t }}</th>
+                <th>{{ 'reports.col.orderState' | t }}</th>
+                <th>{{ 'reports.col.date' | t }}</th>
+                <th class="dsh-num">{{ 'reports.col.orderTotal' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (o of data()!.recentOrders; track o.orderId) {
+                <tr [routerLink]="['/main/orders', o.orderId]" tabindex="0">
+                  <td><span class="dsh-code">{{ o.orderCode }}</span></td>
+                  <td>{{ o.customer }}</td>
+                  <td>{{ o.city }}</td>
+                  <td><span class="dsh-chip" [ngClass]="stateTone(o.state)">{{ stateLabel(o.state) }}</span></td>
+                  <td class="dsh-muted">{{ formatDateTime(o.createdDate) }}</td>
+                  <td class="dsh-num"><strong>{{ money(o.total) }}</strong></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="dsh-empty">{{ 'dash.noOrders' | t }}</p>
+      }
     </section>
   </div>
 </div>

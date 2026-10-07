@@ -1,5 +1,4 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   AdminSupportClient,
@@ -14,7 +13,7 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
 @Component({
   selector: 'app-support',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, HasPermissionDirective],
+  imports: [ReactiveFormsModule, TranslatePipe, HasPermissionDirective],
   templateUrl: './support.component.html',
   styleUrls: ['./support.component.css', '../../shared/styles/entity-form.css']
 })

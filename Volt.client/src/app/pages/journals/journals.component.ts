@@ -3,11 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   AdminSettlementClient,
-  DeliveryClient,
   DeliveryLookupDto,
   JournalDirection,
   LedgerPartyType,
-  MerchantClient,
   MerchantLookupDto,
   OrderJournalEntryKind,
   OrderJournalListDto,
@@ -19,6 +17,8 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
+import { memo } from '../../shared/utils/memo';
+import { LookupService } from '../../core/services/lookup.service';
 
 @Component({
   selector: 'app-journals',
@@ -28,10 +28,12 @@ import {
   styleUrls: ['./journals.component.css', '../../shared/styles/entity-form.css']
 })
 export class JournalsComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly deliveryOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly merchantOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
   private readonly settlementClient = inject(AdminSettlementClient);
-  private readonly deliveryClient = inject(DeliveryClient);
-  private readonly merchantClient = inject(MerchantClient);
 
   deliveries: DeliveryLookupDto[] = [];
   merchants: MerchantLookupDto[] = [];
@@ -49,23 +51,25 @@ export class JournalsComponent implements OnInit {
   readonly LedgerPartyType = LedgerPartyType;
 
   get deliveryOptions(): MultiSelectOption[] {
-    return this.deliveries
-      .filter(d => d.deliveryId != null)
-      .map(d => ({
-        value: d.deliveryId as number,
-        label: d.fullName || String(d.deliveryId),
-        description: d.mobileNumber || '—'
-      }));
+    return this.deliveryOptionsMemo([this.deliveries], () =>
+      this.deliveries
+        .filter(d => d.deliveryId != null)
+        .map(d => ({
+          value: d.deliveryId as number,
+          label: d.fullName || String(d.deliveryId),
+          description: d.mobileNumber || '—'
+        })));
   }
 
   get merchantOptions(): MultiSelectOption[] {
-    return this.merchants
-      .filter(m => m.merchantId != null)
-      .map(m => ({
-        value: m.merchantId as number,
-        label: m.fullName || String(m.merchantId),
-        description: m.mobileNumber || '—'
-      }));
+    return this.merchantOptionsMemo([this.merchants], () =>
+      this.merchants
+        .filter(m => m.merchantId != null)
+        .map(m => ({
+          value: m.merchantId as number,
+          label: m.fullName || String(m.merchantId),
+          description: m.mobileNumber || '—'
+        })));
   }
 
   ngOnInit(): void {
@@ -81,7 +85,7 @@ export class JournalsComponent implements OnInit {
       if (pending <= 0) this.isLoadingLookups = false;
     };
 
-    this.deliveryClient.getActive().subscribe({
+    this.lookups.activeDeliveries().subscribe({
       next: (list) => {
         this.deliveries = list || [];
         done();
@@ -89,7 +93,7 @@ export class JournalsComponent implements OnInit {
       error: () => done()
     });
 
-    this.merchantClient.getActive().subscribe({
+    this.lookups.activeMerchants().subscribe({
       next: (list) => {
         this.merchants = list || [];
         done();

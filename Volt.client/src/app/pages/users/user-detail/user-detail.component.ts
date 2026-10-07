@@ -13,6 +13,7 @@ import {
 } from '../../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { userNameValidator } from '../../../shared/validators/user-name.validator';
+import { memo } from '../../../shared/utils/memo';
 
 @Component({
   selector: 'app-user-detail',
@@ -22,6 +23,8 @@ import { userNameValidator } from '../../../shared/validators/user-name.validato
   styleUrls: ['./user-detail.component.css', '../../../shared/styles/entity-form.css']
 })
 export class UserDetailComponent implements OnInit {
+  private readonly roleOptionsMemo = memo<MultiSelectOption[]>();
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private adminUserClient = inject(AdminUserClient);
@@ -47,12 +50,13 @@ export class UserDetailComponent implements OnInit {
   pendingAction: 'delete' | 'activate' | 'deactivate' | null = null;
 
   get roleOptions(): MultiSelectOption[] {
-    return this.availableRoles
-      .filter(role => !!role.roleName)
-      .map(role => ({
-        value: role.roleName!,
-        label: role.roleName || this.localeService.translate('users.unnamedRole')
-      }));
+    return this.roleOptionsMemo([this.availableRoles, this.localeService.locale()], () =>
+      this.availableRoles
+        .filter(role => !!role.roleName)
+        .map(role => ({
+          value: role.roleName!,
+          label: role.roleName || this.localeService.translate('users.unnamedRole')
+        })));
   }
 
   get subRoleOptions(): MultiSelectOption[] {

@@ -1,8 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CityClient, CityDto, PagedResultOfCityDto } from '../../core/services/clientAPI';
+import { CityDto, PagedResultOfCityDto } from '../../core/services/clientAPI';
 import { LocaleService } from '../../core/services/locale.service';
 import { RiderDispatchService, SHIFT_ALL_DAYS, Shift } from '../../core/services/rider-dispatch.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
@@ -12,6 +11,8 @@ import {
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { memo } from '../../shared/utils/memo';
+import { LookupService } from '../../core/services/lookup.service';
 
 interface DayChip {
   bit: number;
@@ -32,13 +33,15 @@ const DAYS: DayChip[] = [
 @Component({
   selector: 'app-shifts',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent, HasPermissionDirective],
+  imports: [FormsModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './shifts.component.html',
   styleUrls: ['./shifts.component.css']
 })
 export class ShiftsComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
-  private readonly cityClient = inject(CityClient);
   private readonly dispatchService = inject(RiderDispatchService);
   private readonly router = inject(Router);
 
@@ -57,11 +60,12 @@ export class ShiftsComponent implements OnInit {
   isDeleting = false;
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(c => ({ value: c.cityId, label: c.name }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(c => ({ value: c.cityId, label: c.name })));
   }
 
   ngOnInit(): void {
-    this.cityClient.getAll(1, 1000, undefined, true).subscribe({
+    this.lookups.activeCities().subscribe({
       next: (result: PagedResultOfCityDto) => {
         this.cities = result.items || [];
       },

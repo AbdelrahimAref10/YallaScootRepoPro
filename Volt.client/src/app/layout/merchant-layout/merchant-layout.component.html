@@ -2,13 +2,14 @@
   class="dashboard-layout"
   [class.dashboard-layout--compact]="isCompactViewport"
   [class.dashboard-layout--mobile-nav-open]="isMobileNavOpen"
->
-  <div
-    class="dashboard-layout__backdrop"
-    *ngIf="isMobileNavOpen"
-    (click)="closeMobileNav()"
-    aria-hidden="true"
-  ></div>
+  >
+  @if (isMobileNavOpen) {
+    <div
+      class="dashboard-layout__backdrop"
+      (click)="closeMobileNav()"
+      aria-hidden="true"
+    ></div>
+  }
 
   <app-dashboard-sidebar
     [isOpen]="sidebarExpanded"
@@ -23,7 +24,7 @@
   <div
     class="dashboard-layout__main"
     [class.dashboard-layout__main--sidebar-closed]="!isSidebarOpen"
-  >
+    >
     <app-dashboard-header
       [isMobileNavOpen]="isMobileNavOpen"
       [showNotifications]="true"

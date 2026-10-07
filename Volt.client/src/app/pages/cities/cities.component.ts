@@ -1,5 +1,4 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CityClient, CityDto, PagedResultOfCityDto } from '../../core/services/clientAPI';
@@ -13,12 +12,12 @@ import {
 } from '../../shared/components/multi-select/multi-select.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { memo } from '../../shared/utils/memo';
 
 @Component({
   selector: 'app-cities',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterModule,
     ConfirmDialogComponent,
@@ -26,11 +25,13 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
     MultiSelectComponent,
     TranslatePipe,
     HasPermissionDirective
-  ],
+],
   templateUrl: './cities.component.html',
   styleUrls: ['./cities.component.css', '../../shared/styles/list-filters.css']
 })
 export class CitiesComponent implements OnInit {
+  private readonly statusOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
   private readonly dispatchService = inject(RiderDispatchService);
 
@@ -65,10 +66,11 @@ export class CitiesComponent implements OnInit {
   }
 
   get statusOptions(): MultiSelectOption[] {
-    return [
-      { value: 'true', label: this.localeService.translate('common.active') },
-      { value: 'false', label: this.localeService.translate('common.inactive') }
-    ];
+    return this.statusOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 'true', label: this.localeService.translate('common.active') },
+        { value: 'false', label: this.localeService.translate('common.inactive') }
+      ]);
   }
 
   get activeFilterCount(): number {

@@ -6,11 +6,8 @@ import { Observable } from 'rxjs';
 import {
   AdminCustomerClient,
   AdminReportClient,
-  CityClient,
-  DeliveryClient,
   FileResponse,
   LedgerPartyType,
-  MerchantClient,
   MerchantReportClient,
   MerchantVehicleClient,
   OrderState,
@@ -29,6 +26,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { MultiSelectComponent, MultiSelectOption } from '../../../shared/components/multi-select/multi-select.component';
 import { downloadFileResponse, emptyToNull, optionalDate, toNumberArray } from '../report-utils';
 import { ReportDefinition, ReportFilterKey, ReportScopeName, reportsBaseRoute, reportsFor } from '../reports.config';
+import { LookupService } from '../../../core/services/lookup.service';
 
 type Row = Record<string, unknown>;
 
@@ -63,15 +61,13 @@ const WARN_VALUES = new Set(['Pending', 'MerchantPending', 'RefundPending', 'Col
   styleUrls: ['../report-page-shared.css', './report-viewer.component.css']
 })
 export class ReportViewerComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly locale = inject(LocaleService);
   private readonly adminReports = inject(AdminReportClient);
   private readonly merchantReports = inject(MerchantReportClient);
-  private readonly cityClient = inject(CityClient);
   private readonly customerClient = inject(AdminCustomerClient);
-  private readonly merchantClient = inject(MerchantClient);
-  private readonly deliveryClient = inject(DeliveryClient);
   private readonly vehicleClient = inject(MerchantVehicleClient);
 
   readonly ColumnType = ReportColumnType;
@@ -244,9 +240,6 @@ export class ReportViewerComponent implements OnInit {
     return '';
   }
 
-  trackRow(index: number): number {
-    return index;
-  }
 
   private labelFor(labelKey: string, fallback: string): string {
     // English keeps the report's own (more specific) wording; other languages use the translation.
@@ -296,7 +289,7 @@ export class ReportViewerComponent implements OnInit {
       if (this.options[field.key]) continue;
       switch (field.key) {
         case 'cities':
-          this.cityClient.getAll(1, 500).subscribe(res =>
+          this.lookups.allCities().subscribe(res =>
             this.options = { ...this.options, cities: (res.items || []).map(c => ({ value: c.cityId, label: c.name })) });
           break;
         case 'customers':
@@ -307,14 +300,14 @@ export class ReportViewerComponent implements OnInit {
             });
           break;
         case 'merchants':
-          this.merchantClient.getActive().subscribe(res =>
+          this.lookups.activeMerchants().subscribe(res =>
             this.options = {
               ...this.options,
               merchants: (res || []).map(m => ({ value: m.merchantId, label: m.fullName, description: m.mobileNumber }))
             });
           break;
         case 'deliveries':
-          this.deliveryClient.getActive().subscribe(res =>
+          this.lookups.activeDeliveries().subscribe(res =>
             this.options = {
               ...this.options,
               deliveries: (res || []).map(d => ({ value: d.deliveryId, label: d.fullName, description: d.mobileNumber }))

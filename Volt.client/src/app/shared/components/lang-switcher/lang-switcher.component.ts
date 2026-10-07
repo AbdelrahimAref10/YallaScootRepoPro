@@ -1,12 +1,12 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { LocaleService } from '../../../core/services/locale.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-lang-switcher',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
+  imports: [TranslatePipe],
   template: `
     <button
       type="button"

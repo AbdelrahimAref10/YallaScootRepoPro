@@ -7,9 +7,7 @@ import {
   VehicleDto,
   CreateVehicleCommand,
   UpdateVehicleCommand,
-  SubCategoryClient,
   SubCategoryLookupDto,
-  MerchantClient,
   MerchantLookupDto
 } from '../../../core/services/clientAPI';
 import {
@@ -19,6 +17,8 @@ import {
 import { VehicleStatus } from '../../../core/enums/vehicle-status.enum';
 import { LocaleService } from '../../../core/services/locale.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { memo } from '../../../shared/utils/memo';
+import { LookupService } from '../../../core/services/lookup.service';
 
 @Component({
   selector: 'app-vehicle-form',
@@ -28,6 +28,11 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
   styleUrls: ['./vehicle-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
 export class VehicleFormComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly statusOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly merchantOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly subCategoryOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
   vehicleForm: FormGroup;
   isEditMode = false;
@@ -56,17 +61,16 @@ export class VehicleFormComponent implements OnInit {
   }
 
   get statusOptions(): MultiSelectOption[] {
-    return [
-      { value: VehicleStatus.Available, label: this.localeService.translate('vehicles.available') },
-      { value: VehicleStatus.UnderMaintenance, label: this.localeService.translate('vehicles.maintenance') },
-      { value: VehicleStatus.Rented, label: this.localeService.translate('vehicles.rented') }
-    ];
+    return this.statusOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: VehicleStatus.Available, label: this.localeService.translate('vehicles.available') },
+        { value: VehicleStatus.UnderMaintenance, label: this.localeService.translate('vehicles.maintenance') },
+        { value: VehicleStatus.Rented, label: this.localeService.translate('vehicles.rented') }
+      ]);
   }
 
   constructor(
     private vehicleClient: VehicleClient,
-    private subCategoryClient: SubCategoryClient,
-    private merchantClient: MerchantClient,
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder
@@ -88,20 +92,22 @@ export class VehicleFormComponent implements OnInit {
   }
 
   get merchantOptions(): MultiSelectOption[] {
-    return this.merchants
-      .filter(merchant => merchant.merchantId != null)
-      .map(merchant => ({
-        value: merchant.merchantId as number,
-        label: merchant.fullName || String(merchant.merchantId),
-        description: merchant.mobileNumber || '—'
-      }));
+    return this.merchantOptionsMemo([this.merchants], () =>
+      this.merchants
+        .filter(merchant => merchant.merchantId != null)
+        .map(merchant => ({
+          value: merchant.merchantId as number,
+          label: merchant.fullName || String(merchant.merchantId),
+          description: merchant.mobileNumber || '—'
+        })));
   }
 
   get subCategoryOptions(): MultiSelectOption[] {
-    return this.subCategories.map(subCategory => ({
-      value: subCategory.subCategoryId,
-      label: `${subCategory.name} (${subCategory.categoryName})`
-    }));
+    return this.subCategoryOptionsMemo([this.subCategories], () =>
+      this.subCategories.map(subCategory => ({
+        value: subCategory.subCategoryId,
+        label: `${subCategory.name} (${subCategory.categoryName})`
+      })));
   }
 
   ngOnInit(): void {
@@ -129,7 +135,7 @@ export class VehicleFormComponent implements OnInit {
   }
 
   loadSubCategories(): void {
-    this.subCategoryClient.getLookup().subscribe({
+    this.lookups.subCategories().subscribe({
       next: (result) => {
         this.subCategories = result || [];
       },
@@ -140,7 +146,7 @@ export class VehicleFormComponent implements OnInit {
   }
 
   loadMerchants(): void {
-    this.merchantClient.getActive().subscribe({
+    this.lookups.activeMerchants().subscribe({
       next: (result) => {
         this.merchants = result || [];
       },

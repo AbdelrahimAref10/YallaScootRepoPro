@@ -10,111 +10,128 @@
     </div>
   </header>
 
-  <div *ngIf="errorMessage" class="entity-form__alert" role="alert">{{ errorMessage }}</div>
-  <div *ngIf="isLoading" class="entity-form__loading">
-    <div class="entity-form__spinner" aria-hidden="true"></div>
-    <p>{{ 'common.loading' | t }}</p>
-  </div>
+  @if (errorMessage) {
+    <div class="entity-form__alert" role="alert">{{ errorMessage }}</div>
+  }
+  @if (isLoading) {
+    <div class="entity-form__loading">
+      <div class="entity-form__spinner" aria-hidden="true"></div>
+      <p>{{ 'common.loading' | t }}</p>
+    </div>
+  }
 
-  <form *ngIf="!isLoading" [formGroup]="subCategoryForm" (ngSubmit)="onSubmit()" class="rf-layout">
-    <div class="rf-main">
-      <section class="rf-card">
-        <div class="rf-card__head">
-          <span class="rf-card__step">01</span>
-          <div>
-            <h2 class="rf-card__title">{{ 'subcategories.basicInfo' | t }}</h2>
-            <p class="rf-card__hint">{{ 'subcategories.basicInfoSubtitle' | t }}</p>
+  @if (!isLoading) {
+    <form [formGroup]="subCategoryForm" (ngSubmit)="onSubmit()" class="rf-layout">
+      <div class="rf-main">
+        <section class="rf-card">
+          <div class="rf-card__head">
+            <span class="rf-card__step">01</span>
+            <div>
+              <h2 class="rf-card__title">{{ 'subcategories.basicInfo' | t }}</h2>
+              <p class="rf-card__hint">{{ 'subcategories.basicInfoSubtitle' | t }}</p>
+            </div>
           </div>
-        </div>
-        <div class="rf-grid">
+          <div class="rf-grid">
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="rf-name">{{ 'subcategories.name' | t }}<span class="entity-form__req">*</span></label>
+              <input id="rf-name" type="text" formControlName="name" class="entity-form__input" [placeholder]="'subcategories.namePlaceholder' | t" />
+              @if (subCategoryForm.get('name')?.invalid && subCategoryForm.get('name')?.touched) {
+                <p class="entity-form__error">{{ 'subcategories.nameRequired' | t }}</p>
+              }
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label">{{ 'subcategories.category' | t }}<span class="entity-form__req">*</span></label>
+              <app-multi-select formControlName="categoryId" [multiple]="false" [options]="categoryOptions" [placeholder]="'subcategories.selectCategory' | t"></app-multi-select>
+              @if (subCategoryForm.get('categoryId')?.invalid && subCategoryForm.get('categoryId')?.touched) {
+                <p class="entity-form__error">{{ 'subcategories.categoryRequired' | t }}</p>
+              }
+            </div>
+          </div>
           <div class="entity-form__field">
-            <label class="entity-form__label" for="rf-name">{{ 'subcategories.name' | t }}<span class="entity-form__req">*</span></label>
-            <input id="rf-name" type="text" formControlName="name" class="entity-form__input" [placeholder]="'subcategories.namePlaceholder' | t" />
-            <p *ngIf="subCategoryForm.get('name')?.invalid && subCategoryForm.get('name')?.touched" class="entity-form__error">{{ 'subcategories.nameRequired' | t }}</p>
+            <label class="entity-form__label" for="rf-desc">{{ 'common.description' | t }}<span class="entity-form__req">*</span></label>
+            <textarea id="rf-desc" formControlName="description" class="entity-form__textarea" rows="4" [placeholder]="'subcategories.descriptionPlaceholder' | t"></textarea>
+            @if (subCategoryForm.get('description')?.invalid && subCategoryForm.get('description')?.touched) {
+              <p class="entity-form__error">{{ 'subcategories.descriptionRequired' | t }}</p>
+            }
           </div>
           <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'subcategories.category' | t }}<span class="entity-form__req">*</span></label>
-            <app-multi-select formControlName="categoryId" [multiple]="false" [options]="categoryOptions" [placeholder]="'subcategories.selectCategory' | t"></app-multi-select>
-            <p *ngIf="subCategoryForm.get('categoryId')?.invalid && subCategoryForm.get('categoryId')?.touched" class="entity-form__error">{{ 'subcategories.categoryRequired' | t }}</p>
+            <label class="entity-form__check">
+              <input type="checkbox" formControlName="isOffer" />
+              <span>{{ 'subcategories.markAsOffer' | t }}</span>
+            </label>
+            <p class="entity-form__hint">{{ 'subcategories.offerHint' | t }}</p>
           </div>
-        </div>
-        <div class="entity-form__field">
-          <label class="entity-form__label" for="rf-desc">{{ 'common.description' | t }}<span class="entity-form__req">*</span></label>
-          <textarea id="rf-desc" formControlName="description" class="entity-form__textarea" rows="4" [placeholder]="'subcategories.descriptionPlaceholder' | t"></textarea>
-          <p *ngIf="subCategoryForm.get('description')?.invalid && subCategoryForm.get('description')?.touched" class="entity-form__error">{{ 'subcategories.descriptionRequired' | t }}</p>
-        </div>
-        <div class="entity-form__field">
-          <label class="entity-form__check">
-            <input type="checkbox" formControlName="isOffer" />
-            <span>{{ 'subcategories.markAsOffer' | t }}</span>
-          </label>
-          <p class="entity-form__hint">{{ 'subcategories.offerHint' | t }}</p>
-        </div>
-      </section>
-      <section class="rf-card">
-        <div class="rf-card__head">
-          <span class="rf-card__step">02</span>
-          <div>
-            <h2 class="rf-card__title">{{ 'subcategories.image' | t }}</h2>
-            <p class="rf-card__hint">{{ 'subcategories.imageSubtitle' | t }}</p>
+        </section>
+        <section class="rf-card">
+          <div class="rf-card__head">
+            <span class="rf-card__step">02</span>
+            <div>
+              <h2 class="rf-card__title">{{ 'subcategories.image' | t }}</h2>
+              <p class="rf-card__hint">{{ 'subcategories.imageSubtitle' | t }}</p>
+            </div>
           </div>
-        </div>
-        <div class="rf-doc">
-          <div *ngIf="imagePreview" class="entity-form__preview">
-            <img [src]="imagePreview" [alt]="'subcategories.image' | t" />
-            <button type="button" class="entity-form__remove" (click)="removeImage()" [attr.aria-label]="'customers.removeImage' | t">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/></svg>
+          <div class="rf-doc">
+            @if (imagePreview) {
+              <div class="entity-form__preview">
+                <img [src]="imagePreview" [alt]="'subcategories.image' | t" />
+                <button type="button" class="entity-form__remove" (click)="removeImage()" [attr.aria-label]="'customers.removeImage' | t">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            }
+            <label class="entity-form__upload" for="subcategory-image">
+              <input id="subcategory-image" type="file" accept="image/*" (change)="onImageSelect($event)" />
+              <span class="entity-form__upload-icon" aria-hidden="true">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </span>
+              <strong>{{ imagePreview ? ('customers.changeImage' | t) : ('customers.uploadHint' | t) }}</strong>
+              <small>{{ 'customers.imageFormats' | t }}</small>
+            </label>
+          </div>
+        </section>
+      </div>
+      <aside class="rf-side">
+        <div class="rf-summary">
+          <p class="rf-summary__kicker">{{ 'subcategories.summary' | t }}</p>
+          <div class="rf-cover">
+            @if (imagePreview) {
+              <img [src]="imagePreview" alt="" />
+            }
+            @if (!imagePreview) {
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            }
+          </div>
+          <div class="rf-summary__name">
+            <strong>{{ subCategoryForm.get('name')?.value || ('subcategories.newRecord' | t) }}</strong>
+            <span>{{ optionLabel(categoryOptions, subCategoryForm.get('categoryId')?.value) }}</span>
+          </div>
+          <dl class="rf-summary__facts">
+            <div>
+              <dt>{{ 'subcategories.offer' | t }}</dt>
+              <dd>{{ (subCategoryForm.get('isOffer')?.value ? 'common.yes' : 'common.no') | t }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'common.description' | t }}</dt>
+              <dd>{{ subCategoryForm.get('description')?.value || '—' }}</dd>
+            </div>
+          </dl>
+          <div class="rf-summary__progress">
+            <div class="rf-summary__progress-top">
+              <span>{{ 'customers.completion' | t }}</span>
+              <strong>{{ completion }}%</strong>
+            </div>
+            <div class="rf-meter"><span [style.width.%]="completion"></span></div>
+          </div>
+          <div class="rf-summary__actions">
+            <button type="submit" class="entity-form__btn entity-form__btn--primary" [disabled]="subCategoryForm.invalid || isSaving">
+              {{ isSaving ? ('common.saving' | t) : ((isEditMode ? 'subcategories.update' : 'subcategories.create') | t) }}
+            </button>
+            <button type="button" class="entity-form__btn entity-form__btn--ghost" (click)="onCancel()" [disabled]="isSaving">
+              {{ 'common.cancel' | t }}
             </button>
           </div>
-          <label class="entity-form__upload" for="subcategory-image">
-            <input id="subcategory-image" type="file" accept="image/*" (change)="onImageSelect($event)" />
-            <span class="entity-form__upload-icon" aria-hidden="true">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            </span>
-            <strong>{{ imagePreview ? ('customers.changeImage' | t) : ('customers.uploadHint' | t) }}</strong>
-            <small>{{ 'customers.imageFormats' | t }}</small>
-          </label>
         </div>
-      </section>
-    </div>
-
-    <aside class="rf-side">
-      <div class="rf-summary">
-        <p class="rf-summary__kicker">{{ 'subcategories.summary' | t }}</p>
-        <div class="rf-cover">
-          <img *ngIf="imagePreview" [src]="imagePreview" alt="" />
-          <svg *ngIf="!imagePreview" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        </div>
-        <div class="rf-summary__name">
-          <strong>{{ subCategoryForm.get('name')?.value || ('subcategories.newRecord' | t) }}</strong>
-          <span>{{ optionLabel(categoryOptions, subCategoryForm.get('categoryId')?.value) }}</span>
-        </div>
-        <dl class="rf-summary__facts">
-          <div>
-            <dt>{{ 'subcategories.offer' | t }}</dt>
-            <dd>{{ (subCategoryForm.get('isOffer')?.value ? 'common.yes' : 'common.no') | t }}</dd>
-          </div>
-          <div>
-            <dt>{{ 'common.description' | t }}</dt>
-            <dd>{{ subCategoryForm.get('description')?.value || '—' }}</dd>
-          </div>
-        </dl>
-        <div class="rf-summary__progress">
-          <div class="rf-summary__progress-top">
-            <span>{{ 'customers.completion' | t }}</span>
-            <strong>{{ completion }}%</strong>
-          </div>
-          <div class="rf-meter"><span [style.width.%]="completion"></span></div>
-        </div>
-        <div class="rf-summary__actions">
-          <button type="submit" class="entity-form__btn entity-form__btn--primary" [disabled]="subCategoryForm.invalid || isSaving">
-            {{ isSaving ? ('common.saving' | t) : ((isEditMode ? 'subcategories.update' : 'subcategories.create') | t) }}
-          </button>
-          <button type="button" class="entity-form__btn entity-form__btn--ghost" (click)="onCancel()" [disabled]="isSaving">
-            {{ 'common.cancel' | t }}
-          </button>
-        </div>
-      </div>
-    </aside>
-  </form>
+      </aside>
+    </form>
+  }
 </div>

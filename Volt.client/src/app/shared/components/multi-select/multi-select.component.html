@@ -5,8 +5,10 @@
   [class.ms--disabled]="disabled"
   [class.ms--single]="!multiple"
   [class.ms--table]="isTable"
->
-  <label *ngIf="label" class="ms__label">{{ label }}</label>
+  >
+  @if (label) {
+    <label class="ms__label">{{ label }}</label>
+  }
 
   <div
     class="ms__trigger"
@@ -18,84 +20,98 @@
     [attr.aria-expanded]="open"
     [attr.aria-disabled]="disabled"
     aria-haspopup="listbox"
-  >
+    >
     <span class="ms__trigger-text" [class.ms__trigger-text--placeholder]="selectedCount === 0">
-      <ng-container *ngIf="!multiple || selectedCount <= 1; else countTpl">
+      @if (!multiple || selectedCount <= 1) {
         <span class="ms__trigger-label">{{ triggerLabel }}</span>
-        <span class="ms__trigger-meta" *ngIf="triggerDescription">{{ triggerDescription }}</span>
-      </ng-container>
-      <ng-template #countTpl>
+        @if (triggerDescription) {
+          <span class="ms__trigger-meta">{{ triggerDescription }}</span>
+        }
+      } @else {
         <span class="ms__trigger-prefix">{{ placeholder }}</span>
         <span class="ms__badge">{{ selectedCount }}</span>
-      </ng-template>
+      }
     </span>
 
     <span class="ms__trigger-actions">
-      <button
-        *ngIf="clearable && selectedCount > 0 && !disabled"
-        type="button"
-        class="ms__clear"
-        (click)="clear($event)"
-        [attr.aria-label]="'common.clear' | t"
-        [attr.title]="'common.clear' | t"
-      >
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
+      @if (clearable && selectedCount > 0 && !disabled) {
+        <button
+          type="button"
+          class="ms__clear"
+          (click)="clear($event)"
+          [attr.aria-label]="'common.clear' | t"
+          [attr.title]="'common.clear' | t"
+          >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      }
       <svg class="ms__caret" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6"/>
       </svg>
     </span>
   </div>
 
-  <div *ngIf="open" class="ms__panel" role="listbox" [attr.aria-multiselectable]="multiple">
-    <div *ngIf="searchable" class="ms__search">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-      </svg>
-      <input
-        type="search"
-        class="ms__search-input"
-        [(ngModel)]="query"
-        [placeholder]="searchPlaceholder || ('common.search' | t)"
-        (click)="$event.stopPropagation()"
-      />
-    </div>
-
-    <div class="ms__toolbar" *ngIf="multiple && options.length > 0">
-      <button type="button" class="ms__link" (click)="selectAll($event)">{{ 'common.selectAll' | t }}</button>
-      <button type="button" class="ms__link" (click)="clear($event)" [disabled]="selectedCount === 0">{{ 'common.clear' | t }}</button>
-    </div>
-
-    <div class="ms__options" [class.ms__options--table]="isTable">
-      <div class="ms__table-head" *ngIf="isTable && filteredOptions.length > 0">
-        <span class="ms__table-spacer" aria-hidden="true"></span>
-        <span>{{ primaryColumnLabel || ('common.name' | t) }}</span>
-        <span>{{ secondaryColumnLabel || ('common.mobile' | t) }}</span>
-      </div>
-      <button
-        *ngFor="let option of filteredOptions"
-        type="button"
-        class="ms__option"
-        [class.ms__option--row]="isTable"
-        role="option"
-        [class.ms__option--selected]="isSelected(option.value)"
-        [attr.aria-selected]="isSelected(option.value)"
-        (click)="toggleValue(option.value, $event)"
-      >
-        <span class="ms__check" aria-hidden="true">
-          <svg *ngIf="isSelected(option.value)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+  @if (open) {
+    <div class="ms__panel" role="listbox" [attr.aria-multiselectable]="multiple">
+      @if (searchable) {
+        <div class="ms__search">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
-        </span>
-        <span class="ms__option-label">{{ option.label }}</span>
-        <span class="ms__option-meta" *ngIf="isTable">{{ option.description || '—' }}</span>
-      </button>
-
-      <div *ngIf="filteredOptions.length === 0" class="ms__empty">
-        {{ emptyText || ('common.noResults' | t) }}
+          <input
+            type="search"
+            class="ms__search-input"
+            [(ngModel)]="query"
+            [placeholder]="searchPlaceholder || ('common.search' | t)"
+            (click)="$event.stopPropagation()"
+            />
+        </div>
+      }
+      @if (multiple && options.length > 0) {
+        <div class="ms__toolbar">
+          <button type="button" class="ms__link" (click)="selectAll($event)">{{ 'common.selectAll' | t }}</button>
+          <button type="button" class="ms__link" (click)="clear($event)" [disabled]="selectedCount === 0">{{ 'common.clear' | t }}</button>
+        </div>
+      }
+      <div class="ms__options" [class.ms__options--table]="isTable">
+        @if (isTable && filteredOptions.length > 0) {
+          <div class="ms__table-head">
+            <span class="ms__table-spacer" aria-hidden="true"></span>
+            <span>{{ primaryColumnLabel || ('common.name' | t) }}</span>
+            <span>{{ secondaryColumnLabel || ('common.mobile' | t) }}</span>
+          </div>
+        }
+        @for (option of filteredOptions; track option.value) {
+          <button
+            type="button"
+            class="ms__option"
+            [class.ms__option--row]="isTable"
+            role="option"
+            [class.ms__option--selected]="isSelected(option.value)"
+            [attr.aria-selected]="isSelected(option.value)"
+            (click)="toggleValue(option.value, $event)"
+            >
+            <span class="ms__check" aria-hidden="true">
+              @if (isSelected(option.value)) {
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+              }
+            </span>
+            <span class="ms__option-label">{{ option.label }}</span>
+            @if (isTable) {
+              <span class="ms__option-meta">{{ option.description || '—' }}</span>
+            }
+          </button>
+        }
+        @if (filteredOptions.length === 0) {
+          <div class="ms__empty">
+            {{ emptyText || ('common.noResults' | t) }}
+          </div>
+        }
       </div>
     </div>
-  </div>
+  }
 </div>

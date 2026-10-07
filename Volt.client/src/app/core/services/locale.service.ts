@@ -5,12 +5,24 @@ import { firstValueFrom } from 'rxjs';
 export type AppLocale = 'en' | 'ar';
 
 const STORAGE_KEY = 'volt-locale';
+const PARAM = /{{\s*(\w+)\s*}}/g;
+
+/** { a: { b: 'x' } } → Map { 'a.b' => 'x' } */
+function flatten(tree: Record<string, unknown>, prefix = '', into = new Map<string, string>()): Map<string, string> {
+  for (const [key, value] of Object.entries(tree)) {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'string') into.set(path, value);
+    else if (value && typeof value === 'object') flatten(value as Record<string, unknown>, path, into);
+  }
+  return into;
+}
 const SUPPORTED: AppLocale[] = ['en', 'ar'];
 
 @Injectable({ providedIn: 'root' })
 export class LocaleService {
-  private readonly translations = signal<Record<string, unknown>>({});
-  private readonly englishFallback = signal<Record<string, unknown>>({});
+  /** Flattened "a.b.c" → text, so a lookup is one Map read instead of a walk through the JSON tree. */
+  private readonly translations = signal<ReadonlyMap<string, string>>(new Map());
+  private readonly englishFallback = signal<ReadonlyMap<string, string>>(new Map());
   private readonly currentLocale = signal<AppLocale>(this.readStoredLocale());
 
   readonly locale = this.currentLocale.asReadonly();
@@ -33,7 +45,7 @@ export class LocaleService {
     const en = await firstValueFrom(
       this.http.get<Record<string, unknown>>('assets/i18n/en.json')
     );
-    this.englishFallback.set(en);
+    this.englishFallback.set(flatten(en));
 
     await this.loadLocale(this.currentLocale());
     this.applyDocumentLocale(this.currentLocale());
@@ -68,18 +80,14 @@ export class LocaleService {
   }
 
   translate(key: string, params?: Record<string, string | number>): string {
-    const value = this.resolveKey(key, this.translations())
-      ?? this.resolveKey(key, this.englishFallback());
+    const value = this.translations().get(key) ?? this.englishFallback().get(key);
     if (value == null) {
       return key;
     }
     if (!params) {
       return value;
     }
-    return Object.keys(params).reduce(
-      (text, param) => text.replace(new RegExp(`{{\\s*${param}\\s*}}`, 'g'), String(params[param])),
-      value
-    );
+    return value.replace(PARAM, (match, name: string) => (name in params ? String(params[name]) : match));
   }
 
   private async loadLocale(locale: AppLocale): Promise<void> {
@@ -91,22 +99,10 @@ export class LocaleService {
       const data = await firstValueFrom(
         this.http.get<Record<string, unknown>>(`assets/i18n/${locale}.json`)
       );
-      this.translations.set(data);
+      this.translations.set(flatten(data));
     } catch {
       this.translations.set(this.englishFallback());
     }
-  }
-
-  private resolveKey(key: string, tree: Record<string, unknown>): string | null {
-    const parts = key.split('.');
-    let current: unknown = tree;
-    for (const part of parts) {
-      if (current == null || typeof current !== 'object') {
-        return null;
-      }
-      current = (current as Record<string, unknown>)[part];
-    }
-    return typeof current === 'string' ? current : null;
   }
 
   private applyDocumentLocale(locale: AppLocale): void {

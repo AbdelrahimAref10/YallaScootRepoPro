@@ -1,12 +1,10 @@
 import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   AdminCreateDeliveryCommand,
   AdminDeliveryClient,
   AdminUpdateDeliveryCommand,
-  CityClient,
   CityDto,
   PagedResultOfCityDto,
   ZoneLookupDto
@@ -17,20 +15,25 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
+import { memo } from '../../../shared/utils/memo';
+import { LookupService } from '../../../core/services/lookup.service';
 
 @Component({
   selector: 'app-delivery-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent],
+  imports: [ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent],
   templateUrl: './delivery-form.component.html',
   styleUrls: ['./delivery-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
 export class DeliveryFormComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly zoneOptionsMemo = memo<MultiSelectOption[]>();
+
   @ViewChild('personalImageInput', { static: false }) personalImageInputRef?: ElementRef<HTMLInputElement>;
 
   private readonly localeService = inject(LocaleService);
   private readonly deliveryClient = inject(AdminDeliveryClient);
-  private readonly cityClient = inject(CityClient);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
@@ -69,17 +72,19 @@ export class DeliveryFormComponent implements OnInit {
   }
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(city => ({
-      value: city.cityId,
-      label: city.name
-    }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(city => ({
+        value: city.cityId,
+        label: city.name
+      })));
   }
 
   get zoneOptions(): MultiSelectOption[] {
-    return this.zones.map(zone => ({
-      value: zone.zoneId,
-      label: zone.name
-    }));
+    return this.zoneOptionsMemo([this.zones], () =>
+      this.zones.map(zone => ({
+        value: zone.zoneId,
+        label: zone.name
+      })));
   }
 
   ngOnInit(): void {
@@ -115,7 +120,7 @@ export class DeliveryFormComponent implements OnInit {
   }
 
   loadCities(): void {
-    this.cityClient.getAll(1, 1000, undefined, true).subscribe({
+    this.lookups.activeCities().subscribe({
       next: (result: PagedResultOfCityDto) => {
         this.cities = result.items || [];
       },
@@ -132,7 +137,7 @@ export class DeliveryFormComponent implements OnInit {
       return;
     }
 
-    this.cityClient.getZonesByCity(cityId).subscribe({
+    this.lookups.zonesByCity(cityId).subscribe({
       next: (zones) => {
         this.zones = zones || [];
         const keep = preferredZoneId ?? this.deliveryForm.get('zoneId')?.value;

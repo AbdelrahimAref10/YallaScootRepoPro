@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SplashService } from './core/services/splash.service';
 
@@ -8,7 +7,7 @@ import { SplashService } from './core/services/splash.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   standalone: true,
-  imports: [CommonModule, RouterModule]
+  imports: [RouterModule]
 })
 export class AppComponent {
   readonly splash = inject(SplashService);

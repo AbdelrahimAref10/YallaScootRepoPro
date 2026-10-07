@@ -4,7 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, filter, switchMap, takeUntil } from 'rxjs';
 import { RiderDispatchService } from '../../core/services/rider-dispatch.service';
-import { AdminOrderClient, OrderDto, PagedResultOfOrderDto, OrderState, PaymentMethod, CityClient, CityDto, PagedResultOfCityDto } from '../../core/services/clientAPI';
+import { AdminOrderClient, OrderDto, PagedResultOfOrderDto, OrderState, PaymentMethod, CityDto, PagedResultOfCityDto } from '../../core/services/clientAPI';
 import { AdminNotificationService } from '../../core/services/admin-notification.service';
 import { LocaleService } from '../../core/services/locale.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
@@ -14,6 +14,8 @@ import {
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { memo } from '../../shared/utils/memo';
+import { LookupService } from '../../core/services/lookup.service';
 
 @Component({
   selector: 'app-orders',
@@ -23,6 +25,10 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
   styleUrls: ['./orders.component.css', '../../shared/styles/list-filters.css']
 })
 export class OrdersComponent implements OnInit, OnDestroy {
+  private readonly lookups = inject(LookupService);
+  private readonly stateOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
   private readonly adminNotifications = inject(AdminNotificationService);
   private readonly dispatchService = inject(RiderDispatchService);
@@ -66,30 +72,31 @@ export class OrdersComponent implements OnInit, OnDestroy {
   ];
 
   get stateOptions(): MultiSelectOption[] {
-    return [
-      { value: OrderState.Pending, label: this.localeService.translate('common.pending') },
-      { value: OrderState.MerchantPending, label: this.localeService.translate('common.merchantPending') },
-      { value: OrderState.MerchantConfirmed, label: this.localeService.translate('common.merchantConfirmed') },
-      { value: OrderState.Confirmed, label: this.localeService.translate('common.confirmed') },
-      { value: OrderState.DeliveryAssigned, label: this.localeService.translate('common.deliveryAssigned') },
-      { value: OrderState.OnWay, label: this.localeService.translate('common.onWay') },
-      { value: OrderState.CustomerReceived, label: this.localeService.translate('common.received') },
-      { value: OrderState.CustomerRejectedReceipt, label: this.localeService.translate('common.rejectedReceipt') },
-      { value: OrderState.Completed, label: this.localeService.translate('common.completed') },
-      { value: OrderState.Cancelled, label: this.localeService.translate('orders.cancelled') }
-    ];
+    return this.stateOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: OrderState.Pending, label: this.localeService.translate('common.pending') },
+        { value: OrderState.MerchantPending, label: this.localeService.translate('common.merchantPending') },
+        { value: OrderState.MerchantConfirmed, label: this.localeService.translate('common.merchantConfirmed') },
+        { value: OrderState.Confirmed, label: this.localeService.translate('common.confirmed') },
+        { value: OrderState.DeliveryAssigned, label: this.localeService.translate('common.deliveryAssigned') },
+        { value: OrderState.OnWay, label: this.localeService.translate('common.onWay') },
+        { value: OrderState.CustomerReceived, label: this.localeService.translate('common.received') },
+        { value: OrderState.CustomerRejectedReceipt, label: this.localeService.translate('common.rejectedReceipt') },
+        { value: OrderState.Completed, label: this.localeService.translate('common.completed') },
+        { value: OrderState.Cancelled, label: this.localeService.translate('orders.cancelled') }
+      ]);
   }
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(city => ({
-      value: city.cityId,
-      label: city.name
-    }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(city => ({
+        value: city.cityId,
+        label: city.name
+      })));
   }
 
   constructor(
     private orderClient: AdminOrderClient,
-    private cityClient: CityClient,
     private router: Router
   ) {}
 
@@ -148,7 +155,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   loadCities(): void {
     this.isLoadingCities = true;
-    this.cityClient.getAll(1, 1000, undefined, true).subscribe({
+    this.lookups.activeCities().subscribe({
       next: (result: PagedResultOfCityDto) => {
         this.cities = result.items || [];
         this.isLoadingCities = false;

@@ -10,71 +10,89 @@
     </div>
   </header>
 
-  <div *ngIf="errorMessage" class="entity-form__alert" role="alert">{{ errorMessage }}</div>
-  <div *ngIf="isLoading" class="entity-form__loading">
-    <div class="entity-form__spinner" aria-hidden="true"></div>
-    <p>{{ 'common.loading' | t }}</p>
-  </div>
+  @if (errorMessage) {
+    <div class="entity-form__alert" role="alert">{{ errorMessage }}</div>
+  }
+  @if (isLoading) {
+    <div class="entity-form__loading">
+      <div class="entity-form__spinner" aria-hidden="true"></div>
+      <p>{{ 'common.loading' | t }}</p>
+    </div>
+  }
 
-  <form *ngIf="!isLoading" [formGroup]="merchantForm" (ngSubmit)="onSubmit()" class="rf-layout">
-    <div class="rf-main">
-      <!-- 01 Profile -->
-      <section class="rf-card">
-        <div class="rf-card__head">
-          <span class="rf-card__step">01</span>
-          <div>
-            <h2 class="rf-card__title">{{ 'merchants.profile' | t }}</h2>
-            <p class="rf-card__hint">{{ 'merchants.profileHint' | t }}</p>
+  @if (!isLoading) {
+    <form [formGroup]="merchantForm" (ngSubmit)="onSubmit()" class="rf-layout">
+      <div class="rf-main">
+        <!-- 01 Profile -->
+        <section class="rf-card">
+          <div class="rf-card__head">
+            <span class="rf-card__step">01</span>
+            <div>
+              <h2 class="rf-card__title">{{ 'merchants.profile' | t }}</h2>
+              <p class="rf-card__hint">{{ 'merchants.profileHint' | t }}</p>
+            </div>
           </div>
-        </div>
-        <div class="rf-grid">
-          <div class="entity-form__field">
-            <label class="entity-form__label" for="rf-name">{{ 'common.name' | t }}<span class="entity-form__req">*</span></label>
-            <input id="rf-name" type="text" formControlName="fullName" class="entity-form__input" />
-            <p *ngIf="merchantForm.get('fullName')?.invalid && merchantForm.get('fullName')?.touched" class="entity-form__error">{{ 'common.required' | t }}</p>
+          <div class="rf-grid">
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="rf-name">{{ 'common.name' | t }}<span class="entity-form__req">*</span></label>
+              <input id="rf-name" type="text" formControlName="fullName" class="entity-form__input" />
+              @if (merchantForm.get('fullName')?.invalid && merchantForm.get('fullName')?.touched) {
+                <p class="entity-form__error">{{ 'common.required' | t }}</p>
+              }
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="rf-user">{{ 'login.username' | t }}<span class="entity-form__req">*</span></label>
+              <input id="rf-user" type="text" formControlName="userName" class="entity-form__input" [placeholder]="'merchants.userNamePlaceholder' | t" autocomplete="username" />
+              @if (merchantForm.get('userName')?.invalid && merchantForm.get('userName')?.touched) {
+                <p class="entity-form__error">{{ 'users.userNameRequired' | t }}</p>
+              }
+              <p class="entity-form__hint">{{ 'merchants.userNameHint' | t }}</p>
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="rf-phone">{{ 'common.phone' | t }}<span class="entity-form__req">*</span></label>
+              <input id="rf-phone" type="text" formControlName="mobileNumber" class="entity-form__input rf-ltr" [readonly]="isEditMode" />
+              @if (merchantForm.get('mobileNumber')?.invalid && merchantForm.get('mobileNumber')?.touched) {
+                <p class="entity-form__error">{{ 'common.required' | t }}</p>
+              }
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="rf-email">{{ 'common.email' | t }}<span class="entity-form__req">*</span></label>
+              <input id="rf-email" type="email" formControlName="email" class="entity-form__input" />
+              @if (merchantForm.get('email')?.invalid && merchantForm.get('email')?.touched) {
+                <p class="entity-form__error">{{ 'common.required' | t }}</p>
+              }
+            </div>
           </div>
-          <div class="entity-form__field">
-            <label class="entity-form__label" for="rf-user">{{ 'login.username' | t }}<span class="entity-form__req">*</span></label>
-            <input id="rf-user" type="text" formControlName="userName" class="entity-form__input" [placeholder]="'merchants.userNamePlaceholder' | t" autocomplete="username" />
-            <p *ngIf="merchantForm.get('userName')?.invalid && merchantForm.get('userName')?.touched" class="entity-form__error">{{ 'users.userNameRequired' | t }}</p>
-            <p class="entity-form__hint">{{ 'merchants.userNameHint' | t }}</p>
+        </section>
+        <!-- 02 Account & location -->
+        <section class="rf-card">
+          <div class="rf-card__head">
+            <span class="rf-card__step">02</span>
+            <div>
+              <h2 class="rf-card__title">{{ 'merchants.accountTitle' | t }}</h2>
+              <p class="rf-card__hint">{{ 'merchants.accountHint' | t }}</p>
+            </div>
           </div>
-          <div class="entity-form__field">
-            <label class="entity-form__label" for="rf-phone">{{ 'common.phone' | t }}<span class="entity-form__req">*</span></label>
-            <input id="rf-phone" type="text" formControlName="mobileNumber" class="entity-form__input rf-ltr" [readonly]="isEditMode" />
-            <p *ngIf="merchantForm.get('mobileNumber')?.invalid && merchantForm.get('mobileNumber')?.touched" class="entity-form__error">{{ 'common.required' | t }}</p>
-          </div>
-          <div class="entity-form__field">
-            <label class="entity-form__label" for="rf-email">{{ 'common.email' | t }}<span class="entity-form__req">*</span></label>
-            <input id="rf-email" type="email" formControlName="email" class="entity-form__input" />
-            <p *ngIf="merchantForm.get('email')?.invalid && merchantForm.get('email')?.touched" class="entity-form__error">{{ 'common.required' | t }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- 02 Account & location -->
-      <section class="rf-card">
-        <div class="rf-card__head">
-          <span class="rf-card__step">02</span>
-          <div>
-            <h2 class="rf-card__title">{{ 'merchants.accountTitle' | t }}</h2>
-            <p class="rf-card__hint">{{ 'merchants.accountHint' | t }}</p>
-          </div>
-        </div>
-        <div class="rf-grid">
-          <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'common.city' | t }}<span class="entity-form__req">*</span></label>
-            <app-multi-select formControlName="cityId" [multiple]="false" [options]="cityOptions" [placeholder]="'merchants.selectCity' | t"></app-multi-select>
-            <p *ngIf="merchantForm.get('cityId')?.invalid && merchantForm.get('cityId')?.touched" class="entity-form__error">{{ 'merchants.cityRequired' | t }}</p>
-          </div>
-          <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'common.zone' | t }}<span class="entity-form__req">*</span></label>
-            <app-multi-select formControlName="zoneId" [multiple]="false" [options]="zoneOptions" [disabled]="!merchantForm.get('cityId')?.value" [placeholder]="'common.selectZone' | t"></app-multi-select>
-            <p *ngIf="merchantForm.get('zoneId')?.invalid && merchantForm.get('zoneId')?.touched" class="entity-form__error">{{ 'common.zoneRequired' | t }}</p>
-          </div>
-          <div class="entity-form__field">
-            <label class="entity-form__label" for="rf-password">
-              {{ 'customers.password' | t }}<span *ngIf="!isEditMode" class="entity-form__req">*</span>
+          <div class="rf-grid">
+            <div class="entity-form__field">
+              <label class="entity-form__label">{{ 'common.city' | t }}<span class="entity-form__req">*</span></label>
+              <app-multi-select formControlName="cityId" [multiple]="false" [options]="cityOptions" [placeholder]="'merchants.selectCity' | t"></app-multi-select>
+              @if (merchantForm.get('cityId')?.invalid && merchantForm.get('cityId')?.touched) {
+                <p class="entity-form__error">{{ 'merchants.cityRequired' | t }}</p>
+              }
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label">{{ 'common.zone' | t }}<span class="entity-form__req">*</span></label>
+              <app-multi-select formControlName="zoneId" [multiple]="false" [options]="zoneOptions" [disabled]="!merchantForm.get('cityId')?.value" [placeholder]="'common.selectZone' | t"></app-multi-select>
+              @if (merchantForm.get('zoneId')?.invalid && merchantForm.get('zoneId')?.touched) {
+                <p class="entity-form__error">{{ 'common.zoneRequired' | t }}</p>
+              }
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="rf-password">
+                {{ 'customers.password' | t }}@if (!isEditMode) {
+                <span class="entity-form__req">*</span>
+              }
             </label>
             <input
               id="rf-password"
@@ -83,12 +101,13 @@
               class="entity-form__input"
               autocomplete="new-password"
               [placeholder]="(isEditMode ? 'customers.passwordOptionalHint' : 'customers.passwordPlaceholder') | t"
-            />
-            <p *ngIf="merchantForm.get('password')?.invalid && merchantForm.get('password')?.touched" class="entity-form__error">{{ 'customers.passwordRequired' | t }}</p>
+              />
+            @if (merchantForm.get('password')?.invalid && merchantForm.get('password')?.touched) {
+              <p class="entity-form__error">{{ 'customers.passwordRequired' | t }}</p>
+            }
           </div>
         </div>
       </section>
-
       <!-- 03 Settings -->
       <section class="rf-card">
         <div class="rf-card__head">
@@ -119,12 +138,13 @@
               <input id="rf-commission" type="number" min="0" max="100" step="0.01" formControlName="companyCommissionPercent" class="entity-form__input" />
               <span class="entity-form__affix-addon entity-form__affix-addon--trail">%</span>
             </div>
-            <p *ngIf="merchantForm.get('companyCommissionPercent')?.invalid && merchantForm.get('companyCommissionPercent')?.touched" class="entity-form__error">{{ 'merchants.companyCommissionInvalid' | t }}</p>
+            @if (merchantForm.get('companyCommissionPercent')?.invalid && merchantForm.get('companyCommissionPercent')?.touched) {
+              <p class="entity-form__error">{{ 'merchants.companyCommissionInvalid' | t }}</p>
+            }
             <p class="entity-form__hint">{{ 'merchants.companyCommissionHint' | t }}</p>
           </div>
         </div>
       </section>
-
       <!-- 04 Photo -->
       <section class="rf-card">
         <div class="rf-card__head">
@@ -135,12 +155,14 @@
           </div>
         </div>
         <div class="rf-doc">
-          <div *ngIf="personalImagePreview" class="entity-form__preview">
-            <img [src]="personalImagePreview" [alt]="'customers.imagePreviewAlt' | t" />
-            <button type="button" class="entity-form__remove" (click)="removePersonalImage()" [attr.aria-label]="'customers.removeImage' | t">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-          </div>
+          @if (personalImagePreview) {
+            <div class="entity-form__preview">
+              <img [src]="personalImagePreview" [alt]="'customers.imagePreviewAlt' | t" />
+              <button type="button" class="entity-form__remove" (click)="removePersonalImage()" [attr.aria-label]="'customers.removeImage' | t">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          }
           <label class="entity-form__upload" for="merchants-personal-image">
             <input #personalImageInput id="merchants-personal-image" type="file" accept="image/*" (change)="onPersonalImageSelect()" />
             <span class="entity-form__upload-icon" aria-hidden="true">
@@ -152,22 +174,24 @@
         </div>
       </section>
     </div>
-
     <!-- Summary -->
     <aside class="rf-side">
       <div class="rf-summary">
         <p class="rf-summary__kicker">{{ 'merchants.summary' | t }}</p>
         <div class="rf-summary__id">
           <span class="rf-avatar">
-            <img *ngIf="personalImagePreview" [src]="personalImagePreview" alt="" />
-            <ng-container *ngIf="!personalImagePreview">{{ initial }}</ng-container>
+            @if (personalImagePreview) {
+              <img [src]="personalImagePreview" alt="" />
+            }
+            @if (!personalImagePreview) {
+              {{ initial }}
+            }
           </span>
           <div class="rf-summary__name">
             <strong>{{ merchantForm.get('fullName')?.value || ('merchants.newRecord' | t) }}</strong>
             <span>&#64;{{ merchantForm.get('userName')?.value || '—' }}</span>
           </div>
         </div>
-
         <dl class="rf-summary__facts">
           <div>
             <dt>{{ 'common.city' | t }}</dt>
@@ -194,7 +218,6 @@
             <dd [class.rf-on]="merchantForm.get('isActive')?.value">{{ (merchantForm.get('isActive')?.value ? 'common.active' : 'common.inactive') | t }}</dd>
           </div>
         </dl>
-
         <div class="rf-summary__progress">
           <div class="rf-summary__progress-top">
             <span>{{ 'customers.completion' | t }}</span>
@@ -202,7 +225,6 @@
           </div>
           <div class="rf-meter"><span [style.width.%]="completion"></span></div>
         </div>
-
         <div class="rf-summary__actions">
           <button type="submit" class="entity-form__btn entity-form__btn--primary" [disabled]="isSaving">
             {{ isSaving ? ('common.saving' | t) : ('common.save' | t) }}
@@ -214,4 +236,5 @@
       </div>
     </aside>
   </form>
+}
 </div>

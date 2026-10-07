@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { CityClient, CityDto, PagedResultOfCityDto } from '../../../core/services/clientAPI';
+import { CityDto, PagedResultOfCityDto } from '../../../core/services/clientAPI';
 import { LocaleService } from '../../../core/services/locale.service';
 import {
   RiderCandidate,
@@ -16,6 +16,8 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
+import { memo } from '../../../shared/utils/memo';
+import { LookupService } from '../../../core/services/lookup.service';
 
 interface DayChip {
   bit: number;
@@ -73,8 +75,10 @@ interface TimelineSegment {
   styleUrls: ['./shift-form.component.css']
 })
 export class ShiftFormComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
-  private readonly cityClient = inject(CityClient);
   private readonly dispatchService = inject(RiderDispatchService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -99,7 +103,8 @@ export class ShiftFormComponent implements OnInit {
   }
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(c => ({ value: c.cityId, label: c.name }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(c => ({ value: c.cityId, label: c.name })));
   }
 
   get cityName(): string {
@@ -189,7 +194,7 @@ export class ShiftFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cityClient.getAll(1, 1000, undefined, true).subscribe({
+    this.lookups.activeCities().subscribe({
       next: (result: PagedResultOfCityDto) => {
         this.cities = result.items || [];
       },

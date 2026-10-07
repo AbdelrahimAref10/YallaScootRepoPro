@@ -5,7 +5,6 @@ import { Router, RouterModule } from '@angular/router';
 import {
   CategoryClient,
   CategoryDto,
-  CityClient,
   CityDto,
   PagedResultOfCategoryDto
 } from '../../core/services/clientAPI';
@@ -18,6 +17,8 @@ import {
 } from '../../shared/components/multi-select/multi-select.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { memo } from '../../shared/utils/memo';
+import { LookupService } from '../../core/services/lookup.service';
 
 @Component({
   selector: 'app-categories',
@@ -36,6 +37,10 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
   styleUrls: ['./categories.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-tiles.css']
 })
 export class CategoriesComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly statusOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
 
   categories: CategoryDto[] = [];
@@ -65,7 +70,6 @@ export class CategoriesComponent implements OnInit {
 
   constructor(
     private categoryClient: CategoryClient,
-    private cityClient: CityClient,
     private router: Router
   ) {}
 
@@ -75,17 +79,19 @@ export class CategoriesComponent implements OnInit {
   }
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(city => ({
-      value: city.cityId,
-      label: city.name
-    }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(city => ({
+        value: city.cityId,
+        label: city.name
+      })));
   }
 
   get statusOptions(): MultiSelectOption[] {
-    return [
-      { value: 'true', label: this.localeService.translate('common.active') },
-      { value: 'false', label: this.localeService.translate('common.inactive') }
-    ];
+    return this.statusOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 'true', label: this.localeService.translate('common.active') },
+        { value: 'false', label: this.localeService.translate('common.inactive') }
+      ]);
   }
 
   get activeFilterCount(): number {
@@ -139,7 +145,7 @@ export class CategoriesComponent implements OnInit {
   }
 
   loadCities(): void {
-    this.cityClient.getAll(1, 1000, undefined, true).subscribe({
+    this.lookups.activeCities().subscribe({
       next: (result) => {
         this.cities = result.items || [];
       },

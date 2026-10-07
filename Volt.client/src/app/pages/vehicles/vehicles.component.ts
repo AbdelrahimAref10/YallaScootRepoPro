@@ -6,11 +6,8 @@ import {
   VehicleClient,
   VehicleDto,
   PagedResultOfVehicleDto,
-  SubCategoryClient,
   SubCategoryLookupDto,
-  CategoryClient,
   CategoryLookupDto,
-  CityClient,
   CityDto
 } from '../../core/services/clientAPI';
 import { VehicleStatus } from '../../core/enums/vehicle-status.enum';
@@ -24,6 +21,8 @@ import {
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { VehicleSpecsComponent } from '../../shared/components/vehicle-specs/vehicle-specs.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { memo } from '../../shared/utils/memo';
+import { LookupService } from '../../core/services/lookup.service';
 
 @Component({
   selector: 'app-vehicles',
@@ -43,6 +42,12 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
   styleUrls: ['./vehicles.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-tiles.css']
 })
 export class VehiclesComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly categoryOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly subCategoryOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly statusOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
 
   vehicles: VehicleDto[] = [];
@@ -74,9 +79,6 @@ export class VehiclesComponent implements OnInit {
 
   constructor(
     private vehicleClient: VehicleClient,
-    private categoryClient: CategoryClient,
-    private subCategoryClient: SubCategoryClient,
-    private cityClient: CityClient,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -94,32 +96,36 @@ export class VehiclesComponent implements OnInit {
   }
 
   get categoryOptions(): MultiSelectOption[] {
-    return this.categories.map(category => ({
-      value: category.categoryId,
-      label: category.name
-    }));
+    return this.categoryOptionsMemo([this.categories], () =>
+      this.categories.map(category => ({
+        value: category.categoryId,
+        label: category.name
+      })));
   }
 
   get subCategoryOptions(): MultiSelectOption[] {
-    return this.subCategories.map(subCategory => ({
-      value: subCategory.subCategoryId,
-      label: subCategory.name
-    }));
+    return this.subCategoryOptionsMemo([this.subCategories], () =>
+      this.subCategories.map(subCategory => ({
+        value: subCategory.subCategoryId,
+        label: subCategory.name
+      })));
   }
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(city => ({
-      value: city.cityId,
-      label: city.name
-    }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(city => ({
+        value: city.cityId,
+        label: city.name
+      })));
   }
 
   get statusOptions(): MultiSelectOption[] {
-    return [
-      { value: VehicleStatus.Available, label: this.localeService.translate('vehicles.available') },
-      { value: VehicleStatus.UnderMaintenance, label: this.localeService.translate('vehicles.maintenance') },
-      { value: VehicleStatus.Rented, label: this.localeService.translate('vehicles.rented') }
-    ];
+    return this.statusOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: VehicleStatus.Available, label: this.localeService.translate('vehicles.available') },
+        { value: VehicleStatus.UnderMaintenance, label: this.localeService.translate('vehicles.maintenance') },
+        { value: VehicleStatus.Rented, label: this.localeService.translate('vehicles.rented') }
+      ]);
   }
 
   get activeFilterCount(): number {
@@ -152,21 +158,21 @@ export class VehiclesComponent implements OnInit {
   }
 
   loadLookups(): void {
-    this.categoryClient.getLookup().subscribe({
+    this.lookups.categories().subscribe({
       next: (result) => {
         this.categories = result || [];
       },
       error: (error: unknown) => console.error('Error loading categories:', error)
     });
 
-    this.subCategoryClient.getLookup().subscribe({
+    this.lookups.subCategories().subscribe({
       next: (result) => {
         this.subCategories = result || [];
       },
       error: (error: unknown) => console.error('Error loading subcategories:', error)
     });
 
-    this.cityClient.getAll(1, 1000, undefined, true).subscribe({
+    this.lookups.activeCities().subscribe({
       next: (result) => {
         this.cities = result.items || [];
       },

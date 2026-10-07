@@ -13,269 +13,293 @@
     </div>
   </header>
 
-  <div *ngIf="errorMessage" class="entity-form__alert" role="alert">{{ errorMessage }}</div>
+  @if (errorMessage) {
+    <div class="entity-form__alert" role="alert">{{ errorMessage }}</div>
+  }
 
-  <div *ngIf="isLoading" class="entity-form__loading">
-    <div class="entity-form__spinner" aria-hidden="true"></div>
-    <p>{{ 'customers.loadingDetails' | t }}</p>
-  </div>
-
-  <form *ngIf="!isLoading" [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="rf-layout">
-    <div class="rf-main">
-      <!-- 01 Basic info -->
-      <section class="rf-card">
-        <div class="rf-card__head">
-          <span class="rf-card__step">01</span>
-          <div>
-            <h2 class="rf-card__title">{{ 'customers.basicInfo' | t }}</h2>
-            <p class="rf-card__hint">{{ 'customers.basicInfoSubtitle' | t }}</p>
-          </div>
-        </div>
-        <div class="rf-grid">
-          <div class="entity-form__field">
-            <label class="entity-form__label" for="rf-name">{{ 'customers.fullName' | t }}<span class="entity-form__req">*</span></label>
-            <input id="rf-name" type="text" formControlName="fullName" class="entity-form__input" [placeholder]="'customers.fullNamePlaceholder' | t" />
-            <p *ngIf="customerForm.get('fullName')?.invalid && customerForm.get('fullName')?.touched" class="entity-form__error">
-              {{ 'customers.fullNameRequired' | t }}
-            </p>
-          </div>
-          <div class="entity-form__field">
-            <label class="entity-form__label" for="rf-mobile">{{ 'customers.mobile' | t }}<span class="entity-form__req">*</span></label>
-            <app-phone-input inputId="rf-mobile" formControlName="mobileNumber" [placeholder]="'customers.mobilePlaceholder' | t"></app-phone-input>
-            <p *ngIf="customerForm.get('mobileNumber')?.invalid && customerForm.get('mobileNumber')?.touched" class="entity-form__error">
-              {{ (customerForm.get('mobileNumber')?.hasError('required') ? 'customers.mobileRequired' : 'customers.mobileInvalid') | t }}
-            </p>
-          </div>
-          <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'customers.gender' | t }}<span class="entity-form__req">*</span></label>
-            <app-multi-select
-              formControlName="gender"
-              [multiple]="false"
-              [options]="genderOptions"
-              [searchable]="false"
-              [placeholder]="'customers.selectGender' | t"
-            ></app-multi-select>
-            <p *ngIf="customerForm.get('gender')?.invalid && customerForm.get('gender')?.touched" class="entity-form__error">
-              {{ 'customers.genderRequired' | t }}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- 02 Location -->
-      <section class="rf-card">
-        <div class="rf-card__head">
-          <span class="rf-card__step">02</span>
-          <div>
-            <h2 class="rf-card__title">{{ 'customers.locationTitle' | t }}</h2>
-            <p class="rf-card__hint">{{ 'customers.locationHint' | t }}</p>
-          </div>
-        </div>
-        <div class="rf-grid">
-          <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'common.city' | t }}<span class="entity-form__req">*</span></label>
-            <app-multi-select
-              formControlName="cityId"
-              [multiple]="false"
-              [options]="cityOptions"
-              [disabled]="isLoadingCities"
-              [placeholder]="'customers.selectCity' | t"
-            ></app-multi-select>
-            <p *ngIf="customerForm.get('cityId')?.invalid && customerForm.get('cityId')?.touched" class="entity-form__error">
-              {{ 'customers.cityRequired' | t }}
-            </p>
-          </div>
-          <div class="entity-form__field">
-            <label class="entity-form__label">{{ 'common.zone' | t }}<span class="entity-form__req">*</span></label>
-            <app-multi-select
-              formControlName="zoneId"
-              [multiple]="false"
-              [options]="zoneOptions"
-              [disabled]="!customerForm.get('cityId')?.value"
-              [placeholder]="'common.selectZone' | t"
-            ></app-multi-select>
-            <p *ngIf="customerForm.get('zoneId')?.invalid && customerForm.get('zoneId')?.touched" class="entity-form__error">
-              {{ 'common.zoneRequired' | t }}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- 03 Account -->
-      <section class="rf-card">
-        <div class="rf-card__head">
-          <span class="rf-card__step">03</span>
-          <div>
-            <h2 class="rf-card__title">{{ 'customers.accountInfo' | t }}</h2>
-            <p class="rf-card__hint">{{ 'customers.accountInfoSubtitle' | t }}</p>
-          </div>
-        </div>
-
-        <div class="entity-form__field">
-          <span class="entity-form__label">{{ 'customers.registerAs' | t }}<span class="entity-form__req">*</span></span>
-          <div class="rf-choices" role="group">
-            <button
-              *ngFor="let o of registerAsOptions"
-              type="button"
-              class="rf-choice"
-              [class.rf-choice--on]="customerForm.get('registerAs')?.value === o.value"
-              (click)="customerForm.get('registerAs')?.setValue(o.value)"
-            >
-              <span class="rf-choice__mark" aria-hidden="true"></span>
-              {{ o.label }}
-            </button>
-          </div>
-        </div>
-
-        <div class="entity-form__field">
-          <span class="entity-form__label">{{ 'customers.verificationBy' | t }}<span class="entity-form__req">*</span></span>
-          <div class="rf-choices" role="group">
-            <button
-              *ngFor="let o of verificationByOptions"
-              type="button"
-              class="rf-choice"
-              [class.rf-choice--on]="customerForm.get('verificationBy')?.value === o.value"
-              (click)="customerForm.get('verificationBy')?.setValue(o.value)"
-            >
-              <span class="rf-choice__mark" aria-hidden="true"></span>
-              {{ o.label }}
-            </button>
-          </div>
-        </div>
-
-        <div class="rf-grid">
-          <div class="entity-form__field">
-            <label class="entity-form__label" for="rf-email">
-              {{ 'common.email' | t }}
-              <span class="entity-form__req">*</span>
-            </label>
-            <input id="rf-email" type="email" formControlName="email" class="entity-form__input" [placeholder]="'customers.emailPlaceholder' | t" />
-            <p *ngIf="customerForm.get('email')?.invalid && customerForm.get('email')?.touched" class="entity-form__error">
-              {{ (customerForm.get('email')?.hasError('required') ? 'customers.emailRequired' : 'customers.emailInvalid') | t }}
-            </p>
-          </div>
-          <div class="entity-form__field">
-            <label class="entity-form__label" for="rf-password">
-              {{ 'customers.password' | t }}
-              <span *ngIf="!isEditMode" class="entity-form__req">*</span>
-            </label>
-            <input
-              id="rf-password"
-              type="password"
-              formControlName="password"
-              class="entity-form__input"
-              autocomplete="new-password"
-              [placeholder]="(isEditMode ? 'customers.passwordOptionalHint' : 'customers.passwordPlaceholder') | t"
-            />
-            <p *ngIf="customerForm.get('password')?.invalid && customerForm.get('password')?.touched" class="entity-form__error">
-              {{ 'customers.passwordRequired' | t }}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- 04 Documents -->
-      <section class="rf-card">
-        <div class="rf-card__head">
-          <span class="rf-card__step">04</span>
-          <div>
-            <h2 class="rf-card__title">{{ 'customers.documentsTitle' | t }}</h2>
-            <p class="rf-card__hint">{{ 'customers.personalImageSubtitle' | t }}</p>
-          </div>
-        </div>
-
-        <div class="rf-docs" [class.rf-docs--two]="isInstitution">
-          <div class="rf-doc">
-            <span class="entity-form__label">{{ 'customers.personalImage' | t }}</span>
-            <div *ngIf="personalImagePreview" class="entity-form__preview">
-              <img [src]="personalImagePreview" [alt]="'customers.imagePreviewAlt' | t" />
-              <button type="button" class="entity-form__remove" (click)="removePersonalImage()" [attr.aria-label]="'customers.removeImage' | t">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/></svg>
-              </button>
-            </div>
-            <label class="entity-form__upload" for="personal-image">
-              <input #personalImageInput id="personal-image" type="file" accept="image/*" (change)="onPersonalImageSelect()" />
-              <span class="entity-form__upload-icon" aria-hidden="true">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              </span>
-              <strong>{{ personalImagePreview ? ('customers.changeImage' | t) : ('customers.uploadHint' | t) }}</strong>
-              <small>{{ 'customers.imageFormats' | t }}</small>
-            </label>
-          </div>
-
-          <div class="rf-doc" *ngIf="isInstitution">
-            <span class="entity-form__label">{{ 'customers.commercialImage' | t }}<span class="entity-form__req">*</span></span>
-            <div *ngIf="commercialImagePreview" class="entity-form__preview">
-              <img [src]="commercialImagePreview" [alt]="'customers.commercialImage' | t" />
-              <button type="button" class="entity-form__remove" (click)="removeCommercialImage()" [attr.aria-label]="'customers.removeImage' | t">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/></svg>
-              </button>
-            </div>
-            <label class="entity-form__upload" for="commercial-image">
-              <input #commercialImageInput id="commercial-image" type="file" accept="image/*" (change)="onCommercialImageSelect()" />
-              <span class="entity-form__upload-icon" aria-hidden="true">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              </span>
-              <strong>{{ commercialImagePreview ? ('customers.changeImage' | t) : ('customers.uploadHint' | t) }}</strong>
-              <small>{{ 'customers.imageFormats' | t }}</small>
-            </label>
-            <p *ngIf="showCommercialImageError" class="entity-form__error">{{ 'customers.commercialImageRequired' | t }}</p>
-          </div>
-        </div>
-      </section>
+  @if (isLoading) {
+    <div class="entity-form__loading">
+      <div class="entity-form__spinner" aria-hidden="true"></div>
+      <p>{{ 'customers.loadingDetails' | t }}</p>
     </div>
+  }
 
-    <!-- Summary -->
-    <aside class="rf-side">
-      <div class="rf-summary">
-        <p class="rf-summary__kicker">{{ 'customers.summary' | t }}</p>
-        <div class="rf-summary__id">
-          <span class="rf-avatar">
-            <img *ngIf="personalImagePreview" [src]="personalImagePreview" alt="" />
-            <ng-container *ngIf="!personalImagePreview">{{ initial }}</ng-container>
-          </span>
-          <div class="rf-summary__name">
-            <strong>{{ customerForm.get('fullName')?.value || ('customers.newCustomer' | t) }}</strong>
-            <span class="rf-ltr">{{ customerForm.get('mobileNumber')?.value || '—' }}</span>
+  @if (!isLoading) {
+    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="rf-layout">
+      <div class="rf-main">
+        <!-- 01 Basic info -->
+        <section class="rf-card">
+          <div class="rf-card__head">
+            <span class="rf-card__step">01</span>
+            <div>
+              <h2 class="rf-card__title">{{ 'customers.basicInfo' | t }}</h2>
+              <p class="rf-card__hint">{{ 'customers.basicInfoSubtitle' | t }}</p>
+            </div>
           </div>
-        </div>
-
-        <dl class="rf-summary__facts">
-          <div>
-            <dt>{{ 'common.city' | t }}</dt>
-            <dd>{{ optionLabel(cityOptions, customerForm.get('cityId')?.value) }}</dd>
+          <div class="rf-grid">
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="rf-name">{{ 'customers.fullName' | t }}<span class="entity-form__req">*</span></label>
+              <input id="rf-name" type="text" formControlName="fullName" class="entity-form__input" [placeholder]="'customers.fullNamePlaceholder' | t" />
+              @if (customerForm.get('fullName')?.invalid && customerForm.get('fullName')?.touched) {
+                <p class="entity-form__error">
+                  {{ 'customers.fullNameRequired' | t }}
+                </p>
+              }
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="rf-mobile">{{ 'customers.mobile' | t }}<span class="entity-form__req">*</span></label>
+              <app-phone-input inputId="rf-mobile" formControlName="mobileNumber" [placeholder]="'customers.mobilePlaceholder' | t"></app-phone-input>
+              @if (customerForm.get('mobileNumber')?.invalid && customerForm.get('mobileNumber')?.touched) {
+                <p class="entity-form__error">
+                  {{ (customerForm.get('mobileNumber')?.hasError('required') ? 'customers.mobileRequired' : 'customers.mobileInvalid') | t }}
+                </p>
+              }
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label">{{ 'customers.gender' | t }}<span class="entity-form__req">*</span></label>
+              <app-multi-select
+                formControlName="gender"
+                [multiple]="false"
+                [options]="genderOptions"
+                [searchable]="false"
+                [placeholder]="'customers.selectGender' | t"
+              ></app-multi-select>
+              @if (customerForm.get('gender')?.invalid && customerForm.get('gender')?.touched) {
+                <p class="entity-form__error">
+                  {{ 'customers.genderRequired' | t }}
+                </p>
+              }
+            </div>
           </div>
-          <div>
-            <dt>{{ 'common.zone' | t }}</dt>
-            <dd>{{ optionLabel(zoneOptions, customerForm.get('zoneId')?.value) }}</dd>
+        </section>
+        <!-- 02 Location -->
+        <section class="rf-card">
+          <div class="rf-card__head">
+            <span class="rf-card__step">02</span>
+            <div>
+              <h2 class="rf-card__title">{{ 'customers.locationTitle' | t }}</h2>
+              <p class="rf-card__hint">{{ 'customers.locationHint' | t }}</p>
+            </div>
           </div>
-          <div>
-            <dt>{{ 'customers.registerAs' | t }}</dt>
-            <dd>{{ optionLabel(registerAsOptions, customerForm.get('registerAs')?.value) }}</dd>
+          <div class="rf-grid">
+            <div class="entity-form__field">
+              <label class="entity-form__label">{{ 'common.city' | t }}<span class="entity-form__req">*</span></label>
+              <app-multi-select
+                formControlName="cityId"
+                [multiple]="false"
+                [options]="cityOptions"
+                [disabled]="isLoadingCities"
+                [placeholder]="'customers.selectCity' | t"
+              ></app-multi-select>
+              @if (customerForm.get('cityId')?.invalid && customerForm.get('cityId')?.touched) {
+                <p class="entity-form__error">
+                  {{ 'customers.cityRequired' | t }}
+                </p>
+              }
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label">{{ 'common.zone' | t }}<span class="entity-form__req">*</span></label>
+              <app-multi-select
+                formControlName="zoneId"
+                [multiple]="false"
+                [options]="zoneOptions"
+                [disabled]="!customerForm.get('cityId')?.value"
+                [placeholder]="'common.selectZone' | t"
+              ></app-multi-select>
+              @if (customerForm.get('zoneId')?.invalid && customerForm.get('zoneId')?.touched) {
+                <p class="entity-form__error">
+                  {{ 'common.zoneRequired' | t }}
+                </p>
+              }
+            </div>
           </div>
-          <div>
-            <dt>{{ 'customers.verificationBy' | t }}</dt>
-            <dd>{{ optionLabel(verificationByOptions, customerForm.get('verificationBy')?.value) }}</dd>
+        </section>
+        <!-- 03 Account -->
+        <section class="rf-card">
+          <div class="rf-card__head">
+            <span class="rf-card__step">03</span>
+            <div>
+              <h2 class="rf-card__title">{{ 'customers.accountInfo' | t }}</h2>
+              <p class="rf-card__hint">{{ 'customers.accountInfoSubtitle' | t }}</p>
+            </div>
           </div>
-        </dl>
-
-        <div class="rf-summary__progress">
-          <div class="rf-summary__progress-top">
-            <span>{{ 'customers.completion' | t }}</span>
-            <strong>{{ completion }}%</strong>
+          <div class="entity-form__field">
+            <span class="entity-form__label">{{ 'customers.registerAs' | t }}<span class="entity-form__req">*</span></span>
+            <div class="rf-choices" role="group">
+              @for (o of registerAsOptions; track o) {
+                <button
+                  type="button"
+                  class="rf-choice"
+                  [class.rf-choice--on]="customerForm.get('registerAs')?.value === o.value"
+                  (click)="customerForm.get('registerAs')?.setValue(o.value)"
+                  >
+                  <span class="rf-choice__mark" aria-hidden="true"></span>
+                  {{ o.label }}
+                </button>
+              }
+            </div>
           </div>
-          <div class="rf-meter"><span [style.width.%]="completion"></span></div>
-        </div>
-
-        <div class="rf-summary__actions">
-          <button type="submit" class="entity-form__btn entity-form__btn--primary" [disabled]="customerForm.invalid || isSaving">
-            {{ isSaving ? ('common.saving' | t) : ((isEditMode ? 'customers.update' : 'customers.create') | t) }}
-          </button>
-          <button type="button" class="entity-form__btn entity-form__btn--ghost" (click)="onCancel()" [disabled]="isSaving">
-            {{ 'common.cancel' | t }}
-          </button>
-        </div>
+          <div class="entity-form__field">
+            <span class="entity-form__label">{{ 'customers.verificationBy' | t }}<span class="entity-form__req">*</span></span>
+            <div class="rf-choices" role="group">
+              @for (o of verificationByOptions; track o) {
+                <button
+                  type="button"
+                  class="rf-choice"
+                  [class.rf-choice--on]="customerForm.get('verificationBy')?.value === o.value"
+                  (click)="customerForm.get('verificationBy')?.setValue(o.value)"
+                  >
+                  <span class="rf-choice__mark" aria-hidden="true"></span>
+                  {{ o.label }}
+                </button>
+              }
+            </div>
+          </div>
+          <div class="rf-grid">
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="rf-email">
+                {{ 'common.email' | t }}
+                <span class="entity-form__req">*</span>
+              </label>
+              <input id="rf-email" type="email" formControlName="email" class="entity-form__input" [placeholder]="'customers.emailPlaceholder' | t" />
+              @if (customerForm.get('email')?.invalid && customerForm.get('email')?.touched) {
+                <p class="entity-form__error">
+                  {{ (customerForm.get('email')?.hasError('required') ? 'customers.emailRequired' : 'customers.emailInvalid') | t }}
+                </p>
+              }
+            </div>
+            <div class="entity-form__field">
+              <label class="entity-form__label" for="rf-password">
+                {{ 'customers.password' | t }}
+                @if (!isEditMode) {
+                  <span class="entity-form__req">*</span>
+                }
+              </label>
+              <input
+                id="rf-password"
+                type="password"
+                formControlName="password"
+                class="entity-form__input"
+                autocomplete="new-password"
+                [placeholder]="(isEditMode ? 'customers.passwordOptionalHint' : 'customers.passwordPlaceholder') | t"
+                />
+              @if (customerForm.get('password')?.invalid && customerForm.get('password')?.touched) {
+                <p class="entity-form__error">
+                  {{ 'customers.passwordRequired' | t }}
+                </p>
+              }
+            </div>
+          </div>
+        </section>
+        <!-- 04 Documents -->
+        <section class="rf-card">
+          <div class="rf-card__head">
+            <span class="rf-card__step">04</span>
+            <div>
+              <h2 class="rf-card__title">{{ 'customers.documentsTitle' | t }}</h2>
+              <p class="rf-card__hint">{{ 'customers.personalImageSubtitle' | t }}</p>
+            </div>
+          </div>
+          <div class="rf-docs" [class.rf-docs--two]="isInstitution">
+            <div class="rf-doc">
+              <span class="entity-form__label">{{ 'customers.personalImage' | t }}</span>
+              @if (personalImagePreview) {
+                <div class="entity-form__preview">
+                  <img [src]="personalImagePreview" [alt]="'customers.imagePreviewAlt' | t" />
+                  <button type="button" class="entity-form__remove" (click)="removePersonalImage()" [attr.aria-label]="'customers.removeImage' | t">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              }
+              <label class="entity-form__upload" for="personal-image">
+                <input #personalImageInput id="personal-image" type="file" accept="image/*" (change)="onPersonalImageSelect()" />
+                <span class="entity-form__upload-icon" aria-hidden="true">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </span>
+                <strong>{{ personalImagePreview ? ('customers.changeImage' | t) : ('customers.uploadHint' | t) }}</strong>
+                <small>{{ 'customers.imageFormats' | t }}</small>
+              </label>
+            </div>
+            @if (isInstitution) {
+              <div class="rf-doc">
+                <span class="entity-form__label">{{ 'customers.commercialImage' | t }}<span class="entity-form__req">*</span></span>
+                @if (commercialImagePreview) {
+                  <div class="entity-form__preview">
+                    <img [src]="commercialImagePreview" [alt]="'customers.commercialImage' | t" />
+                    <button type="button" class="entity-form__remove" (click)="removeCommercialImage()" [attr.aria-label]="'customers.removeImage' | t">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                }
+                <label class="entity-form__upload" for="commercial-image">
+                  <input #commercialImageInput id="commercial-image" type="file" accept="image/*" (change)="onCommercialImageSelect()" />
+                  <span class="entity-form__upload-icon" aria-hidden="true">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  </span>
+                  <strong>{{ commercialImagePreview ? ('customers.changeImage' | t) : ('customers.uploadHint' | t) }}</strong>
+                  <small>{{ 'customers.imageFormats' | t }}</small>
+                </label>
+                @if (showCommercialImageError) {
+                  <p class="entity-form__error">{{ 'customers.commercialImageRequired' | t }}</p>
+                }
+              </div>
+            }
+          </div>
+        </section>
       </div>
-    </aside>
-  </form>
+      <!-- Summary -->
+      <aside class="rf-side">
+        <div class="rf-summary">
+          <p class="rf-summary__kicker">{{ 'customers.summary' | t }}</p>
+          <div class="rf-summary__id">
+            <span class="rf-avatar">
+              @if (personalImagePreview) {
+                <img [src]="personalImagePreview" alt="" />
+              }
+              @if (!personalImagePreview) {
+                {{ initial }}
+              }
+            </span>
+            <div class="rf-summary__name">
+              <strong>{{ customerForm.get('fullName')?.value || ('customers.newCustomer' | t) }}</strong>
+              <span class="rf-ltr">{{ customerForm.get('mobileNumber')?.value || '—' }}</span>
+            </div>
+          </div>
+          <dl class="rf-summary__facts">
+            <div>
+              <dt>{{ 'common.city' | t }}</dt>
+              <dd>{{ optionLabel(cityOptions, customerForm.get('cityId')?.value) }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'common.zone' | t }}</dt>
+              <dd>{{ optionLabel(zoneOptions, customerForm.get('zoneId')?.value) }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'customers.registerAs' | t }}</dt>
+              <dd>{{ optionLabel(registerAsOptions, customerForm.get('registerAs')?.value) }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'customers.verificationBy' | t }}</dt>
+              <dd>{{ optionLabel(verificationByOptions, customerForm.get('verificationBy')?.value) }}</dd>
+            </div>
+          </dl>
+          <div class="rf-summary__progress">
+            <div class="rf-summary__progress-top">
+              <span>{{ 'customers.completion' | t }}</span>
+              <strong>{{ completion }}%</strong>
+            </div>
+            <div class="rf-meter"><span [style.width.%]="completion"></span></div>
+          </div>
+          <div class="rf-summary__actions">
+            <button type="submit" class="entity-form__btn entity-form__btn--primary" [disabled]="customerForm.invalid || isSaving">
+              {{ isSaving ? ('common.saving' | t) : ((isEditMode ? 'customers.update' : 'customers.create') | t) }}
+            </button>
+            <button type="button" class="entity-form__btn entity-form__btn--ghost" (click)="onCancel()" [disabled]="isSaving">
+              {{ 'common.cancel' | t }}
+            </button>
+          </div>
+        </div>
+      </aside>
+    </form>
+  }
 </div>

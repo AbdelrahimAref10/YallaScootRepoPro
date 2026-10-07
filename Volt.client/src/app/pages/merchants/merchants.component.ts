@@ -11,6 +11,7 @@ import {
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { memo } from '../../shared/utils/memo';
 
 @Component({
   selector: 'app-merchants',
@@ -20,6 +21,8 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
   styleUrls: ['./merchants.component.css', '../../shared/styles/list-filters.css']
 })
 export class MerchantsComponent implements OnInit {
+  private readonly deletedFilterOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
   private readonly merchantClient = inject(AdminMerchantClient);
   private readonly router = inject(Router);
@@ -35,10 +38,11 @@ export class MerchantsComponent implements OnInit {
   successMessage = '';
 
   get deletedFilterOptions(): MultiSelectOption[] {
-    return [
-      { value: 'active', label: this.localeService.translate('merchants.filterNotDeleted') },
-      { value: 'deleted', label: this.localeService.translate('merchants.filterDeleted') }
-    ];
+    return this.deletedFilterOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 'active', label: this.localeService.translate('merchants.filterNotDeleted') },
+        { value: 'deleted', label: this.localeService.translate('merchants.filterDeleted') }
+      ]);
   }
 
   get isDeletedFilter(): boolean | null {
