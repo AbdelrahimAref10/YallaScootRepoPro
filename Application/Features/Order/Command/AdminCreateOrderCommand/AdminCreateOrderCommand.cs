@@ -203,8 +203,6 @@ namespace Application.Features.Order.Command.AdminCreateOrderCommand
 
                 CancellationDebtHelper.AttachPendingFeesToOrder(pendingCancellationFees, order.OrderId);
 
-                var orderTotals = Domain.Models.OrderTotals.FromPricing(order.OrderId, pricing);
-
                 var orderPayment = Domain.Models.OrderPayment.Create(
                     order.OrderId,
                     (int)PaymentMethod.Cash,
@@ -212,7 +210,6 @@ namespace Application.Features.Order.Command.AdminCreateOrderCommand
                     actor
                 );
 
-                await _context.OrderTotals.AddAsync(orderTotals, cancellationToken);
                 await _context.OrderPayments.AddAsync(orderPayment, cancellationToken);
 
                 // Vehicles at create — stay Pending (no auto-confirm)

@@ -40,10 +40,10 @@ namespace Application.Features.Order.Command.OrderVehicleLifecycleCommands
             if (merchant == null)
                 return Result.Failure<VehicleSettlementSnapshot>("Merchant not found");
 
-            var orderServiceFees = await context.OrderTotals
+            var orderServiceFees = await context.Orders
                 .AsNoTracking()
-                .Where(t => t.OrderId == orderId)
-                .Select(t => t.ServiceFees)
+                .Where(o => o.OrderId == orderId)
+                .Select(o => o.OrderServiceFees)
                 .FirstOrDefaultAsync(cancellationToken);
 
             var vehicleDeliveryFee = await context.OrderVehicles

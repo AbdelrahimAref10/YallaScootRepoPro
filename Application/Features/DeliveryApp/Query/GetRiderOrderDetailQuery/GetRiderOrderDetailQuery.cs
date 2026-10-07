@@ -40,10 +40,6 @@ namespace Application.Features.DeliveryApp.Query.GetRiderOrderDetailQuery
             if (order == null)
                 return Result.Failure<RiderOrderDetailDto>($"Order {request.OrderId} not found");
 
-            var totals = await _context.OrderTotals
-                .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.OrderId == request.OrderId, cancellationToken);
-
             var cashJournals = await _context.OrderJournals
                 .AsNoTracking()
                 .Where(j => j.OrderId == request.OrderId
@@ -56,7 +52,7 @@ namespace Application.Features.DeliveryApp.Query.GetRiderOrderDetailQuery
                 .Where(i => i.OrderId == request.OrderId)
                 .ToListAsync(cancellationToken);
 
-            return Result.Success(RiderOrderReader.ToDetail(order, totals, riderId, cashJournals, images));
+            return Result.Success(RiderOrderReader.ToDetail(order, riderId, cashJournals, images));
         }
     }
 }

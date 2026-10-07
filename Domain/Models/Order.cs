@@ -20,6 +20,10 @@ namespace Domain.Models
         public int VehiclesCount { get; private set; }
         public decimal OrderSubTotal { get; private set; }
         public decimal OrderTotal { get; private set; }
+        public decimal OrderServiceFees { get; private set; }
+        public decimal OrderDeliveryFees { get; private set; }
+        public decimal OrderUrgentFees { get; private set; }
+        public decimal OrderTieredDiscount { get; private set; }
         public string? Notes { get; private set; }
         public string PassportImage { get; private set; } = string.Empty; // Base64 string
         public string HotelName { get; private set; } = string.Empty;
@@ -293,7 +297,7 @@ namespace Domain.Models
         }
 
         /// <summary>
-        /// Single place that writes VehiclesCount / OrderSubTotal / OrderTotal / PreviousDebt.
+        /// Single place that writes VehiclesCount / OrderSubTotal / OrderTotal / fee breakdown / PreviousDebt.
         /// Create, update, replacement, and remove all go through this.
         /// </summary>
         private void ApplyPricing(OrderPricingBreakdown pricing, string? modifiedBy = null)
@@ -307,6 +311,10 @@ namespace Domain.Models
             VehiclesCount = pricing.VehiclesCount;
             OrderSubTotal = pricing.SubTotal;
             OrderTotal = pricing.Total;
+            OrderServiceFees = pricing.ServiceFees;
+            OrderDeliveryFees = pricing.DeliveryFees;
+            OrderUrgentFees = pricing.UrgentFees;
+            OrderTieredDiscount = pricing.TieredDiscountAmount;
             PreviousDebt = pricing.PreviousDebt;
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;

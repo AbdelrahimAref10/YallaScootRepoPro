@@ -63,6 +63,23 @@ namespace Infrastructure.MappingConfiguration
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
 
+            // Price breakdown (formerly the 1:1 OrderTotals table)
+            builder.Property(o => o.OrderServiceFees)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            builder.Property(o => o.OrderDeliveryFees)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            builder.Property(o => o.OrderUrgentFees)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            builder.Property(o => o.OrderTieredDiscount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
             builder.Property(o => o.Notes)
                 .HasColumnName("Notes")
                 .HasMaxLength(1000);
@@ -105,7 +122,6 @@ namespace Infrastructure.MappingConfiguration
             builder.Property(o => o.PreviousDebt)
                 .HasColumnName("PreviousDebt")
                 .HasColumnType("decimal(18,2)")
-                .HasDefaultValue(0m)
                 .IsRequired();
 
             builder.Property(o => o.MoneyRefunded)

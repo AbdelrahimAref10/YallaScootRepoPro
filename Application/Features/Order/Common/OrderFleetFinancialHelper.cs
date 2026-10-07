@@ -28,19 +28,6 @@ namespace Application.Features.Order.Common
             var rates = await OrderZoneFeeHelper.LoadRatesForCityAsync(context, order.CityId, cancellationToken);
             var pricing = order.RecalculateTotals(city, rates, actor);
 
-            var orderTotals = await context.OrderTotals
-                .AsTracking()
-                .FirstOrDefaultAsync(ot => ot.OrderId == order.OrderId, cancellationToken);
-
-            if (orderTotals != null)
-                orderTotals.Apply(pricing);
-            else
-            {
-                await context.OrderTotals.AddAsync(
-                    OrderTotals.FromPricing(order.OrderId, pricing),
-                    cancellationToken);
-            }
-
             var payment = order.OrderPayments?.FirstOrDefault()
                 ?? await context.OrderPayments
                     .AsTracking()

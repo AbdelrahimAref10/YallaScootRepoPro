@@ -228,18 +228,6 @@ namespace Application.Features.Order.Command.AdminUpdateOrderCommand
                     ov.SetDeliveryFee(fee, actor);
                 }
 
-                var orderTotals = await _context.OrderTotals
-                    .AsTracking()
-                    .FirstOrDefaultAsync(ot => ot.OrderId == order.OrderId, cancellationToken);
-
-                if (orderTotals != null)
-                    orderTotals.Apply(pricing);
-                else
-                {
-                    orderTotals = Domain.Models.OrderTotals.FromPricing(order.OrderId, pricing);
-                    await _context.OrderTotals.AddAsync(orderTotals, cancellationToken);
-                }
-
                 if (orderPayment != null)
                 {
                     orderPayment.Update((int)PaymentMethod.Cash, pricing.Total, actor);

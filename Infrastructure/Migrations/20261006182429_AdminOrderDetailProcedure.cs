@@ -15,10 +15,8 @@ namespace Infrastructure.Migrations
     /// </summary>
     public partial class AdminOrderDetailProcedure : Migration
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.Sql(@"
+        /// <summary>Procedure text as created here; later migrations alter it from this.</summary>
+        internal const string ProcedureSql = @"
 CREATE OR ALTER PROCEDURE dbo.usp_GetAdminOrderDetail
     @OrderId INT,
     @CancellationFeeType INT
@@ -180,7 +178,12 @@ BEGIN
     WHERE i.OrderId = @OrderId
     ORDER BY i.VehicleId, i.Step, i.Position;
 END
-");
+";
+
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql(ProcedureSql);
         }
 
         /// <inheritdoc />

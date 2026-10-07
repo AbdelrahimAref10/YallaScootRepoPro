@@ -50,7 +50,6 @@ namespace Infrastructure
         public DbSet<CustomerWallet> CustomerWallets { get; set; }
         public DbSet<RefundablePaypalAmount> RefundablePaypalAmounts { get; set; }
         public DbSet<CompanyTreasury> CompanyTreasuries { get; set; }
-        public DbSet<OrderTotals> OrderTotals { get; set; }
         public DbSet<CustomerLocation> CustomerLocations { get; set; }
         public DbSet<AdminNotification> AdminNotifications { get; set; }
         public DbSet<MerchantNotification> MerchantNotifications { get; set; }

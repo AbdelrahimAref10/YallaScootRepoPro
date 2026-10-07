@@ -169,7 +169,6 @@ namespace Application.Features.DeliveryApp.Common
 
         public static RiderOrderDetailDto ToDetail(
             Domain.Models.Order order,
-            OrderTotals? totals,
             int riderId,
             IReadOnlyList<OrderJournal> cashJournals,
             IReadOnlyList<OrderVehicleHandoverImage> images)
@@ -284,11 +283,11 @@ namespace Application.Features.DeliveryApp.Common
                     CollectFromCustomer = MyCollect(order, riderId, cashJournals),
                     CollectFromCustomerBreakdown = new RiderCollectBreakdownDto
                     {
-                        Rental = totals?.SubTotal ?? order.OrderSubTotal,
-                        DeliveryFees = totals?.DeliveryFees ?? 0,
-                        ServiceFees = totals?.ServiceFees ?? 0,
-                        UrgentFees = totals?.UrgentFees ?? 0,
-                        TieredDiscount = totals?.TieredDiscount ?? 0,
+                        Rental = order.OrderSubTotal,
+                        DeliveryFees = order.OrderDeliveryFees,
+                        ServiceFees = order.OrderServiceFees,
+                        UrgentFees = order.OrderUrgentFees,
+                        TieredDiscount = order.OrderTieredDiscount,
                         PreviousDebt = order.PreviousDebt
                     },
                     MyDeliveryFeeShare = MyCommission(order, riderId)

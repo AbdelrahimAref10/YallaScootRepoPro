@@ -112,33 +112,31 @@ namespace Application.Features.Order.Query.GetCustomerOrdersQuery
             var orderIds = orders.Select(o => o.OrderId).ToList();
             var riders = await CustomerOrderRiders.LoadAsync(_context, orderIds, cancellationToken);
 
-            var totals = await _context.OrderTotals
-                .AsNoTracking()
-                .Where(t => orderIds.Contains(t.OrderId))
-                .ToDictionaryAsync(t => t.OrderId, cancellationToken);
-
-            var previousDebts = await _context.Orders
+            var breakdowns = await _context.Orders
                 .AsNoTracking()
                 .Where(o => orderIds.Contains(o.OrderId))
-                .ToDictionaryAsync(o => o.OrderId, o => o.PreviousDebt, cancellationToken);
+                .Select(o => new
+                {
+                    o.OrderId,
+                    Breakdown = new OrderPriceBreakdownDto
+                    {
+                        SubTotal = o.OrderSubTotal,
+                        ServiceFees = o.OrderServiceFees,
+                        DeliveryFees = o.OrderDeliveryFees,
+                        UrgentFees = o.OrderUrgentFees,
+                        Discount = o.OrderTieredDiscount,
+                        PreviousDebt = o.PreviousDebt,
+                        Total = o.OrderTotal
+                    }
+                })
+                .ToDictionaryAsync(x => x.OrderId, x => x.Breakdown, cancellationToken);
 
             foreach (var order in orders)
             {
                 order.Riders = riders.TryGetValue(order.OrderId, out var list) ? list : new List<CustomerOrderRiderDto>();
 
-                if (totals.TryGetValue(order.OrderId, out var t))
-                {
-                    order.PriceBreakdown = new OrderPriceBreakdownDto
-                    {
-                        SubTotal = t.SubTotal,
-                        ServiceFees = t.ServiceFees,
-                        DeliveryFees = t.DeliveryFees,
-                        UrgentFees = t.UrgentFees,
-                        Discount = t.TieredDiscount,
-                        PreviousDebt = previousDebts.TryGetValue(order.OrderId, out var debt) ? debt : 0,
-                        Total = order.OrderTotal
-                    };
-                }
+                if (breakdowns.TryGetValue(order.OrderId, out var breakdown))
+                    order.PriceBreakdown = breakdown;
             }
         }
 
