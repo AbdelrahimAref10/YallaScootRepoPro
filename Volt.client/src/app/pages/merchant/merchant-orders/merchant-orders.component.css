@@ -1,16 +1,41 @@
 .orders__mini-badge {
-  display: inline-block;
-  margin-top: 0.25rem;
-  margin-inline-end: 0.35rem;
-  padding: 0.15rem 0.45rem;
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 0.2rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 0.35rem;
-  background: rgba(36, 89, 199, 0.15);
-  color: #1e40af;
-  font-size: 0.72rem;
+  background: var(--volt-info-soft);
+  color: var(--volt-info);
+  font-size: 0.7rem;
   font-weight: 700;
 }
 
 .orders__mini-badge--warn {
-  background: rgba(178, 107, 0, 0.18);
-  color: #9a3412;
+  background: var(--volt-warn-soft);
+  color: var(--volt-warn);
+}
+
+/* My response to the invitation */
+.orders__response {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.2rem 0.55rem;
+  border-radius: 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
+.orders__response--ok { background: var(--volt-ok-soft); color: var(--volt-ok); }
+.orders__response--warn { background: var(--volt-warn-soft); color: var(--volt-warn); }
+.orders__response--info { background: var(--volt-info-soft); color: var(--volt-info); }
+.orders__response--red { background: color-mix(in srgb, var(--volt-accent) 12%, transparent); color: var(--volt-accent); }
+
+/* No action button after the stat: drop its divider. */
+.orders__header-stat.orders__header-stat--last {
+  padding-inline-end: 0;
+  border-inline-end: none;
+}
+
+.orders__pipe--all .orders__pipe-dot {
+  background: var(--volt-text-primary);
 }
