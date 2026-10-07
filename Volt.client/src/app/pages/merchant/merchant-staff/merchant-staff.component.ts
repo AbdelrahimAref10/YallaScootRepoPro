@@ -18,6 +18,7 @@ import {
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { userNameValidator } from '../../../shared/validators/user-name.validator';
 
 type StaffAction = 'delete' | 'activate' | 'deactivate';
 
@@ -53,7 +54,7 @@ export class MerchantStaffComponent implements OnInit {
   constructor() {
     this.staffForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.minLength(2)]],
-      userName: ['', [Validators.required, Validators.minLength(3)]],
+      userName: ['', [Validators.required, Validators.minLength(3), userNameValidator]],
       phoneNumber: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
