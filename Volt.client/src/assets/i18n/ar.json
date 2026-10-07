@@ -1399,7 +1399,8 @@
     "openOrderNow": "افتح الطلب الآن",
     "vehiclesLabel": "المركبات",
     "merchantsUnit": "تاجر",
-    "call": "اتصال"
+    "call": "اتصال",
+    "eyebrow": "مركز العمليات"
   },
   "settlements": {
     "typePayDeliveryHint": "عهدة نقدية أو مستحقات طلب للرايدر",

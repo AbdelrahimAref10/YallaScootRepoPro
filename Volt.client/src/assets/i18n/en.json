@@ -1399,7 +1399,8 @@
     "openOrderNow": "Open the order now",
     "vehiclesLabel": "Vehicles",
     "merchantsUnit": "merchants",
-    "call": "Call"
+    "call": "Call",
+    "eyebrow": "Operations center"
   },
   "settlements": {
     "typePayDeliveryHint": "Cash float or order payout to a rider",
