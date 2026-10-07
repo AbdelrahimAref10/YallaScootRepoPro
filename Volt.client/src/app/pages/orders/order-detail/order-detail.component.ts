@@ -72,11 +72,7 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
 import { memo } from '../../../shared/utils/memo';
 import { LookupService } from '../../../core/services/lookup.service';
 import { PortalDirective } from '../../../shared/directives/portal.directive';
-
-interface PipelineStep {
-  state: OrderState;
-  key: string;
-}
+import { ORDER_PIPELINE_STEPS, pipelineProgress } from '../../../shared/order-cycle/order-pipeline';
 
 /** One vehicle in the assign / reassign riders dialog. */
 interface AssignLegDraft {
@@ -146,7 +142,7 @@ type TimelineEvent = { date: Date; text: string; detail?: string; tone: 'ok' | '
   templateUrl: './order-detail.component.html',
   styleUrls: [
     './order-detail.component.css',
-    './order-detail-page.css',
+    '../../../shared/styles/order-detail.css',
     '../../../shared/styles/entity-tiles.css'
   ]
 })
@@ -306,17 +302,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   refundDialogLoading = false;
   showConfirmOrderDialog = false;
 
-  readonly pipelineSteps: PipelineStep[] = [
-    { state: OrderState.Pending, key: 'common.pending' },
-    { state: OrderState.MerchantPending, key: 'common.merchantPending' },
-    { state: OrderState.MerchantConfirmed, key: 'common.merchantConfirmed' },
-    { state: OrderState.Confirmed, key: 'common.confirmed' },
-    { state: OrderState.DeliveryAssigned, key: 'common.deliveryAssigned' },
-    { state: OrderState.OnWay, key: 'common.onWay' },
-    { state: OrderState.CustomerReceived, key: 'common.received' },
-    { state: OrderState.Completed, key: 'common.completed' }
-  ];
-
+  readonly pipelineSteps = ORDER_PIPELINE_STEPS;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -2072,11 +2058,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   /** How far along the pipeline the order is, 0–100, for the stepper's fill line. */
   get pipelineProgress(): number {
-    const state = this.order?.orderState;
-    if (state == null || this.pipelineSteps.length < 2) return 0;
-    const index = this.pipelineSteps.findIndex(step => step.state === state);
-    const reached = index >= 0 ? index : this.pipelineSteps.filter(step => step.state < state).length - 1;
-    return Math.max(0, Math.min(100, (reached / (this.pipelineSteps.length - 1)) * 100));
+    return pipelineProgress(this.order?.orderState);
   }
 
   /** Share of the order total the customer has paid, 0–100. */

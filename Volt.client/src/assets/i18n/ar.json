@@ -336,7 +336,10 @@
       "deactivateConfirm": "لن يتمكن {{name}} من تسجيل الدخول. متابعة؟",
       "deleteTitle": "حذف الموظف",
       "deleteConfirm": "حذف {{name}}؟ سيفقد الوصول فوراً."
-    }
+    },
+    "yourTurn": "دورك",
+    "nextConfirmVehicles": "أكّد المركبات اللي تقدر توفرها للطلب ده.",
+    "nextHandover": "المندوب في الطريق: سلّمه المركبات أول ما يوصل."
   },
   "dashboard": {
     "welcome": "أهلاً بعودتك، {{name}}"

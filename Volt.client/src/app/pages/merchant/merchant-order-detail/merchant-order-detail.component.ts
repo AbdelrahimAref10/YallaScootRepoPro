@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, debounceTime, filter, takeUntil } from 'rxjs';
 import {
   AcceptMerchantOrderCommand,
+  MerchantPortalHandoverDto,
   FaultParty,
   JournalDirection,
   MarkMerchantHandoverToDeliveryCommand,
@@ -23,13 +24,16 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { VehicleSpecsComponent } from '../../../shared/components/vehicle-specs/vehicle-specs.component';
 import { VEHICLE_LIFECYCLE_STEPS, isStepDone } from '../../../shared/order-cycle/order-vehicle-cycle';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { PortalDirective } from '../../../shared/directives/portal.directive';
+import { ORDER_PIPELINE_STEPS, PipelineStep, pipelineProgress, pipelineStepStatus } from '../../../shared/order-cycle/order-pipeline';
+import { memo } from '../../../shared/utils/memo';
 
 @Component({
   selector: 'app-merchant-order-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, VehicleSpecsComponent, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, VehicleSpecsComponent, HasPermissionDirective, PortalDirective],
   templateUrl: './merchant-order-detail.component.html',
-  styleUrl: './merchant-order-detail.component.css'
+  styleUrls: ['../../../shared/styles/order-detail.css', './merchant-order-detail.component.css']
 })
 export class MerchantOrderDetailComponent implements OnInit, OnDestroy {
   private readonly localeService = inject(LocaleService);
@@ -53,7 +57,11 @@ export class MerchantOrderDetailComponent implements OnInit, OnDestroy {
   selectedHandoverVehicleIds: number[] = [];
 
   readonly JournalDirection = JournalDirection;
+  readonly OrderState = OrderState;
   readonly lifecycleSteps = VEHICLE_LIFECYCLE_STEPS;
+  readonly pipelineSteps = ORDER_PIPELINE_STEPS;
+
+  private readonly handoversMemo = memo<Map<number, MerchantPortalHandoverDto>>();
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -316,38 +324,49 @@ export class MerchantOrderDetailComponent implements OnInit, OnDestroy {
     return Math.max(1, Math.round((to.getTime() - from.getTime()) / 86400000) + 1);
   }
 
-  getStateClass(state: OrderState): string {
+  /** The stepper is hidden once the order stopped (cancelled or refused at delivery). */
+  get showPipeline(): boolean {
+    const state = this.order?.orderState;
+    return state !== OrderState.Cancelled && state !== OrderState.CustomerRejectedReceipt;
+  }
+
+  get pipelineProgress(): number {
+    return pipelineProgress(this.order?.orderState);
+  }
+
+  stepStatus(step: PipelineStep): 'done' | 'active' | 'upcoming' {
+    return pipelineStepStatus(this.order?.orderState, step.state);
+  }
+
+  /** What the merchant should do now, if anything. */
+  get nextHintKey(): string | null {
+    if (!this.order) return null;
+    if (this.order.canAccept) return 'merchant.nextConfirmVehicles';
+    if (this.order.canHandover) return 'merchant.nextHandover';
+    return null;
+  }
+
+  /** Handover status per vehicle (rider and whether it was handed over). */
+  handoverFor(vehicleId: number): MerchantPortalHandoverDto | undefined {
+    const handovers = this.order?.myHandovers ?? [];
+    return this.handoversMemo([handovers], () => new Map(handovers.map(h => [h.vehicleId, h]))).get(vehicleId);
+  }
+
+  stateTone(state: OrderState): 'ok' | 'warn' | 'info' | 'red' | 'mute' {
     switch (state) {
-      case OrderState.Pending:
-        return 'mod__status--pending';
-      case OrderState.MerchantPending:
-        return 'mod__status--merchant-pending';
-      case OrderState.MerchantConfirmed:
-        return 'mod__status--merchant-confirmed';
-      case OrderState.Confirmed:
-        return 'mod__status--confirmed';
-      case OrderState.DeliveryAssigned:
-        return 'mod__status--delivery-assigned';
-      case OrderState.OnWay:
-        return 'mod__status--onway';
-      case OrderState.CustomerReceived:
-        return 'mod__status--received';
-      case OrderState.CustomerRejectedReceipt:
-        return 'mod__status--rejected-receipt';
-      case OrderState.Completed:
-        return 'mod__status--completed';
+      case OrderState.Completed: return 'ok';
       case OrderState.Cancelled:
-        return 'mod__status--cancelled';
-      default:
-        return '';
+      case OrderState.CustomerRejectedReceipt: return 'red';
+      case OrderState.Pending:
+      case OrderState.MerchantPending: return 'warn';
+      default: return 'info';
     }
   }
 
-  getResponseClass(status: MerchantOrderResponseStatus): string {
-    if (status === MerchantOrderResponseStatus.Accepted) return 'mod__chip--ok';
-    if (status === MerchantOrderResponseStatus.Rejected) return 'mod__chip--danger';
-    if (status === MerchantOrderResponseStatus.PartiallyAccepted) return 'mod__chip--warn';
-    return 'mod__chip--warn';
+  responseTone(status: MerchantOrderResponseStatus): 'ok' | 'warn' | 'red' {
+    if (status === MerchantOrderResponseStatus.Accepted) return 'ok';
+    if (status === MerchantOrderResponseStatus.Rejected) return 'red';
+    return 'warn';
   }
 
   isBusy(action: string): boolean {
