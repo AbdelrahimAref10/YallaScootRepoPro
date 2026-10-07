@@ -262,7 +262,7 @@
 
 <!-- Create User Modal -->
 @if (showModal) {
-  <div class="users-modal" (click)="onCloseModal()">
+  <div class="users-modal" appPortal (click)="onCloseModal()">
     <div class="users-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
       <header class="users-modal__header">
         <div>

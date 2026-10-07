@@ -1386,7 +1386,17 @@
     "assignAnyway": "Assign anyway",
     "backToRiders": "Back",
     "assignCashDebtLimitError": "A cash order's delivery trip can't go to a rider at his cash debt limit; he must remit collected cash first: {{riders}}",
-    "assignCashDebtLimitErrorShort": "A cash order's delivery trip can't go to a rider at his cash debt limit; he must remit collected cash first."
+    "assignCashDebtLimitErrorShort": "A cash order's delivery trip can't go to a rider at his cash debt limit; he must remit collected cash first.",
+    "reviewDates": "Dates",
+    "reviewDuration": "Duration",
+    "reviewSummary": "Price summary",
+    "backToEdit": "Back to edit",
+    "createdTitle": "Order created!",
+    "createdMessage": "The booking for {{customer}} is confirmed. Opening the order details…",
+    "openOrderNow": "Open the order now",
+    "vehiclesLabel": "Vehicles",
+    "merchantsUnit": "merchants",
+    "call": "Call"
   },
   "settlements": {
     "typePayDeliveryHint": "Cash float or order payout to a rider",

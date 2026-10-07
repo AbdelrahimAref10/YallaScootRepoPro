@@ -18,6 +18,7 @@ import {
 } from '../../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { userNameValidator } from '../../../shared/validators/user-name.validator';
+import { PortalDirective } from '../../../shared/directives/portal.directive';
 
 type StaffAction = 'delete' | 'activate' | 'deactivate';
 
@@ -25,7 +26,7 @@ type StaffAction = 'delete' | 'activate' | 'deactivate';
 @Component({
   selector: 'app-merchant-staff',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, ConfirmDialogComponent, MultiSelectComponent, HasPermissionDirective],
+  imports: [PortalDirective, ReactiveFormsModule, TranslatePipe, ConfirmDialogComponent, MultiSelectComponent, HasPermissionDirective],
   templateUrl: './merchant-staff.component.html',
   styleUrls: ['../../users/users.component.css', '../../../shared/styles/entity-form.css']
 })

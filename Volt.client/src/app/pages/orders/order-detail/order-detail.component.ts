@@ -71,6 +71,7 @@ import {
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { memo } from '../../../shared/utils/memo';
 import { LookupService } from '../../../core/services/lookup.service';
+import { PortalDirective } from '../../../shared/directives/portal.directive';
 
 interface PipelineStep {
   state: OrderState;
@@ -127,17 +128,32 @@ const POSITION_LABEL_KEYS: Record<HandoverImagePosition, string> = {
 
 type OrderDetailTab = 'merchants' | 'riders' | 'journal' | 'documents';
 
+/** Order vehicles grouped by the merchant who supplies them (one fulfilment card each). */
+interface MerchantGroup {
+  merchantId: number;
+  merchantName: string;
+  cashOnReceive: boolean;
+  zoneName: string;
+  vehicles: OrderVehicleDto[];
+}
+
+type TimelineEvent = { date: Date; text: string; detail?: string; tone: 'ok' | 'info' | 'warn' | 'red' | 'mute' };
+
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, ConfirmDialogComponent, VehicleSpecsComponent, MultiSelectComponent, RiderPickerComponent, HasPermissionDirective],
+  imports: [PortalDirective, CommonModule, FormsModule, RouterModule, TranslatePipe, ConfirmDialogComponent, VehicleSpecsComponent, MultiSelectComponent, RiderPickerComponent, HasPermissionDirective],
   templateUrl: './order-detail.component.html',
   styleUrls: [
     './order-detail.component.css',
+    './order-detail-page.css',
     '../../../shared/styles/entity-tiles.css'
   ]
 })
 export class OrderDetailComponent implements OnInit, OnDestroy {
+  private readonly companyLedgerMemo = memo<{ debit: number; credit: number }>();
+  private readonly timelineMemo = memo<TimelineEvent[]>();
+  private readonly vehiclesByMerchantMemo = memo<MerchantGroup[]>();
   private readonly lookups = inject(LookupService);
   private readonly reassignMerchantOptionsMemo = memo<MultiSelectOption[]>();
   private readonly replaceVehicleOptionsMemo = memo<MultiSelectOption[]>();
@@ -238,36 +254,32 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       })));
   }
 
-  get vehiclesByMerchant(): Array<{
-    merchantId: number;
-    merchantName: string;
-    cashOnReceive: boolean;
-    zoneName: string;
-    vehicles: OrderVehicleDto[];
-  }> {
-    const groups = new Map<number, {
-      merchantId: number;
-      merchantName: string;
-      cashOnReceive: boolean;
-      zoneName: string;
-      vehicles: OrderVehicleDto[];
-    }>();
-    for (const vehicle of this.order?.orderVehicles || []) {
-      const merchantId = vehicle.merchantId || 0;
-      const existing = groups.get(merchantId);
-      if (existing) {
-        existing.vehicles.push(vehicle);
-        continue;
+  get vehiclesByMerchant(): MerchantGroup[] {
+    return this.vehiclesByMerchantMemo([this.order, this.dispatch, this.localeService.locale()], () => {
+      const groups = new Map<number, {
+        merchantId: number;
+        merchantName: string;
+        cashOnReceive: boolean;
+        zoneName: string;
+        vehicles: OrderVehicleDto[];
+      }>();
+      for (const vehicle of this.order?.orderVehicles || []) {
+        const merchantId = vehicle.merchantId || 0;
+        const existing = groups.get(merchantId);
+        if (existing) {
+          existing.vehicles.push(vehicle);
+          continue;
+        }
+        groups.set(merchantId, {
+          merchantId,
+          merchantName: (vehicle.merchantName || '').trim() || this.localeService.translate('orders.unassignedMerchant'),
+          cashOnReceive: !!vehicle.merchantCashOnReceive,
+          zoneName: (vehicle.merchantZoneName || '').trim(),
+          vehicles: [vehicle]
+        });
       }
-      groups.set(merchantId, {
-        merchantId,
-        merchantName: (vehicle.merchantName || '').trim() || this.localeService.translate('orders.unassignedMerchant'),
-        cashOnReceive: !!vehicle.merchantCashOnReceive,
-        zoneName: (vehicle.merchantZoneName || '').trim(),
-        vehicles: [vehicle]
-      });
-    }
-    return [...groups.values()];
+      return [...groups.values()];
+    });
   }
 
   // vehiclesByMerchant and timeline build new objects on every check, so their @for loops must
@@ -1626,14 +1638,16 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   /** Company debit/credit totals on this order's journal. */
   get companyLedger(): { debit: number; credit: number } {
-    let debit = 0;
-    let credit = 0;
-    for (const j of this.order?.orderJournals || []) {
-      if (j.partyType !== LedgerPartyType.Company) continue;
-      if (j.direction === JournalDirection.Debit) debit += j.amount || 0;
-      else credit += j.amount || 0;
-    }
-    return { debit, credit };
+    return this.companyLedgerMemo([this.order], () => {
+      let debit = 0;
+      let credit = 0;
+      for (const j of this.order?.orderJournals || []) {
+        if (j.partyType !== LedgerPartyType.Company) continue;
+        if (j.direction === JournalDirection.Debit) debit += j.amount || 0;
+        else credit += j.amount || 0;
+      }
+      return { debit, credit };
+    });
   }
 
   /** Merchant / rider name for a journal row, resolved from this order's payout snapshots. */
@@ -1735,72 +1749,74 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
 
   /** Everything that happened to the order, newest first. */
-  get timeline(): Array<{ date: Date; text: string; detail?: string; tone: 'ok' | 'info' | 'warn' | 'red' | 'mute' }> {
-    const o = this.order;
-    if (!o) return [];
-    const t = (k: string, p?: Record<string, unknown>) => this.localeService.translate(k, p as any);
-    const money = (v: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
-    const events: Array<{ date: Date; text: string; detail?: string; tone: 'ok' | 'info' | 'warn' | 'red' | 'mute' }> = [];
+  get timeline(): TimelineEvent[] {
+    return this.timelineMemo([this.order, this.dispatch, this.localeService.locale()], () => {
+      const o = this.order;
+      if (!o) return [];
+      const t = (k: string, p?: Record<string, unknown>) => this.localeService.translate(k, p as any);
+      const money = (v: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+      const events: Array<{ date: Date; text: string; detail?: string; tone: 'ok' | 'info' | 'warn' | 'red' | 'mute' }> = [];
 
-    if (o.createdDate) {
-      events.push({ date: new Date(o.createdDate), text: t('orders.evCreated', { name: o.customerName }), tone: 'info' });
-    }
-
-    for (const mo of o.merchantOrders || []) {
-      if (mo.createdDate) {
-        events.push({ date: new Date(mo.createdDate), text: t('orders.evSentToMerchant', { name: mo.merchantName }), tone: 'mute' });
+      if (o.createdDate) {
+        events.push({ date: new Date(o.createdDate), text: t('orders.evCreated', { name: o.customerName }), tone: 'info' });
       }
-      if (mo.respondedAt) {
+
+      for (const mo of o.merchantOrders || []) {
+        if (mo.createdDate) {
+          events.push({ date: new Date(mo.createdDate), text: t('orders.evSentToMerchant', { name: mo.merchantName }), tone: 'mute' });
+        }
+        if (mo.respondedAt) {
+          events.push({
+            date: new Date(mo.respondedAt),
+            text: t('orders.evMerchantResponded', { name: mo.merchantName, status: this.getMerchantStatusLabel(mo.responseStatus) }),
+            detail: mo.rejectReason || undefined,
+            tone: mo.responseStatus === MerchantOrderResponseStatus.Rejected ? 'red' : 'ok'
+          });
+        }
+      }
+
+      // Lifecycle steps, dated by the first photo taken at each step.
+      const firstPhoto = new Map<string, Date>();
+      for (const img of this.dispatch.handoverImages || []) {
+        const key = `${img.vehicleId}:${img.step}`;
+        const d = new Date(img.createdDate);
+        if (!firstPhoto.has(key) || d < firstPhoto.get(key)!) firstPhoto.set(key, d);
+      }
+      const stepKeys: Record<number, string> = {
+        1: 'orders.cyclePickup',
+        2: 'orders.cycleDeliveredToCustomer',
+        3: 'orders.cycleReceivedFromCustomer',
+        4: 'orders.cycleReturnedToOwner'
+      };
+      firstPhoto.forEach((date, key) => {
+        const [vehicleId, step] = key.split(':').map(Number);
+        const v = o.orderVehicles?.find(x => x.vehicleId === vehicleId);
+        events.push({ date, text: `${t(stepKeys[step])} · ${v?.vehicleName || ''} #${v?.vehicleCode || vehicleId}`, tone: step === 2 ? 'ok' : 'info' });
+      });
+
+      for (const p of o.orderPayments || []) {
+        if (!p.createdDate) continue;
         events.push({
-          date: new Date(mo.respondedAt),
-          text: t('orders.evMerchantResponded', { name: mo.merchantName, status: this.getMerchantStatusLabel(mo.responseStatus) }),
-          detail: mo.rejectReason || undefined,
-          tone: mo.responseStatus === MerchantOrderResponseStatus.Rejected ? 'red' : 'ok'
+          date: new Date(p.createdDate),
+          text: t('orders.evPayment', { amount: money(p.total), method: this.getPaymentMethodLabel(p.paymentMethod) }),
+          detail: this.getPaymentStateLabel(p.state),
+          tone: p.state === PaymentState.Paid ? 'ok' : p.state === PaymentState.Failed ? 'red' : 'warn'
         });
       }
-    }
 
-    // Lifecycle steps, dated by the first photo taken at each step.
-    const firstPhoto = new Map<string, Date>();
-    for (const img of this.dispatch.handoverImages || []) {
-      const key = `${img.vehicleId}:${img.step}`;
-      const d = new Date(img.createdDate);
-      if (!firstPhoto.has(key) || d < firstPhoto.get(key)!) firstPhoto.set(key, d);
-    }
-    const stepKeys: Record<number, string> = {
-      1: 'orders.cyclePickup',
-      2: 'orders.cycleDeliveredToCustomer',
-      3: 'orders.cycleReceivedFromCustomer',
-      4: 'orders.cycleReturnedToOwner'
-    };
-    firstPhoto.forEach((date, key) => {
-      const [vehicleId, step] = key.split(':').map(Number);
-      const v = o.orderVehicles?.find(x => x.vehicleId === vehicleId);
-      events.push({ date, text: `${t(stepKeys[step])} · ${v?.vehicleName || ''} #${v?.vehicleCode || vehicleId}`, tone: step === 2 ? 'ok' : 'info' });
+      for (const j of o.orderJournals || []) {
+        if (!j.createdDate) continue;
+        const sign = j.direction === JournalDirection.Credit ? '+' : '−';
+        events.push({
+          date: new Date(j.createdDate),
+          text: `${this.getJournalKindLabel(j.entryKind)} · ${sign}${money(j.amount)}`,
+          detail: `${this.getPartyTypeLabel(j.partyType)} · ${this.journalPartyName(j)}${j.vehicleCode ? ' · #' + j.vehicleCode : ''}`,
+          tone: 'mute'
+        });
+      }
+
+      return events.sort((a, b) => b.date.getTime() - a.date.getTime());
     });
-
-    for (const p of o.orderPayments || []) {
-      if (!p.createdDate) continue;
-      events.push({
-        date: new Date(p.createdDate),
-        text: t('orders.evPayment', { amount: money(p.total), method: this.getPaymentMethodLabel(p.paymentMethod) }),
-        detail: this.getPaymentStateLabel(p.state),
-        tone: p.state === PaymentState.Paid ? 'ok' : p.state === PaymentState.Failed ? 'red' : 'warn'
-      });
-    }
-
-    for (const j of o.orderJournals || []) {
-      if (!j.createdDate) continue;
-      const sign = j.direction === JournalDirection.Credit ? '+' : '−';
-      events.push({
-        date: new Date(j.createdDate),
-        text: `${this.getJournalKindLabel(j.entryKind)} · ${sign}${money(j.amount)}`,
-        detail: `${this.getPartyTypeLabel(j.partyType)} · ${this.journalPartyName(j)}${j.vehicleCode ? ' · #' + j.vehicleCode : ''}`,
-        tone: 'mute'
-      });
-    }
-
-    return events.sort((a, b) => b.date.getTime() - a.date.getTime());
   }
 
   /** Badge colour for the order state. */
@@ -2052,6 +2068,25 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       || this.order?.orderState === OrderState.OnWay
       || this.order?.orderState === OrderState.CustomerReceived
       || this.order?.orderState === OrderState.DeliveryAssigned;
+  }
+
+  /** How far along the pipeline the order is, 0–100, for the stepper's fill line. */
+  get pipelineProgress(): number {
+    const state = this.order?.orderState;
+    if (state == null || this.pipelineSteps.length < 2) return 0;
+    const index = this.pipelineSteps.findIndex(step => step.state === state);
+    const reached = index >= 0 ? index : this.pipelineSteps.filter(step => step.state < state).length - 1;
+    return Math.max(0, Math.min(100, (reached / (this.pipelineSteps.length - 1)) * 100));
+  }
+
+  /** Share of the order total the customer has paid, 0–100. */
+  get paidPercent(): number {
+    const total = this.order?.orderTotal || 0;
+    return total > 0 ? Math.min(100, (this.paidAmount / total) * 100) : 0;
+  }
+
+  get balanceDue(): number {
+    return Math.max(0, (this.order?.orderTotal || 0) - this.paidAmount);
   }
 
   getStepStatus(stepState: OrderState): 'done' | 'active' | 'upcoming' {

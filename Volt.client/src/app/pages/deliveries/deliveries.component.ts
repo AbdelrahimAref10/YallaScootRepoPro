@@ -24,11 +24,12 @@ import {
 } from '../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { memo } from '../../shared/utils/memo';
+import { PortalDirective } from '../../shared/directives/portal.directive';
 
 @Component({
   selector: 'app-deliveries',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent, HasPermissionDirective],
+  imports: [PortalDirective, CommonModule, FormsModule, RouterModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './deliveries.component.html',
   styleUrls: ['./deliveries.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-form.css']
 })

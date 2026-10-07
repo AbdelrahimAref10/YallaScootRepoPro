@@ -7,576 +7,591 @@
 }
 
 @if (order && !isLoading) {
-  <div class="ox">
-    <!-- ── Header: number, statuses, actions ───────────────────────── -->
-    <header class="ox-head">
-      <div class="ox-head__main">
-        <button type="button" class="ox-head__back" (click)="onBack()">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
+  <div class="oz">
+    <!-- ══════════ Hero: identity, key figures, progress ══════════ -->
+    <section class="oz-hero">
+      <div class="oz-hero__bar">
+        <button type="button" class="oz-back" (click)="onBack()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
           {{ 'nav.orders' | t }}
         </button>
-        <div class="ox-head__title-row">
-          <h1 class="ox-head__title">#{{ order.orderCode }}</h1>
-          <span class="ox-badge" [ngClass]="'ox-badge--' + paymentBadge.tone">{{ paymentBadge.labelKey | t }}</span>
-          <span class="ox-badge" [ngClass]="'ox-badge--' + stateTone(displayState)">{{ getStateLabel(displayState) }}</span>
-          @if (order.isUrgent) {
-            <span class="ox-badge ox-badge--red">{{ 'orders.urgent' | t }}</span>
-          }
-        </div>
-        <p class="ox-head__meta">
-          {{ order.createdDate | date:'d MMMM y \'at\' HH:mm' }}
-          <span aria-hidden="true">·</span> {{ order.subCategoryName }}
-          <span aria-hidden="true">·</span> {{ order.cityName }}
-        </p>
-      </div>
-      <div class="ox-head__actions">
-        <button type="button" class="ox-btn" (click)="onPrint()">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-          </svg>
-          {{ 'orders.printReceipt' | t }}
-        </button>
-        <div class="ox-menu">
-          <button type="button" class="ox-btn" (click)="showMoreMenu = !showMoreMenu" [attr.aria-expanded]="showMoreMenu">
-            {{ 'orders.moreActions' | t }}
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
+        <div class="oz-hero__actions">
+          <button type="button" class="oz-btn oz-btn--glass" (click)="onPrint()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <span>{{ 'orders.printReceipt' | t }}</span>
           </button>
-          @if (showMoreMenu) {
-            <div class="ox-menu__backdrop" (click)="showMoreMenu = false"></div>
-          }
-          @if (showMoreMenu) {
-            <div class="ox-menu__list" role="menu">
-              <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                @if (canEdit()) {
-                  <button type="button" role="menuitem" (click)="showMoreMenu = false; onEdit()">{{ 'common.edit' | t }}</button>
-                }
-              </ng-container>
-              <ng-container *appHasPermission="'Admin.Settlements.View'">
-                <button type="button" role="menuitem" (click)="showMoreMenu = false; onGoSettlements()">{{ 'orders.openSettlements' | t }}</button>
-              </ng-container>
-              <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                @if (canCancel()) {
-                  <button
-                    type="button"
-                    role="menuitem"
-                    class="ox-menu__danger"
-                    (click)="showMoreMenu = false; onCancelOrder()"
-                    [disabled]="isActionLoading('cancel')"
-                  >{{ 'orders.cancelOrder' | t }}</button>
-                }
-              </ng-container>
-            </div>
-          }
+          <div class="oz-menu">
+            <button type="button" class="oz-btn oz-btn--glass" (click)="showMoreMenu = !showMoreMenu" [attr.aria-expanded]="showMoreMenu">
+              <span>{{ 'orders.moreActions' | t }}</span>
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            @if (showMoreMenu) {
+              <div class="oz-menu__backdrop" (click)="showMoreMenu = false"></div>
+              <div class="oz-menu__list" role="menu">
+                <ng-container *appHasPermission="'Admin.Orders.Edit'">
+                  @if (canEdit()) {
+                    <button type="button" role="menuitem" (click)="showMoreMenu = false; onEdit()">{{ 'common.edit' | t }}</button>
+                  }
+                </ng-container>
+                <ng-container *appHasPermission="'Admin.Settlements.View'">
+                  <button type="button" role="menuitem" (click)="showMoreMenu = false; onGoSettlements()">{{ 'orders.openSettlements' | t }}</button>
+                </ng-container>
+                <ng-container *appHasPermission="'Admin.Orders.Edit'">
+                  @if (canCancel()) {
+                    <button type="button" role="menuitem" class="oz-menu__danger" (click)="showMoreMenu = false; onCancelOrder()" [disabled]="isActionLoading('cancel')">{{ 'orders.cancelOrder' | t }}</button>
+                  }
+                </ng-container>
+              </div>
+            }
+          </div>
+          <ng-container *appHasPermission="'Admin.Orders.Edit'">
+            @if (canSendToMerchants()) {
+              <button type="button" class="oz-btn oz-btn--primary" (click)="onOpenSendToMerchants()" [disabled]="isActionLoading('sendMerchants')">
+                {{ isActionLoading('sendMerchants') ? ('orders.processing' | t) : ('orders.sendToMerchants' | t) }}
+              </button>
+            }
+          </ng-container>
+          <ng-container *appHasPermission="'Admin.Orders.Edit'">
+            @if (canConfirm()) {
+              <button type="button" class="oz-btn oz-btn--primary" (click)="onConfirmOrder()" [disabled]="isActionLoading('confirm')">
+                {{ isActionLoading('confirm') ? ('orders.confirming' | t) : ('orders.confirmOrder' | t) }}
+              </button>
+            }
+          </ng-container>
         </div>
-        <ng-container *appHasPermission="'Admin.Orders.Edit'">
-          @if (canSendToMerchants()) {
-            <button
-              type="button"
-              class="ox-btn ox-btn--primary"
-              (click)="onOpenSendToMerchants()"
-              [disabled]="isActionLoading('sendMerchants')"
-            >{{ isActionLoading('sendMerchants') ? ('orders.processing' | t) : ('orders.sendToMerchants' | t) }}</button>
-          }
-        </ng-container>
-        <ng-container *appHasPermission="'Admin.Orders.Edit'">
-          @if (canConfirm()) {
-            <button
-              type="button"
-              class="ox-btn ox-btn--primary"
-              (click)="onConfirmOrder()"
-              [disabled]="isActionLoading('confirm')"
-            >{{ isActionLoading('confirm') ? ('orders.confirming' | t) : ('orders.confirmOrder' | t) }}</button>
-          }
-        </ng-container>
       </div>
-    </header>
-    @if (successMessage) {
-      <div class="ox-alert ox-alert--ok" role="status">{{ successMessage }}</div>
-    }
-    @if (errorMessage) {
-      <div class="ox-alert ox-alert--err" role="alert">{{ errorMessage }}</div>
-    }
-    <!-- ── Progress ────────────────────────────────────────────────── -->
-    @if (showPipeline) {
-      <section class="ox-progress">
-        <ol class="ox-stepper" [attr.aria-label]="'orders.pipelineAria' | t">
-          @for (step of pipelineSteps; track step; let i = $index) {
+
+      <div class="oz-hero__main">
+        <div class="oz-hero__identity">
+          <p class="oz-hero__eyebrow">{{ order.subCategoryName }} · {{ order.cityName }}</p>
+          <h1 class="oz-hero__code">#{{ order.orderCode }}</h1>
+          <div class="oz-hero__badges">
+            <span class="oz-badge oz-badge--glass" [ngClass]="'oz-badge--' + stateTone(displayState)"><i></i>{{ getStateLabel(displayState) }}</span>
+            <span class="oz-badge oz-badge--glass" [ngClass]="'oz-badge--' + paymentBadge.tone"><i></i>{{ paymentBadge.labelKey | t }}</span>
+            @if (order.isUrgent) {
+              <span class="oz-badge oz-badge--glass oz-badge--urgent">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+                {{ 'orders.urgent' | t }}
+              </span>
+            }
+          </div>
+          <p class="oz-hero__meta">{{ order.createdDate | date: 'd MMMM y · HH:mm' }} · {{ order.customerName }}</p>
+        </div>
+
+        <dl class="oz-hero__stats">
+          <div class="oz-stat oz-stat--total">
+            <dt>{{ 'common.total' | t }}</dt>
+            <dd>{{ order.orderTotal | number: '1.2-2' }} <small>{{ 'common.currency' | t }}</small></dd>
+          </div>
+          <div class="oz-stat">
+            <dt>{{ (balanceDue > 0 ? 'orders.balanceDue' : 'orders.paidByCustomer') | t }}</dt>
+            <dd [class.oz-stat--due]="balanceDue > 0">{{ (balanceDue > 0 ? balanceDue : paidAmount) | number: '1.2-2' }}</dd>
+          </div>
+          <div class="oz-stat">
+            <dt>{{ 'orders.rentalPeriod' | t }}</dt>
+            <dd>{{ order.reservationDateFrom | date: 'd MMM' }} → {{ order.reservationDateTo | date: 'd MMM' }}</dd>
+            <span class="oz-stat__hint">{{ 'orders.daysCount' | t: { n: reservationDays } }}</span>
+          </div>
+          <div class="oz-stat">
+            <dt>{{ 'orders.vehiclesLabel' | t }}</dt>
+            <dd>{{ order.vehiclesCount }}</dd>
+            <span class="oz-stat__hint">{{ vehiclesByMerchant.length }} {{ 'orders.merchantsUnit' | t }}</span>
+          </div>
+        </dl>
+      </div>
+
+      @if (showPipeline) {
+        <ol class="oz-steps" [attr.aria-label]="'orders.pipelineAria' | t" [style.--progress.%]="pipelineProgress" [style.--n]="pipelineSteps.length">
+          @for (step of pipelineSteps; track step.state; let i = $index) {
             <li
-              class="ox-stepper__step"
-              [class.ox-stepper__step--done]="getStepStatus(step.state) === 'done'"
-              [class.ox-stepper__step--now]="getStepStatus(step.state) === 'active'"
-              >
-              <span class="ox-stepper__dot">
+              class="oz-steps__item"
+              [class.oz-steps__item--done]="getStepStatus(step.state) === 'done'"
+              [class.oz-steps__item--now]="getStepStatus(step.state) === 'active'">
+              <span class="oz-steps__dot">
                 @if (getStepStatus(step.state) === 'done') {
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                  </svg>
-                }
-                @if (getStepStatus(step.state) !== 'done') {
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                } @else {
                   {{ i + 1 }}
                 }
               </span>
-              <span class="ox-stepper__label">{{ step.key | t }}</span>
+              <span class="oz-steps__label">{{ step.key | t }}</span>
             </li>
           }
         </ol>
-        @if (nextStepKey || canAssignAnyVehicle || canMarkHandover()) {
-          <div class="ox-next">
-            <div class="ox-next__text">
-              <span class="ox-next__label">{{ 'orders.nextStep' | t }}</span>
-              @if (nextStepKey) {
-                <p>{{ nextStepKey | t }}</p>
-              }
-            </div>
-            <div class="ox-next__actions">
-              <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                @if (canAssignAnyVehicle) {
-                  <button type="button" class="ox-btn" (click)="onOpenAssignDelivery()" [disabled]="isActionLoading('assignDelivery')">
-                    {{ (hasAnyLegRider ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
-                  </button>
-                }
-              </ng-container>
-              <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                @if (canMarkHandover()) {
-                  <button type="button" class="ox-btn ox-btn--primary" (click)="onOpenHandover()" [disabled]="isActionLoading('handover')">
-                    {{ isActionLoading('handover') ? ('orders.processing' | t) : ('orders.markHandover' | t) }}
-                  </button>
-                }
-              </ng-container>
-            </div>
-          </div>
-        }
+      }
+    </section>
+
+    @if (successMessage) {
+      <div class="oz-alert oz-alert--ok" role="status">{{ successMessage }}</div>
+    }
+    @if (errorMessage) {
+      <div class="oz-alert oz-alert--err" role="alert">{{ errorMessage }}</div>
+    }
+
+    <!-- ══════════ What to do next ══════════ -->
+    @if (showPipeline && (nextStepKey || canAssignAnyVehicle || canMarkHandover())) {
+      <section class="oz-next">
+        <span class="oz-next__icon" aria-hidden="true">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 12h14"/></svg>
+        </span>
+        <div class="oz-next__text">
+          <span class="oz-next__label">{{ 'orders.nextStep' | t }}</span>
+          @if (nextStepKey) {
+            <p>{{ nextStepKey | t }}</p>
+          }
+        </div>
+        <div class="oz-next__actions">
+          <ng-container *appHasPermission="'Admin.Orders.Edit'">
+            @if (canAssignAnyVehicle) {
+              <button type="button" class="oz-btn" (click)="onOpenAssignDelivery()" [disabled]="isActionLoading('assignDelivery')">
+                {{ (hasAnyLegRider ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
+              </button>
+            }
+          </ng-container>
+          <ng-container *appHasPermission="'Admin.Orders.Edit'">
+            @if (canMarkHandover()) {
+              <button type="button" class="oz-btn oz-btn--primary" (click)="onOpenHandover()" [disabled]="isActionLoading('handover')">
+                {{ isActionLoading('handover') ? ('orders.processing' | t) : ('orders.markHandover' | t) }}
+              </button>
+            }
+          </ng-container>
+        </div>
       </section>
     }
-    <div class="ox-grid">
-      <!-- ════════════ Main column ════════════ -->
-      <div class="ox-main">
+
+    <div class="oz-grid">
+      <!-- ══════════ Main column ══════════ -->
+      <div class="oz-main">
         @if (isRejectedReceipt) {
-          <section class="ox-notice ox-notice--warn">
+          <section class="oz-notice">
             <strong>{{ 'common.rejectedReceipt' | t }} · {{ getFaultPartyLabel(order.receiptFaultParty) }}</strong>
             @if (order.receiptRejectNote) {
               <p>{{ order.receiptRejectNote }}</p>
             }
           </section>
         }
-        <!-- One card per merchant (like a fulfilment group) -->
+
+        <!-- One card per merchant -->
         @for (group of vehiclesByMerchant; track group.merchantId) {
-          <section class="ox-panel ox-fulfil">
-            <header class="ox-fulfil__head">
-              <span class="ox-badge" [ngClass]="'ox-badge--' + groupTone(group.vehicles)">{{ groupLabelKey(group.vehicles) | t }}</span>
-              <h2 class="ox-fulfil__title">{{ group.merchantName }}</h2>
-              <span class="ox-fulfil__meta">
-                @if (group.zoneName) {
-                  {{ group.zoneName }} ·
-                  }{{ 'orders.nVehicles' | t:{ n: group.vehicles.length } }}
-                </span>
-                @if (group.cashOnReceive) {
-                  <span class="ox-chip">{{ 'orders.cashOnReceiveYes' | t }}</span>
-                }
-              </header>
-              @for (vehicle of group.vehicles; track vehicle.vehicleId) {
-                <article
-                  class="ox-line"
-                  [class.ox-line--void]="vehicle.deliveryFailed || vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Declined"
-                  >
-                  <div class="ox-line__row">
-                    <div class="ox-line__thumb">
-                      @if (vehicle.imageUrl) {
-                        <img [src]="vehicle.imageUrl" alt="" />
-                      }
-                      @if (!vehicle.imageUrl) {
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M5.5 20a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm13 0a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 17.5h6l2.5-6H19M14 6h2.5l2 5.5M8 17.5L11 11h3.5"/>
-                        </svg>
-                      }
-                    </div>
-                    <div class="ox-line__info">
-                      <a class="ox-line__name">{{ vehicle.vehicleName }}</a>
-                      <div class="ox-line__sub">
-                        <span class="ox-line__code">#{{ vehicle.vehicleCode }}</span>
-                        @if (vehicle.model) {
-                          <span>{{ vehicle.model }}</span>
-                        }
-                        @if (vehicle.color) {
-                          <span>{{ vehicle.color }}</span>
-                        }
-                      </div>
-                      <div class="ox-line__legs">
-                        <span><b>{{ 'orders.legOut' | t }}</b> {{ deliveryFor(vehicle.vehicleId)?.deliveryName || ('orders.unassignedCourier' | t) }}</span>
-                        <span><b>{{ 'orders.legBack' | t }}</b> {{ returnFor(vehicle.vehicleId)?.deliveryName || ('orders.unassignedCourier' | t) }}</span>
-                      </div>
-                    </div>
-                    <div class="ox-line__qty">{{ vehicle.price | number:'1.2-2' }} × {{ reservationDays }}</div>
-                    <div class="ox-line__total">{{ (vehicle.price || 0) * reservationDays | number:'1.2-2' }}</div>
-                  </div>
-                  @if (order.orderState >= OrderState.DeliveryAssigned) {
-                    <div class="ox-line__track">
-                      @for (step of lifecycleSteps; track step) {
-                        <div
-                          class="ox-track"
-                          [class.ox-track--done]="isCycleStepDone(vehicle, step.id)"
-                          >
-                          <span class="ox-track__bar"></span>
-                          <span class="ox-track__label">{{ step.labelKey | t }}</span>
-                          @if (stepImages(vehicle, step.id); as photos) {
-                            <span class="ox-track__photos">
-                              @for (photo of photos; track photo; let i = $index) {
-                                <button
-                                  type="button"
-                                  class="ox-track__photo"
-                                  (click)="openGallery(vehicle, step.id, i)"
-                                  [attr.aria-label]="(step.labelKey | t) + ' · ' + (positionLabelKey(photo.position) | t)"
-                                ><img [src]="photo.imageUrl" alt="" /></button>
-                              }
-                            </span>
-                          }
-                          @if (cycleProofUrl(vehicle, step.id)) {
-                            <a
-                              class="ox-track__photo"
-                              [href]="cycleProofUrl(vehicle, step.id)"
-                              target="_blank"
-                              rel="noopener"
-                            ><img [src]="cycleProofUrl(vehicle, step.id)" alt="" /></a>
-                          }
-                        </div>
-                      }
-                    </div>
+          <section class="oz-card oz-fulfil">
+            <header class="oz-fulfil__head">
+              <span class="oz-avatar" aria-hidden="true">{{ group.merchantName.charAt(0) }}</span>
+              <div class="oz-fulfil__who">
+                <h2>{{ group.merchantName }}</h2>
+                <p>
+                  @if (group.zoneName) {
+                    {{ group.zoneName }} ·
                   }
-                  @if (nextVehicleAction(vehicle) || canAssignVehicle(vehicle) || canFailVehicle(vehicle) || canReplaceVehicle() || canRemoveVehicle(vehicle)) {
-                    <div
-                      class="ox-line__actions"
-                      >
-                      <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                        @if (nextVehicleAction(vehicle); as step) {
-                          <button type="button" class="ox-btn ox-btn--primary ox-btn--sm" (click)="openLifecycleModal(vehicle, step)">
-                            {{ lifecycleActionLabel(step) }}
-                          </button>
-                        }
-                      </ng-container>
-                      <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                        @if (canAssignVehicle(vehicle)) {
-                          <button type="button" class="ox-btn ox-btn--sm" (click)="onOpenAssignDelivery(vehicle)" [disabled]="isActionLoading('assignDelivery')">
-                            {{ (hasAnyRider(vehicle.vehicleId) ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
-                          </button>
-                        }
-                      </ng-container>
-                      <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                        @if (canReplaceVehicle()) {
-                          <button type="button" class="ox-btn ox-btn--sm" (click)="onOpenReplaceVehicle(vehicle.vehicleId)">{{ 'orders.replaceVehicle' | t }}</button>
-                        }
-                      </ng-container>
-                      <span class="ox-line__spacer"></span>
-                      <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                        @if (canFailVehicle(vehicle)) {
-                          <button type="button" class="ox-btn ox-btn--sm ox-btn--link-danger" (click)="openVehicleNotReceived(vehicle)">{{ 'orders.cancelVehicle' | t }}</button>
-                        }
-                      </ng-container>
-                      <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                        @if (canRemoveVehicle(vehicle)) {
-                          <button type="button" class="ox-btn ox-btn--sm ox-btn--link-danger" (click)="onOpenRemoveVehicle(vehicle.vehicleId)">{{ 'orders.removeVehicle' | t }}</button>
-                        }
-                      </ng-container>
-                    </div>
-                  }
-                  @if (vehicle.deliveryFailed) {
-                    <p class="ox-line__fail">{{ 'orders.vehicleCancelled' | t }}</p>
-                  }
-                </article>
-              }
-              <footer class="ox-fulfil__foot">
-                <span>{{ 'orders.merchantResponse' | t }}: <b>{{ merchantInviteLabel(group.merchantId) }}</b></span>
-                <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                  @if (merchantInviteRejected(group.merchantId) && order.orderState === OrderState.MerchantPending) {
-                    <button
-                      type="button"
-                      class="ox-btn ox-btn--sm"
-                      (click)="onOpenReassign(group.merchantId)"
-                    >{{ 'orders.reassignMerchant' | t }}</button>
-                  }
-                </ng-container>
-              </footer>
-            </section>
-          }
-          @if (!order.orderVehicles.length) {
-            <p class="ox-panel ox-empty">{{ 'common.noData' | t }}</p>
-          }
-          <!-- Payment -->
-          <section class="ox-panel">
-            <header class="ox-panel__head">
-              <div class="ox-panel__title-row">
-                <span class="ox-badge" [ngClass]="'ox-badge--' + paymentBadge.tone">{{ paymentBadge.labelKey | t }}</span>
-                <h2 class="ox-panel__title">{{ 'orders.payment' | t }}</h2>
+                  {{ 'orders.nVehicles' | t: { n: group.vehicles.length } }}
+                </p>
               </div>
-              <div class="ox-panel__head-actions">
-                <span class="ox-muted">{{ getPaymentMethodLabel(order.paymentMethod) }}</span>
-                <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                  @if (canChangeToCash()) {
-                    <button
-                      type="button"
-                      class="ox-btn ox-btn--sm"
-                      (click)="onChangeToCash()"
-                      [disabled]="isActionLoading('changeToCash')"
-                      >
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                      </svg>
-                      {{ 'orders.changeToCash' | t }}
-                    </button>
-                  }
-                </ng-container>
+              <div class="oz-fulfil__tags">
+                @if (group.cashOnReceive) {
+                  <span class="oz-chip">{{ 'orders.cashOnReceiveYes' | t }}</span>
+                }
+                <span class="oz-badge" [ngClass]="'oz-badge--' + groupTone(group.vehicles)"><i></i>{{ groupLabelKey(group.vehicles) | t }}</span>
               </div>
             </header>
-            @if (order.orderTotals; as totals) {
-              <div class="ox-pay-table">
-                <div><span>{{ 'orders.subTotal' | t }}</span><span class="ox-muted">{{ 'orders.nVehicles' | t:{ n: order.vehiclesCount } }} · {{ 'orders.daysCount' | t:{ n: reservationDays } }}</span><b>{{ totals.subTotal | number:'1.2-2' }}</b></div>
-                <div><span>{{ 'orders.deliveryFees' | t }}</span><span></span><b>{{ totals.deliveryFees | number:'1.2-2' }}</b></div>
-                <div><span>{{ 'orders.serviceFees' | t }}</span><span></span><b>{{ totals.serviceFees | number:'1.2-2' }}</b></div>
-                @if (totals.urgentFees > 0) {
-                  <div><span>{{ 'orders.urgentFees' | t }}</span><span></span><b>{{ totals.urgentFees | number:'1.2-2' }}</b></div>
+
+            @for (vehicle of group.vehicles; track vehicle.vehicleId) {
+              <article class="oz-vehicle" [class.oz-vehicle--void]="vehicle.deliveryFailed || vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Declined">
+                <div class="oz-vehicle__row">
+                  <div class="oz-vehicle__thumb">
+                    @if (vehicle.imageUrl) {
+                      <img [src]="vehicle.imageUrl" alt="" loading="lazy" />
+                    } @else {
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M5.5 20a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm13 0a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 17.5h6l2.5-6H19M14 6h2.5l2 5.5M8 17.5L11 11h3.5"/></svg>
+                    }
+                  </div>
+                  <div class="oz-vehicle__info">
+                    <div class="oz-vehicle__title">
+                      <strong>{{ vehicle.vehicleName }}</strong>
+                      <span class="oz-code">#{{ vehicle.vehicleCode }}</span>
+                    </div>
+                    <div class="oz-vehicle__specs">
+                      @if (vehicle.model) {
+                        <span>{{ vehicle.model }}</span>
+                      }
+                      @if (vehicle.color) {
+                        <span>{{ vehicle.color }}</span>
+                      }
+                    </div>
+                    <div class="oz-legs">
+                      <span class="oz-leg" [class.oz-leg--set]="!!deliveryFor(vehicle.vehicleId)">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-5-5l5 5-5 5"/></svg>
+                        <b>{{ 'orders.legOut' | t }}</b>
+                        {{ deliveryFor(vehicle.vehicleId)?.deliveryName || ('orders.unassignedCourier' | t) }}
+                      </span>
+                      <span class="oz-leg" [class.oz-leg--set]="!!returnFor(vehicle.vehicleId)">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m5 5l-5-5 5-5"/></svg>
+                        <b>{{ 'orders.legBack' | t }}</b>
+                        {{ returnFor(vehicle.vehicleId)?.deliveryName || ('orders.unassignedCourier' | t) }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="oz-vehicle__price">
+                    <strong>{{ (vehicle.price || 0) * reservationDays | number: '1.2-2' }}</strong>
+                    <span>{{ vehicle.price | number: '1.0-2' }} × {{ 'orders.daysCount' | t: { n: reservationDays } }}</span>
+                  </div>
+                </div>
+
+                @if (order.orderState >= OrderState.DeliveryAssigned) {
+                  <div class="oz-track">
+                    @for (step of lifecycleSteps; track step.id) {
+                      <div class="oz-track__step" [class.oz-track__step--done]="isCycleStepDone(vehicle, step.id)">
+                        <span class="oz-track__bar"></span>
+                        <span class="oz-track__label">{{ step.labelKey | t }}</span>
+                        @if (stepImages(vehicle, step.id); as photos) {
+                          <span class="oz-track__photos">
+                            @for (photo of photos; track photo.imageUrl; let i = $index) {
+                              <button type="button" class="oz-track__photo" (click)="openGallery(vehicle, step.id, i)" [attr.aria-label]="(step.labelKey | t) + ' · ' + (positionLabelKey(photo.position) | t)"><img [src]="photo.imageUrl" alt="" loading="lazy" /></button>
+                            }
+                          </span>
+                        }
+                        @if (cycleProofUrl(vehicle, step.id); as proof) {
+                          <a class="oz-track__photo" [href]="proof" target="_blank" rel="noopener"><img [src]="proof" alt="" loading="lazy" /></a>
+                        }
+                      </div>
+                    }
+                  </div>
                 }
-                @if (totals.tieredDiscount) {
-                  <div><span>{{ 'orders.tieredDiscount' | t }}</span><span></span><b>−{{ totals.tieredDiscount | number:'1.2-2' }}</b></div>
+
+                @if (nextVehicleAction(vehicle) || canAssignVehicle(vehicle) || canFailVehicle(vehicle) || canReplaceVehicle() || canRemoveVehicle(vehicle)) {
+                  <div class="oz-vehicle__actions">
+                    <ng-container *appHasPermission="'Admin.Orders.Edit'">
+                      @if (nextVehicleAction(vehicle); as step) {
+                        <button type="button" class="oz-btn oz-btn--primary oz-btn--sm" (click)="openLifecycleModal(vehicle, step)">{{ lifecycleActionLabel(step) }}</button>
+                      }
+                    </ng-container>
+                    <ng-container *appHasPermission="'Admin.Orders.Edit'">
+                      @if (canAssignVehicle(vehicle)) {
+                        <button type="button" class="oz-btn oz-btn--sm" (click)="onOpenAssignDelivery(vehicle)" [disabled]="isActionLoading('assignDelivery')">
+                          {{ (hasAnyRider(vehicle.vehicleId) ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
+                        </button>
+                      }
+                    </ng-container>
+                    <ng-container *appHasPermission="'Admin.Orders.Edit'">
+                      @if (canReplaceVehicle()) {
+                        <button type="button" class="oz-btn oz-btn--sm" (click)="onOpenReplaceVehicle(vehicle.vehicleId)">{{ 'orders.replaceVehicle' | t }}</button>
+                      }
+                    </ng-container>
+                    <span class="oz-spacer"></span>
+                    <ng-container *appHasPermission="'Admin.Orders.Edit'">
+                      @if (canFailVehicle(vehicle)) {
+                        <button type="button" class="oz-btn oz-btn--sm oz-btn--danger-link" (click)="openVehicleNotReceived(vehicle)">{{ 'orders.cancelVehicle' | t }}</button>
+                      }
+                    </ng-container>
+                    <ng-container *appHasPermission="'Admin.Orders.Edit'">
+                      @if (canRemoveVehicle(vehicle)) {
+                        <button type="button" class="oz-btn oz-btn--sm oz-btn--danger-link" (click)="onOpenRemoveVehicle(vehicle.vehicleId)">{{ 'orders.removeVehicle' | t }}</button>
+                      }
+                    </ng-container>
+                  </div>
                 }
-                @if (order.previousDebt > 0) {
-                  <div><span>{{ 'orders.previousDebt' | t }}</span><span></span><b>{{ order.previousDebt | number:'1.2-2' }}</b></div>
+                @if (vehicle.deliveryFailed) {
+                  <p class="oz-vehicle__fail">{{ 'orders.vehicleCancelled' | t }}</p>
                 }
-                <div class="ox-pay-table__total"><span>{{ 'common.total' | t }}</span><span></span><b>{{ order.orderTotal | number:'1.2-2' }} {{ 'common.currency' | t }}</b></div>
-              </div>
+              </article>
             }
-            <div class="ox-pay-table ox-pay-table--split">
-              <div><span>{{ 'orders.paidByCustomer' | t }}</span><span></span><b>{{ paidAmount | number:'1.2-2' }}</b></div>
-              @if (order.orderTotal - paidAmount > 0) {
-                <div class="ox-pay-table__due"><span>{{ 'orders.balanceDue' | t }}</span><span></span><b>{{ order.orderTotal - paidAmount | number:'1.2-2' }}</b></div>
+
+            <footer class="oz-fulfil__foot">
+              <span>{{ 'orders.merchantResponse' | t }}: <b>{{ merchantInviteLabel(group.merchantId) }}</b></span>
+              <ng-container *appHasPermission="'Admin.Orders.Edit'">
+                @if (merchantInviteRejected(group.merchantId) && order.orderState === OrderState.MerchantPending) {
+                  <button type="button" class="oz-btn oz-btn--sm" (click)="onOpenReassign(group.merchantId)">{{ 'orders.reassignMerchant' | t }}</button>
+                }
+              </ng-container>
+            </footer>
+          </section>
+        }
+        @if (!order.orderVehicles.length) {
+          <p class="oz-card oz-empty">{{ 'common.noData' | t }}</p>
+        }
+
+        <!-- Payment -->
+        <section class="oz-card oz-pay">
+          <header class="oz-card__head">
+            <div>
+              <h2 class="oz-card__title">{{ 'orders.payment' | t }}</h2>
+              <p class="oz-card__sub">{{ getPaymentMethodLabel(order.paymentMethod) }}</p>
+            </div>
+            <div class="oz-card__head-actions">
+              <span class="oz-badge" [ngClass]="'oz-badge--' + paymentBadge.tone"><i></i>{{ paymentBadge.labelKey | t }}</span>
+              <ng-container *appHasPermission="'Admin.Orders.Edit'">
+                @if (canChangeToCash()) {
+                  <button type="button" class="oz-btn oz-btn--sm" (click)="onChangeToCash()" [disabled]="isActionLoading('changeToCash')">{{ 'orders.changeToCash' | t }}</button>
+                }
+              </ng-container>
+            </div>
+          </header>
+
+          <div class="oz-pay__summary">
+            <div class="oz-pay__big">
+              <span>{{ 'common.total' | t }}</span>
+              <strong>{{ order.orderTotal | number: '1.2-2' }} <small>{{ 'common.currency' | t }}</small></strong>
+            </div>
+            <div class="oz-pay__progress" role="img" [attr.aria-label]="('orders.paidByCustomer' | t) + ' ' + (paidPercent | number: '1.0-0') + '%'">
+              <div class="oz-pay__progress-top">
+                <span>{{ 'orders.paidByCustomer' | t }} <b>{{ paidAmount | number: '1.2-2' }}</b></span>
+                @if (balanceDue > 0) {
+                  <span class="oz-pay__due">{{ 'orders.balanceDue' | t }} <b>{{ balanceDue | number: '1.2-2' }}</b></span>
+                }
+              </div>
+              <span class="oz-pay__track"><span class="oz-pay__fill" [style.width.%]="paidPercent"></span></span>
+            </div>
+          </div>
+
+          @if (order.orderTotals; as totals) {
+            <ul class="oz-lines">
+              <li><span>{{ 'orders.subTotal' | t }} <small>{{ 'orders.nVehicles' | t: { n: order.vehiclesCount } }} · {{ 'orders.daysCount' | t: { n: reservationDays } }}</small></span><b>{{ totals.subTotal | number: '1.2-2' }}</b></li>
+              <li><span>{{ 'orders.deliveryFees' | t }}</span><b>{{ totals.deliveryFees | number: '1.2-2' }}</b></li>
+              <li><span>{{ 'orders.serviceFees' | t }}</span><b>{{ totals.serviceFees | number: '1.2-2' }}</b></li>
+              @if (totals.urgentFees > 0) {
+                <li><span>{{ 'orders.urgentFees' | t }}</span><b>{{ totals.urgentFees | number: '1.2-2' }}</b></li>
+              }
+              @if (totals.tieredDiscount) {
+                <li class="oz-lines__discount"><span>{{ 'orders.tieredDiscount' | t }}</span><b>−{{ totals.tieredDiscount | number: '1.2-2' }}</b></li>
+              }
+              @if (order.previousDebt > 0) {
+                <li><span>{{ 'orders.previousDebt' | t }}</span><b>{{ order.previousDebt | number: '1.2-2' }}</b></li>
+              }
+            </ul>
+          }
+
+          @if (order.orderCancellationFee; as fee) {
+            <div class="oz-extra">
+              <div>
+                <strong>{{ fee.amount > 0 ? ('orders.cancellationFee' | t) : ('orders.rejectedByAdmin' | t) }}</strong>
+                @if (fee.amount > 0) {
+                  <span>{{ fee.amount | number: '1.2-2' }} {{ 'common.currency' | t }} · {{ (fee.state === 0 ? 'common.pending' : 'common.paid') | t }}</span>
+                } @else {
+                  <span>{{ 'orders.rejectedByAdminHint' | t }}</span>
+                }
+              </div>
+              @if (fee.amount > 0 && fee.state === 0) {
+                <button type="button" class="oz-btn oz-btn--sm oz-btn--primary" (click)="onMarkCancellationFeePaid()" [disabled]="isActionLoading('markFeePaid')">
+                  {{ isActionLoading('markFeePaid') ? ('orders.updating' | t) : ('orders.markAsPaid' | t) }}
+                </button>
               }
             </div>
-            <!-- Cancellation fee -->
-            @if (order.orderCancellationFee; as fee) {
-              <div class="ox-pay-extra">
-                <div>
-                  <strong>{{ fee.amount > 0 ? ('orders.cancellationFee' | t) : ('orders.rejectedByAdmin' | t) }}</strong>
-                  @if (fee.amount > 0) {
-                    <span class="ox-muted">{{ fee.amount | number:'1.2-2' }} {{ 'common.currency' | t }} · {{ (fee.state === 0 ? 'common.pending' : 'common.paid') | t }}</span>
-                  }
-                  @if (fee.amount === 0) {
-                    <span class="ox-muted">{{ 'orders.rejectedByAdminHint' | t }}</span>
-                  }
-                </div>
-                @if (fee.amount > 0 && fee.state === 0) {
-                  <button type="button" class="ox-btn ox-btn--sm ox-btn--primary" (click)="onMarkCancellationFeePaid()" [disabled]="isActionLoading('markFeePaid')">
-                    {{ isActionLoading('markFeePaid') ? ('orders.updating' | t) : ('orders.markAsPaid' | t) }}
+          }
+          @if (order.refundablePaypalAmount; as refund) {
+            <div class="oz-extra">
+              <div>
+                <strong>{{ 'orders.paypalRefund' | t }} · {{ refund.refundableAmount | number: '1.2-2' }} {{ 'common.currency' | t }}</strong>
+                <span>{{ (order.moneyRefunded ? 'orders.moneyRefunded' : 'orders.refundPending') | t }}</span>
+              </div>
+              <ng-container *appHasPermission="'Admin.Orders.Edit'">
+                @if (canMarkMoneyRefunded()) {
+                  <button type="button" class="oz-btn oz-btn--sm oz-btn--primary" (click)="onMarkMoneyRefunded()" [disabled]="isActionLoading('markRefunded')">
+                    {{ isActionLoading('markRefunded') ? ('orders.updating' | t) : ('orders.markAsRefunded' | t) }}
                   </button>
                 }
-              </div>
-            }
-            <!-- PayPal refund -->
-            @if (order.refundablePaypalAmount; as refund) {
-              <div class="ox-pay-extra">
-                <div>
-                  <strong>{{ 'orders.paypalRefund' | t }} · {{ refund.refundableAmount | number:'1.2-2' }} {{ 'common.currency' | t }}</strong>
-                  <span class="ox-muted">{{ (order.moneyRefunded ? 'orders.moneyRefunded' : 'orders.refundPending') | t }}</span>
-                </div>
-                <ng-container *appHasPermission="'Admin.Orders.Edit'">
-                  @if (canMarkMoneyRefunded()) {
-                    <button type="button" class="ox-btn ox-btn--sm ox-btn--primary" (click)="onMarkMoneyRefunded()" [disabled]="isActionLoading('markRefunded')">
-                      {{ isActionLoading('markRefunded') ? ('orders.updating' | t) : ('orders.markAsRefunded' | t) }}
-                    </button>
-                  }
-                </ng-container>
-              </div>
-            }
-          </section>
-          <!-- Payouts -->
-          @if (order.merchantOrderPaymentDetails.length || order.deliveryOrderPaymentDetails.length) {
-            <section class="ox-panel">
-              <header class="ox-panel__head">
-                <h2 class="ox-panel__title">{{ 'orders.payouts' | t }}</h2>
-                <span class="ox-muted">{{ 'orders.companyNetOnOrder' | t }}: <b class="ox-strong">{{ companyLedger.credit - companyLedger.debit | number:'1.2-2' }}</b></span>
-              </header>
-              <table class="ox-table">
+              </ng-container>
+            </div>
+          }
+        </section>
+
+        <!-- Payouts -->
+        @if (order.merchantOrderPaymentDetails.length || order.deliveryOrderPaymentDetails.length) {
+          <section class="oz-card">
+            <header class="oz-card__head">
+              <h2 class="oz-card__title">{{ 'orders.payouts' | t }}</h2>
+              <span class="oz-net">{{ 'orders.companyNetOnOrder' | t }} <b>{{ companyLedger.credit - companyLedger.debit | number: '1.2-2' }}</b></span>
+            </header>
+            <div class="oz-table-wrap">
+              <table class="oz-table">
                 <thead>
                   <tr>
                     <th>{{ 'orders.payee' | t }}</th>
                     <th>{{ 'orders.vehicleCode' | t }}</th>
                     <th>{{ 'orders.basis' | t }}</th>
-                    <th class="ox-num">{{ 'common.amount' | t }}</th>
+                    <th class="oz-num">{{ 'common.amount' | t }}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (row of order.merchantOrderPaymentDetails; track row) {
+                  @for (row of order.merchantOrderPaymentDetails; track $index) {
                     <tr>
-                      <td><span class="ox-tag ox-tag--merchant">{{ 'orders.partyMerchant' | t }}</span> {{ row.merchantName }}</td>
+                      <td><span class="oz-tag oz-tag--merchant">{{ 'orders.partyMerchant' | t }}</span> {{ row.merchantName }}</td>
                       <td>{{ row.vehicleCode }}</td>
-                      <td class="ox-muted">
-                        {{ row.vehicleRental | number:'1.2-2' }}
+                      <td class="oz-muted">
+                        {{ row.vehicleRental | number: '1.2-2' }}
                         @if (row.companyCommissionAmount) {
-                          − {{ row.companyCommissionAmount | number:'1.2-2' }} ({{ row.companyCommissionPercent | number:'1.0-2' }}%)
+                          − {{ row.companyCommissionAmount | number: '1.2-2' }} ({{ row.companyCommissionPercent | number: '1.0-2' }}%)
                         }
                       </td>
-                      <td class="ox-num"><strong>{{ row.netAmount | number:'1.2-2' }}</strong></td>
+                      <td class="oz-num"><strong>{{ row.netAmount | number: '1.2-2' }}</strong></td>
                     </tr>
                   }
-                  @for (row of order.deliveryOrderPaymentDetails; track row) {
+                  @for (row of order.deliveryOrderPaymentDetails; track row.deliveryOrderPaymentDetailId) {
                     <tr>
-                      <td><span class="ox-tag ox-tag--rider">{{ 'orders.partyDelivery' | t }}</span> {{ row.deliveryName }}</td>
+                      <td><span class="oz-tag oz-tag--rider">{{ 'orders.partyDelivery' | t }}</span> {{ row.deliveryName }}</td>
                       <td>{{ row.vehicleCode }}</td>
-                      <td class="ox-muted">
+                      <td class="oz-muted">
                         {{ legLabelKey(payoutLeg(row.deliveryOrderPaymentDetailId)?.leg) | t }}
                         @if (payoutLeg(row.deliveryOrderPaymentDetailId)?.commissionPercent != null) {
-                          · {{ payoutLeg(row.deliveryOrderPaymentDetailId)?.commissionPercent | number:'1.0-2' }}%
+                          · {{ payoutLeg(row.deliveryOrderPaymentDetailId)?.commissionPercent | number: '1.0-2' }}%
                         }
                       </td>
-                      <td class="ox-num"><strong>{{ row.deliveryFeeShare | number:'1.2-2' }}</strong></td>
+                      <td class="oz-num"><strong>{{ row.deliveryFeeShare | number: '1.2-2' }}</strong></td>
                     </tr>
                   }
                 </tbody>
               </table>
-            </section>
-          }
-          <!-- Timeline -->
-          <section class="ox-panel">
-            <header class="ox-panel__head">
-              <h2 class="ox-panel__title">{{ 'orders.timeline' | t }}</h2>
-              @if (order.orderJournals.length) {
-                <button type="button" class="ox-btn ox-btn--sm" (click)="showJournal = !showJournal">
-                  {{ (showJournal ? 'orders.hideJournal' : 'orders.showJournal') | t }}
-                </button>
-              }
-            </header>
-            @if (showJournal && order.orderJournals.length) {
-              <div class="ox-journal">
-                <table class="ox-table">
-                  <thead>
-                    <tr>
-                      <th>{{ 'orders.journalKindCol' | t }}</th>
-                      <th>{{ 'orders.journalParty' | t }}</th>
-                      <th>{{ 'orders.vehicleCode' | t }}</th>
-                      <th class="ox-num">{{ 'orders.journalDebit' | t }}</th>
-                      <th class="ox-num">{{ 'orders.journalCredit' | t }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (j of order.orderJournals; track j.orderJournalId) {
-                      <tr>
-                        <td>{{ getJournalKindLabel(j.entryKind) }}</td>
-                        <td>{{ getPartyTypeLabel(j.partyType) }} <span class="ox-muted">· {{ journalPartyName(j) }}</span></td>
-                        <td>{{ j.vehicleCode || '—' }}</td>
-                        <td class="ox-num ox-dr">{{ j.direction === JournalDirection.Debit ? (j.amount | number:'1.2-2') : '' }}</td>
-                        <td class="ox-num ox-cr">{{ j.direction === JournalDirection.Credit ? (j.amount | number:'1.2-2') : '' }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
+            </div>
+          </section>
+        }
+
+        <!-- Timeline -->
+        <section class="oz-card">
+          <header class="oz-card__head">
+            <h2 class="oz-card__title">{{ 'orders.timeline' | t }}</h2>
+            @if (order.orderJournals.length) {
+              <button type="button" class="oz-btn oz-btn--sm" (click)="showJournal = !showJournal">{{ (showJournal ? 'orders.hideJournal' : 'orders.showJournal') | t }}</button>
             }
-            <ol class="ox-timeline">
-              @for (ev of timeline; track ev.date.getTime() + ev.text) {
-                <li class="ox-timeline__item" [ngClass]="'ox-timeline__item--' + ev.tone">
-                  <span class="ox-timeline__dot" aria-hidden="true"></span>
-                  <div class="ox-timeline__body">
-                    <p class="ox-timeline__text">{{ ev.text }}</p>
-                    @if (ev.detail) {
-                      <span class="ox-timeline__meta">{{ ev.detail }}</span>
-                    }
-                  </div>
-                  <time class="ox-timeline__time">{{ ev.date | date:'d MMM, HH:mm' }}</time>
-                </li>
-              }
-            </ol>
-          </section>
-        </div>
-        <!-- ════════════ Sidebar ════════════ -->
-        <aside class="ox-side">
-          @if (order.notes) {
-            <section class="ox-panel">
-              <header class="ox-panel__head"><h2 class="ox-panel__title">{{ 'common.notes' | t }}</h2></header>
-              <p class="ox-panel__body ox-notes">{{ order.notes }}</p>
-            </section>
+          </header>
+          @if (showJournal && order.orderJournals.length) {
+            <div class="oz-table-wrap oz-journal">
+              <table class="oz-table">
+                <thead>
+                  <tr>
+                    <th>{{ 'orders.journalKindCol' | t }}</th>
+                    <th>{{ 'orders.journalParty' | t }}</th>
+                    <th>{{ 'orders.vehicleCode' | t }}</th>
+                    <th class="oz-num">{{ 'orders.journalDebit' | t }}</th>
+                    <th class="oz-num">{{ 'orders.journalCredit' | t }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (j of order.orderJournals; track j.orderJournalId) {
+                    <tr>
+                      <td>{{ getJournalKindLabel(j.entryKind) }}</td>
+                      <td>{{ getPartyTypeLabel(j.partyType) }} <span class="oz-muted">· {{ journalPartyName(j) }}</span></td>
+                      <td>{{ j.vehicleCode || '—' }}</td>
+                      <td class="oz-num oz-dr">{{ j.direction === JournalDirection.Debit ? (j.amount | number: '1.2-2') : '' }}</td>
+                      <td class="oz-num oz-cr">{{ j.direction === JournalDirection.Credit ? (j.amount | number: '1.2-2') : '' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           }
-          <section class="ox-panel">
-            <header class="ox-panel__head"><h2 class="ox-panel__title">{{ 'orders.customer' | t }}</h2></header>
-            <div class="ox-panel__body ox-card-lines">
-              <ng-container *appHasPermission="'Admin.Customers.View'">
-                <a class="ox-link" [routerLink]="['/main/customers', order.customerId]">{{ order.customerName }}</a>
-              </ng-container>
-              <h3 class="ox-card-lines__label">{{ 'orders.contactInfo' | t }}</h3>
-              @if (order.customerMobileNumber) {
-                <div class="ox-copyline">
-                  <span class="ox-ltr">{{ order.customerMobileNumber }}</span>
-                  <button type="button" class="ox-copy" (click)="copy(order.customerMobileNumber, 'mobile')" [attr.aria-label]="'orders.copy' | t">
-                    @if (copiedKey !== 'mobile') {
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                    }
-                    @if (copiedKey === 'mobile') {
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M5 13l4 4L19 7"/></svg>
-                    }
-                  </button>
+          <ol class="oz-timeline">
+            @for (ev of timeline; track ev.date.getTime() + ev.text) {
+              <li class="oz-timeline__item" [ngClass]="'oz-timeline__item--' + ev.tone">
+                <span class="oz-timeline__dot" aria-hidden="true"></span>
+                <div class="oz-timeline__body">
+                  <p>{{ ev.text }}</p>
+                  @if (ev.detail) {
+                    <span>{{ ev.detail }}</span>
+                  }
                 </div>
-              }
-              @if (order.passportImage) {
-                <a class="ox-passport" [href]="order.passportImage" target="_blank" rel="noopener">
-                  <img [src]="order.passportImage" alt="" />
-                  <span>{{ 'orders.passportImage' | t }}</span>
-                </a>
-              }
-            </div>
-          </section>
-          <section class="ox-panel">
-            <header class="ox-panel__head"><h2 class="ox-panel__title">{{ 'orders.deliverTo' | t }}</h2></header>
-            <div class="ox-panel__body ox-card-lines">
-              <div class="ox-copyline">
-                <address class="ox-address">
-                  <strong>{{ order.hotelName || '—' }}</strong>
-                  @if (order.hotelAddress) {
-                    <span>{{ order.hotelAddress }}</span>
-                  }
-                  <span>{{ order.destinationZoneName }}@if (order.destinationZoneName) {
-                    ,
-                  }{{ order.cityName }}</span>
-                  @if (order.hotelPhone) {
-                    <span class="ox-ltr">{{ order.hotelPhone }}</span>
-                  }
-                </address>
-                <button type="button" class="ox-copy" (click)="copy(addressText, 'address')" [attr.aria-label]="'orders.copy' | t">
-                  @if (copiedKey !== 'address') {
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                  }
-                  @if (copiedKey === 'address') {
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M5 13l4 4L19 7"/></svg>
-                  }
-                </button>
-              </div>
-            </div>
-          </section>
-          <section class="ox-panel">
-            <header class="ox-panel__head"><h2 class="ox-panel__title">{{ 'orders.rentalPeriod' | t }}</h2></header>
-            <div class="ox-panel__body">
-              <div class="ox-period">
-                <div>
-                  <span>{{ 'orders.from' | t }}</span>
-                  <strong>{{ order.reservationDateFrom | date:'d MMM' }}</strong>
-                  <small>{{ order.reservationDateFrom | date:'EEE, y' }}</small>
-                </div>
-                <i aria-hidden="true">{{ 'orders.daysCount' | t:{ n: reservationDays } }}</i>
-                <div>
-                  <span>{{ 'orders.to' | t }}</span>
-                  <strong>{{ order.reservationDateTo | date:'d MMM' }}</strong>
-                  <small>{{ order.reservationDateTo | date:'EEE, y' }}</small>
-                </div>
-              </div>
-            </div>
-          </section>
-        </aside>
+                <time>{{ ev.date | date: 'd MMM · HH:mm' }}</time>
+              </li>
+            }
+          </ol>
+        </section>
       </div>
+
+      <!-- ══════════ Sidebar ══════════ -->
+      <aside class="oz-side">
+        <section class="oz-card oz-person">
+          <p class="oz-side__label">{{ 'orders.customer' | t }}</p>
+          <div class="oz-person__head">
+            <span class="oz-avatar oz-avatar--lg" aria-hidden="true">{{ order.customerName.charAt(0) }}</span>
+            <div>
+              <ng-container *appHasPermission="'Admin.Customers.View'">
+                <a class="oz-person__name" [routerLink]="['/main/customers', order.customerId]">{{ order.customerName }}</a>
+              </ng-container>
+              @if (order.customerMobileNumber) {
+                <span class="oz-ltr oz-person__phone">{{ order.customerMobileNumber }}</span>
+              }
+            </div>
+          </div>
+          @if (order.customerMobileNumber) {
+            <div class="oz-person__actions">
+              <a class="oz-btn oz-btn--sm" [href]="'tel:' + order.customerMobileNumber">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11 11 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z"/></svg>
+                {{ 'orders.call' | t }}
+              </a>
+              <button type="button" class="oz-btn oz-btn--sm" (click)="copy(order.customerMobileNumber, 'mobile')">
+                @if (copiedKey === 'mobile') {
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M5 13l4 4L19 7"/></svg>
+                } @else {
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                }
+                {{ 'orders.copy' | t }}
+              </button>
+            </div>
+          }
+          @if (order.passportImage) {
+            <a class="oz-passport" [href]="order.passportImage" target="_blank" rel="noopener">
+              <img [src]="order.passportImage" alt="" loading="lazy" />
+              <span>{{ 'orders.passportImage' | t }}</span>
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5h5v5m0-5l-8 8M10 5H6a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1v-4"/></svg>
+            </a>
+          }
+        </section>
+
+        <section class="oz-card">
+          <div class="oz-side__row">
+            <p class="oz-side__label">{{ 'orders.deliverTo' | t }}</p>
+            <button type="button" class="oz-icon-btn" (click)="copy(addressText, 'address')" [attr.aria-label]="'orders.copy' | t">
+              @if (copiedKey === 'address') {
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M5 13l4 4L19 7"/></svg>
+              } @else {
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              }
+            </button>
+          </div>
+          <div class="oz-place">
+            <span class="oz-place__pin" aria-hidden="true">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 21s-7-5.6-7-11a7 7 0 1114 0c0 5.4-7 11-7 11z"/><circle cx="12" cy="10" r="2.5" stroke-width="1.8"/></svg>
+            </span>
+            <address>
+              <strong>{{ order.hotelName || '—' }}</strong>
+              @if (order.hotelAddress) {
+                <span>{{ order.hotelAddress }}</span>
+              }
+              <span>{{ order.destinationZoneName }}{{ order.destinationZoneName ? ', ' : '' }}{{ order.cityName }}</span>
+              @if (order.hotelPhone) {
+                <span class="oz-ltr">{{ order.hotelPhone }}</span>
+              }
+            </address>
+          </div>
+        </section>
+
+        <section class="oz-card">
+          <p class="oz-side__label">{{ 'orders.rentalPeriod' | t }}</p>
+          <div class="oz-period">
+            <div class="oz-period__day">
+              <span>{{ 'orders.from' | t }}</span>
+              <strong>{{ order.reservationDateFrom | date: 'd MMM' }}</strong>
+              <small>{{ order.reservationDateFrom | date: 'EEE, y' }}</small>
+            </div>
+            <div class="oz-period__mid" aria-hidden="true"><i></i><b>{{ 'orders.daysCount' | t: { n: reservationDays } }}</b><i></i></div>
+            <div class="oz-period__day oz-period__day--end">
+              <span>{{ 'orders.to' | t }}</span>
+              <strong>{{ order.reservationDateTo | date: 'd MMM' }}</strong>
+              <small>{{ order.reservationDateTo | date: 'EEE, y' }}</small>
+            </div>
+          </div>
+        </section>
+
+        @if (order.notes) {
+          <section class="oz-card oz-notes">
+            <p class="oz-side__label">{{ 'common.notes' | t }}</p>
+            <p>{{ order.notes }}</p>
+          </section>
+        }
+      </aside>
     </div>
-  }
+  </div>
+}
 
   <!-- Send to merchants modal -->
   @if (showMerchantsModal) {
-    <div class="od-modal" (click)="onCloseMerchantsModal()">
+    <div class="od-modal" appPortal (click)="onCloseMerchantsModal()">
       <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -633,7 +648,7 @@
 
   <!-- Reassign merchant modal -->
   @if (showReassignModal) {
-    <div class="od-modal" (click)="onCloseReassignModal()">
+    <div class="od-modal" appPortal (click)="onCloseReassignModal()">
       <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -685,7 +700,7 @@
 
   <!-- Replace vehicle modal -->
   @if (showReplaceVehicleModal) {
-    <div class="od-modal" (click)="onCloseReplaceVehicleModal()">
+    <div class="od-modal" appPortal (click)="onCloseReplaceVehicleModal()">
       <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -740,7 +755,7 @@
 
   <!-- Assign / reassign riders modal (delivery + return trip per vehicle) -->
   @if (showDeliveryModal) {
-    <div class="od-modal" (click)="onCloseDeliveryModal()">
+    <div class="od-modal" appPortal (click)="onCloseDeliveryModal()">
       <div class="od-modal__dialog od-modal__dialog--assign" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -893,7 +908,7 @@
 
   <!-- Handover photos viewer -->
   @if (galleryImage; as photo) {
-    <div class="od-modal" (click)="closeGallery()">
+    <div class="od-modal" appPortal (click)="closeGallery()">
       <div class="od-modal__dialog od-modal__dialog--gallery" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -941,7 +956,7 @@
 
   <!-- Handover modal -->
   @if (showHandoverModal) {
-    <div class="od-modal" (click)="onCloseHandoverModal()">
+    <div class="od-modal" appPortal (click)="onCloseHandoverModal()">
       <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -990,7 +1005,7 @@
 
   <!-- Vehicle lifecycle proof modal -->
   @if (showLifecycleModal) {
-    <div class="od-modal" (click)="onCloseLifecycleModal()">
+    <div class="od-modal" appPortal (click)="onCloseLifecycleModal()">
       <div class="od-modal__dialog od-modal__dialog--proof" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header od-proof__header">
           <div class="od-proof__heading">

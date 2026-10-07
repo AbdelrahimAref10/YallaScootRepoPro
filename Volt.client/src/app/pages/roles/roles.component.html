@@ -117,7 +117,7 @@
 </div>
 
 @if (showModal) {
-  <div class="roles-modal" (click)="onCloseModal()">
+  <div class="roles-modal" appPortal (click)="onCloseModal()">
     <div class="roles-modal__dialog roles-modal__dialog--wide" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
       <header class="roles-modal__header">
         <div>
