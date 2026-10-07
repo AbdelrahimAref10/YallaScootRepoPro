@@ -277,7 +277,7 @@
                   <span class="cs-ladder__legend">{{ 'cities.ladderAxis' | t:{ n: ladderMax - 1 } }}</span>
                 </div>
                 <div class="cs-ladder__track">
-                  @for (row of tierRows; track row; let i = $index) {
+                  @for (row of tierRows; track i; let i = $index) {
                     <span
                       class="cs-ladder__seg"
                       [class.cs-ladder__seg--bad]="isOverlapping(i)"

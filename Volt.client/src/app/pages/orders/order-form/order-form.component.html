@@ -1289,7 +1289,7 @@
         }
       </div>
       <div class="order-booked__grid">
-        @for (day of bookedCalendarDays; track day) {
+        @for (day of bookedCalendarDays; track $index) {
           <span
             class="order-booked__day"
             [class.order-booked__day--muted]="!day.inMonth"

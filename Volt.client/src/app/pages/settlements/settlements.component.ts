@@ -115,7 +115,8 @@ export class SettlementsComponent implements OnInit {
     return null;
   }
 
-  /** Same allocation the server does: the smaller delivery side is offset, the rest goes oldest first. */
+  /** Same allocation the server does: the smaller delivery side is offset, the rest goes oldest first.
+   *  Builds new lines on every check, so the template tracks rows by their open item. */
   get preview(): PreviewLine[] {
     if (!this.summary?.direction || this.amountError) return [];
     const collecting = this.isCollecting;

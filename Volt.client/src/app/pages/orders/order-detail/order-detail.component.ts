@@ -270,6 +270,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return [...groups.values()];
   }
 
+  // vehiclesByMerchant and timeline build new objects on every check, so their @for loops must
+  // track by id (merchantId / vehicleId / date+text). Tracking by object identity rebuilds every
+  // card each pass, and the *appHasPermission effects inside schedule another pass: an endless
+  // loop that freezes the tab.
+
   showLifecycleModal = false;
   lifecycleVehicle: OrderVehicleDto | null = null;
   lifecycleStep: VehicleLifecycleStep | null = null;

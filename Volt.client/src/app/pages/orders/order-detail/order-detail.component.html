@@ -164,7 +164,7 @@
           </section>
         }
         <!-- One card per merchant (like a fulfilment group) -->
-        @for (group of vehiclesByMerchant; track group) {
+        @for (group of vehiclesByMerchant; track group.merchantId) {
           <section class="ox-panel ox-fulfil">
             <header class="ox-fulfil__head">
               <span class="ox-badge" [ngClass]="'ox-badge--' + groupTone(group.vehicles)">{{ groupLabelKey(group.vehicles) | t }}</span>
@@ -178,7 +178,7 @@
                   <span class="ox-chip">{{ 'orders.cashOnReceiveYes' | t }}</span>
                 }
               </header>
-              @for (vehicle of group.vehicles; track vehicle) {
+              @for (vehicle of group.vehicles; track vehicle.vehicleId) {
                 <article
                   class="ox-line"
                   [class.ox-line--void]="vehicle.deliveryFailed || vehicle.merchantResponseStatus === MerchantVehicleResponseStatus.Declined"
@@ -473,7 +473,7 @@
               </div>
             }
             <ol class="ox-timeline">
-              @for (ev of timeline; track ev) {
+              @for (ev of timeline; track ev.date.getTime() + ev.text) {
                 <li class="ox-timeline__item" [ngClass]="'ox-timeline__item--' + ev.tone">
                   <span class="ox-timeline__dot" aria-hidden="true"></span>
                   <div class="ox-timeline__body">

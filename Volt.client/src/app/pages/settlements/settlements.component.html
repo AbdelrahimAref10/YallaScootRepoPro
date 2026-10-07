@@ -99,7 +99,7 @@
               <div class="st-preview">
                 <span class="st-panel__kicker">{{ 'settlements.previewTitle' | t }}</span>
                 <ul>
-                  @for (line of preview; track line) {
+                  @for (line of preview; track line.item) {
                     <li>
                       <span>{{ line.item.orderCode || (line.item.orderId ? '#' + line.item.orderId : ('settlements.noOrder' | t)) }}
                       · {{ itemLabel(line.item.kind) }}</span>

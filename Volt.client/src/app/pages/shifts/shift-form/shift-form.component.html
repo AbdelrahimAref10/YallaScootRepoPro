@@ -97,7 +97,7 @@
           </div>
           <div class="sf-timeline" aria-hidden="true">
             <div class="sf-timeline__bar">
-              @for (seg of timelineSegments; track seg) {
+              @for (seg of timelineSegments; track $index) {
                 <span
                   class="sf-timeline__seg"
                   [style.inset-inline-start.%]="seg.left"
