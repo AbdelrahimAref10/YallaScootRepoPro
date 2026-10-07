@@ -32,7 +32,9 @@ namespace Infrastructure
         }
 
         public DbSet<Permission> Permissions { get; set; }
-        public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<SubRole> SubRoles { get; set; }
+        public DbSet<SubRolePermission> SubRolePermissions { get; set; }
+        public DbSet<MerchantUser> MerchantUsers { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Merchant> Merchants { get; set; }
@@ -78,6 +80,15 @@ namespace Infrastructure
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var accessChanged = HasAccessChanges();
+            var result = await SaveChangesCoreAsync(cancellationToken);
+            if (accessChanged)
+                Services.PermissionService.InvalidateCacheGlobally();
+            return result;
+        }
+
+        private async Task<int> SaveChangesCoreAsync(CancellationToken cancellationToken)
         {
             ApplyAudit();
 
@@ -143,6 +154,25 @@ namespace Infrastructure
             {
                 return new DbResult { IsSuccess = false, ErrorMessage = exp.Message };
             }
+        }
+
+        /// <summary>True when the pending changes can alter a user's sub-role permissions.</summary>
+        private bool HasAccessChanges()
+        {
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                if (entry.State is not (EntityState.Added or EntityState.Modified or EntityState.Deleted))
+                    continue;
+
+                switch (entry.Entity)
+                {
+                    case SubRole or SubRolePermission or Permission or MerchantUser or Employee or Merchant:
+                        return true;
+                    case ApplicationUser when entry.State == EntityState.Deleted || entry.Property(nameof(ApplicationUser.Active)).IsModified:
+                        return true;
+                }
+            }
+            return false;
         }
 
         private void ApplyAudit()

@@ -20,6 +20,11 @@ namespace Volt.Server
             builder.Services.AddScoped<Infrastructure.Services.IAdminNotificationHubService, Presentation.Services.AdminNotificationHubService>();
             builder.Services.AddScoped<Infrastructure.Services.IMerchantNotificationHubService, Presentation.Services.MerchantNotificationHubService>();
 
+            // Sub-role permissions: [HasPermission(Permissions.Admin.Orders.View)]
+            builder.Services.AddAuthorization();
+            builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, Presentation.Authorization.PermissionPolicyProvider>();
+            builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, Presentation.Authorization.PermissionAuthorizationHandler>();
+
             builder.Services.AddControllers();
             // Configure CORS
             builder.Services.AddCors(options =>
@@ -67,21 +72,6 @@ namespace Volt.Server
 
             // JWT Authentication
             app.UseAuthentication();
-
-            // Admin controllers only use [Authorize]; rider-app tokens must not reach them.
-            app.Use(async (context, next) =>
-            {
-                var user = context.User;
-                if (context.Request.Path.StartsWithSegments("/api/admin")
-                    && user.Identity?.IsAuthenticated == true
-                    && user.IsInRole(Domain.Enums.AppRoleNames.Delivery)
-                    && !user.IsInRole(Domain.Enums.AppRoleNames.SuperAdmin))
-                {
-                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                    return;
-                }
-                await next();
-            });
 
             app.UseAuthorization();
             app.MapControllers();

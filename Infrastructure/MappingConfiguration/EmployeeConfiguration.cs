@@ -47,6 +47,14 @@ namespace Infrastructure.MappingConfiguration
                 .HasForeignKey<Employee>(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Property(e => e.SubRoleId)
+                .HasColumnName("SubRoleId");
+
+            builder.HasOne(e => e.SubRole)
+                .WithMany()
+                .HasForeignKey(e => e.SubRoleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasIndex(e => e.UserId)
                 .IsUnique()
                 .HasDatabaseName("IX_Employee_UserId");

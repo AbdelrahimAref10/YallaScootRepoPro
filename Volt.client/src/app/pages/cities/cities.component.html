@@ -5,12 +5,14 @@
       <p class="cities__subtitle">{{ 'cities.subtitle' | t }}</p>
     </div>
     <div class="cities__header-actions">
-      <button type="button" class="cities__add-btn" (click)="onAddNew()">
-        <svg class="cities__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
-        </svg>
-        <span>{{ 'cities.add' | t }}</span>
-      </button>
+      <ng-container *appHasPermission="'Admin.Cities.Create'">
+        <button type="button" class="cities__add-btn" (click)="onAddNew()">
+          <svg class="cities__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          <span>{{ 'cities.add' | t }}</span>
+        </button>
+      </ng-container>
     </div>
   </header>
 
@@ -146,64 +148,74 @@
               </td>
               <td>
                 <div class="cities__actions">
-                  <button
-                    type="button"
-                    class="cities__action va-act va-act--map"
-                    (click)="onZoneRates(city)"
-                    [attr.title]="'cities.zoneRates' | t"
-                    [attr.aria-label]="'cities.zoneRates' | t"
-                  >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    class="cities__action va-act va-act--edit"
-                    (click)="onEdit(city)"
-                    [attr.title]="'cities.editCity' | t"
-                    [attr.aria-label]="'cities.editCity' | t"
-                  >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                  </button>
-                  <button
-                    *ngIf="city.isActive"
-                    type="button"
-                    class="cities__action cities__action--warn va-act va-act--delete"
-                    (click)="onDelete(city.cityId)"
-                    [attr.title]="'cities.deactivateCity' | t"
-                    [attr.aria-label]="'cities.deactivateCity' | t"
-                  >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                    </svg>
-                  </button>
-                  <button
-                    *ngIf="!city.isActive"
-                    type="button"
-                    class="cities__action cities__action--success va-act va-act--on"
-                    (click)="onActivate(city.cityId)"
-                    [attr.title]="'cities.activateCity' | t"
-                    [attr.aria-label]="'cities.activateCity' | t"
-                  >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                  </button>
-                  <button
-                    *ngIf="!city.isActive"
-                    type="button"
-                    class="cities__action cities__action--danger va-act va-act--delete"
-                    (click)="onPermanentlyDelete(city.cityId)"
-                    [attr.title]="'cities.permanentDeleteCity' | t"
-                    [attr.aria-label]="'cities.permanentDeleteCity' | t"
-                  >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                  </button>
+                  <ng-container *appHasPermission="'Admin.Cities.Edit'">
+                    <button
+                      type="button"
+                      class="cities__action va-act va-act--map"
+                      (click)="onZoneRates(city)"
+                      [attr.title]="'cities.zoneRates' | t"
+                      [attr.aria-label]="'cities.zoneRates' | t"
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                      </svg>
+                    </button>
+                  </ng-container>
+                  <ng-container *appHasPermission="'Admin.Cities.Edit'">
+                    <button
+                      type="button"
+                      class="cities__action va-act va-act--edit"
+                      (click)="onEdit(city)"
+                      [attr.title]="'cities.editCity' | t"
+                      [attr.aria-label]="'cities.editCity' | t"
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </button>
+                  </ng-container>
+                  <ng-container *appHasPermission="'Admin.Cities.Delete'">
+                    <button
+                      *ngIf="city.isActive"
+                      type="button"
+                      class="cities__action cities__action--warn va-act va-act--delete"
+                      (click)="onDelete(city.cityId)"
+                      [attr.title]="'cities.deactivateCity' | t"
+                      [attr.aria-label]="'cities.deactivateCity' | t"
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                      </svg>
+                    </button>
+                  </ng-container>
+                  <ng-container *appHasPermission="'Admin.Cities.Edit'">
+                    <button
+                      *ngIf="!city.isActive"
+                      type="button"
+                      class="cities__action cities__action--success va-act va-act--on"
+                      (click)="onActivate(city.cityId)"
+                      [attr.title]="'cities.activateCity' | t"
+                      [attr.aria-label]="'cities.activateCity' | t"
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </button>
+                  </ng-container>
+                  <ng-container *appHasPermission="'Admin.Cities.Delete'">
+                    <button
+                      *ngIf="!city.isActive"
+                      type="button"
+                      class="cities__action cities__action--danger va-act va-act--delete"
+                      (click)="onPermanentlyDelete(city.cityId)"
+                      [attr.title]="'cities.permanentDeleteCity' | t"
+                      [attr.aria-label]="'cities.permanentDeleteCity' | t"
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                  </ng-container>
                 </div>
               </td>
             </tr>
@@ -231,12 +243,14 @@
       </div>
       <h2 class="cities__empty-title">{{ 'cities.empty' | t }}</h2>
       <p class="cities__empty-text">{{ 'cities.emptyHint' | t }}</p>
-      <button type="button" class="cities__add-btn" (click)="onAddNew()">
-        <svg class="cities__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
-        </svg>
-        <span>{{ 'cities.add' | t }}</span>
-      </button>
+      <ng-container *appHasPermission="'Admin.Cities.Create'">
+        <button type="button" class="cities__add-btn" (click)="onAddNew()">
+          <svg class="cities__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          <span>{{ 'cities.add' | t }}</span>
+        </button>
+      </ng-container>
     </div>
   </section>
 </div>

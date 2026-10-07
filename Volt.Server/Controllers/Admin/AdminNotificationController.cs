@@ -2,16 +2,19 @@ using Application.Features.AdminNotification.Command.MarkAdminNotificationAsRead
 using Application.Features.AdminNotification.Command.MarkAllAdminNotificationsAsReadCommand;
 using Application.Features.AdminNotification.Query.GetAdminNotificationsQuery;
 using Application.Features.AdminNotification.Query.GetUnreadAdminNotificationsCountQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 
 namespace Volt.Server.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Super Admin")]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class AdminNotificationController : ControllerBase
     {
         private readonly IMediator _mediator;

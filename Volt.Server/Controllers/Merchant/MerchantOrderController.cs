@@ -7,17 +7,19 @@ using Application.Features.Order.Query.GetMyMerchantJournalsQuery;
 using Application.Features.Order.Query.GetMyMerchantLedgerQuery;
 using Application.Features.Order.Query.GetMyMerchantOrderDetailQuery;
 using Application.Features.Order.Query.GetMyMerchantOrdersQuery;
+using Domain.Authorization;
 using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 
 namespace Volt.Server.Controllers.Merchant
 {
     [Route("api/merchant/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.Merchant)]
     public class MerchantOrderController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -27,6 +29,7 @@ namespace Volt.Server.Controllers.Merchant
             _mediator = mediator;
         }
 
+        [HasPermission(Permissions.Merchant.Orders.View)]
         [HttpGet]
         [ProducesResponseType(typeof(PagedResult<MerchantPortalOrderListItemDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -54,6 +57,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Orders.View)]
         [HttpGet("{orderId:int}")]
         [ProducesResponseType(typeof(MerchantPortalOrderDetailDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -65,6 +69,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Payments.View)]
         [HttpGet("ledger")]
         [ProducesResponseType(typeof(PartyLedgerDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -76,6 +81,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Payments.View)]
         [HttpGet("journals")]
         [ProducesResponseType(typeof(OrderJournalListDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -87,6 +93,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Orders.Edit)]
         [HttpPost("{orderId:int}/Accept")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -100,6 +107,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Orders.Edit)]
         [HttpPost("{orderId:int}/Reject")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -112,6 +120,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Orders.Edit)]
         [HttpPost("{orderId:int}/Handover")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

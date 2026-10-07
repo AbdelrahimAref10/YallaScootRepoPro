@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { LocaleService } from '../../core/services/locale.service';
 import { AdminNotificationService, AdminNotification } from '../../core/services/admin-notification.service';
 import {
   MerchantNotificationService,
@@ -35,7 +36,9 @@ const SECTION_LABELS: Record<string, string> = {
   roles: 'nav.roles',
   support: 'nav.support',
   profile: 'nav.profile',
-  payments: 'merchant.nav.payments'
+  payments: 'merchant.nav.payments',
+  staff: 'merchant.nav.staff',
+  'no-access': 'access.noAccessTitle'
 };
 
 @Component({
@@ -76,9 +79,16 @@ export class DashboardHeaderComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private adminNotificationService: AdminNotificationService,
-    private merchantNotificationService: MerchantNotificationService
+    private merchantNotificationService: MerchantNotificationService,
+    private localeService: LocaleService
   ) {
     this.userData = this.authService.getUserData();
+  }
+
+  /** Sub-role shown under the user name (Arabic name when the UI is Arabic). */
+  get subRoleLabel(): string | null {
+    const subRole = this.authService.subRoleInfo();
+    return (this.localeService.locale() === 'ar' ? subRole.nameAr || subRole.name : subRole.name) || null;
   }
 
   get avatarInitial(): string {

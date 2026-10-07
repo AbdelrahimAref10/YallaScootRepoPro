@@ -9,11 +9,12 @@ import {
 } from '../../core/services/clientAPI';
 import { LocaleService } from '../../core/services/locale.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-support',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, HasPermissionDirective],
   templateUrl: './support.component.html',
   styleUrls: ['./support.component.css', '../../shared/styles/entity-form.css']
 })

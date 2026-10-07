@@ -22,11 +22,12 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-deliveries',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './deliveries.component.html',
   styleUrls: ['./deliveries.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-form.css']
 })

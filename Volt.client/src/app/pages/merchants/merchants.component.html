@@ -5,10 +5,12 @@
       <p class="merchants__subtitle">{{ 'merchants.subtitle' | t }}</p>
     </div>
     <div class="merchants__header-actions">
-      <button type="button" class="merchants__add-btn" (click)="onAddNew()">
-        <svg class="merchants__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-        <span>{{ 'merchants.add' | t }}</span>
-      </button>
+      <ng-container *appHasPermission="'Admin.Merchants.Create'">
+        <button type="button" class="merchants__add-btn" (click)="onAddNew()">
+          <svg class="merchants__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          <span>{{ 'merchants.add' | t }}</span>
+        </button>
+      </ng-container>
     </div>
   </header>
 
@@ -69,10 +71,12 @@
     </div>
     <h2 class="merchants__empty-title">{{ 'merchants.empty' | t }}</h2>
     <p class="merchants__empty-text">{{ 'merchants.emptyHint' | t }}</p>
-    <button type="button" class="merchants__add-btn" (click)="onAddNew()">
-      <svg class="merchants__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-      <span>{{ 'merchants.add' | t }}</span>
-    </button>
+    <ng-container *appHasPermission="'Admin.Merchants.Create'">
+      <button type="button" class="merchants__add-btn" (click)="onAddNew()">
+        <svg class="merchants__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        <span>{{ 'merchants.add' | t }}</span>
+      </button>
+    </ng-container>
   </div>
 
   <section *ngIf="!isLoading && merchants.length > 0" class="pc-grid">
@@ -112,8 +116,12 @@
       <footer class="pc-card__foot">
         <span class="pc-card__since">#{{ m.merchantId }}</span>
         <div class="pc-card__actions" *ngIf="!m.isDeleted">
-          <button type="button" class="va-act va-act--edit" (click)="onEdit(m)" [attr.title]="'common.edit' | t" [attr.aria-label]="'common.edit' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-          <button type="button" class="va-act va-act--delete" (click)="onDelete(m)" [disabled]="isDeleting" [attr.title]="'common.delete' | t" [attr.aria-label]="'common.delete' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+          <ng-container *appHasPermission="'Admin.Merchants.Edit'">
+            <button type="button" class="va-act va-act--edit" (click)="onEdit(m)" [attr.title]="'common.edit' | t" [attr.aria-label]="'common.edit' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+          </ng-container>
+          <ng-container *appHasPermission="'Admin.Merchants.Delete'">
+            <button type="button" class="va-act va-act--delete" (click)="onDelete(m)" [disabled]="isDeleting" [attr.title]="'common.delete' | t" [attr.aria-label]="'common.delete' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+          </ng-container>
         </div>
       </footer>
     </article>

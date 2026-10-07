@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Enums;
 
 namespace Domain.Models
 {
@@ -10,9 +11,11 @@ namespace Domain.Models
         public string Description { get; private set; } = string.Empty;
         public string Module { get; private set; } = string.Empty; // e.g., "Products", "Orders", "Users"
         public bool IsActive { get; private set; } = true;
+        public AppRole Scope { get; private set; }
+        public string Action { get; private set; } = string.Empty;
 
         // Navigation property
-        public ICollection<RolePermission> RolePermissions { get; private set; } = new List<RolePermission>();
+        public ICollection<SubRolePermission> SubRolePermissions { get; private set; } = new List<SubRolePermission>();
 
         // Audit properties
         public string? CreatedBy { get; set; }
@@ -25,6 +28,8 @@ namespace Domain.Models
             string permissionName,
             string description,
             string module,
+            AppRole scope,
+            string action,
             string? createdBy = null)
         {
             if (string.IsNullOrWhiteSpace(permissionName))
@@ -38,6 +43,8 @@ namespace Domain.Models
                 PermissionName = permissionName,
                 Description = description ?? string.Empty,
                 Module = module,
+                Scope = scope,
+                Action = action,
                 IsActive = true,
                 CreatedBy = createdBy,
                 CreatedDate = DateTime.UtcNow,

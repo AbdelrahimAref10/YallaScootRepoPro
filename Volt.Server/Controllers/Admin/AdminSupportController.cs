@@ -2,16 +2,19 @@ using Application.Features.Support.Command.CreateSupportCommand;
 using Application.Features.Support.Command.UpdateSupportCommand;
 using Application.Features.Support.DTOs;
 using Application.Features.Support.Query.GetSupportQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 
 namespace Volt.Server.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Super Admin")]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class AdminSupportController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -21,6 +24,7 @@ namespace Volt.Server.Controllers.Admin
             _mediator = mediator;
         }
 
+        [HasPermission(Permissions.Admin.Support.View)]
         [HttpGet]
         [ProducesResponseType(typeof(SupportDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -34,6 +38,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Support.Edit)]
         [HttpPost]
         [ProducesResponseType(typeof(SupportDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -47,6 +52,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Support.Edit)]
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(SupportDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

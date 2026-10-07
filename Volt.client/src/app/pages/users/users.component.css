@@ -224,6 +224,11 @@
   font-weight: 700;
 }
 
+.users__role-chip--sub {
+  background: var(--volt-info-soft);
+  color: var(--volt-info);
+}
+
 .users__role-chip--empty {
   background: var(--volt-surface-muted);
   color: var(--volt-text-muted);

@@ -958,6 +958,502 @@ export class MerchantProfileClient {
 @Injectable({
     providedIn: 'root'
 })
+export class MerchantStaffClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getMyStaff(): Observable<MerchantStaffDto[]> {
+        let url_ = this.baseUrl + "/api/merchant/MerchantStaff";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMyStaff(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMyStaff(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<MerchantStaffDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<MerchantStaffDto[]>;
+        }));
+    }
+
+    protected processGetMyStaff(response: HttpResponseBase): Observable<MerchantStaffDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(MerchantStaffDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    createStaff(command: CreateMerchantStaffCommand): Observable<number> {
+        let url_ = this.baseUrl + "/api/merchant/MerchantStaff";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreateStaff(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreateStaff(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<number>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<number>;
+        }));
+    }
+
+    protected processCreateStaff(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getStaffById(merchantUserId: number): Observable<MerchantStaffDto> {
+        let url_ = this.baseUrl + "/api/merchant/MerchantStaff/{merchantUserId}";
+        if (merchantUserId === undefined || merchantUserId === null)
+            throw new Error("The parameter 'merchantUserId' must be defined.");
+        url_ = url_.replace("{merchantUserId}", encodeURIComponent("" + merchantUserId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetStaffById(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetStaffById(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<MerchantStaffDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<MerchantStaffDto>;
+        }));
+    }
+
+    protected processGetStaffById(response: HttpResponseBase): Observable<MerchantStaffDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = MerchantStaffDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    updateStaff(merchantUserId: number, command: UpdateMerchantStaffCommand): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/merchant/MerchantStaff/{merchantUserId}";
+        if (merchantUserId === undefined || merchantUserId === null)
+            throw new Error("The parameter 'merchantUserId' must be defined.");
+        url_ = url_.replace("{merchantUserId}", encodeURIComponent("" + merchantUserId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdateStaff(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdateStaff(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processUpdateStaff(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    deleteStaff(merchantUserId: number): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/merchant/MerchantStaff/{merchantUserId}";
+        if (merchantUserId === undefined || merchantUserId === null)
+            throw new Error("The parameter 'merchantUserId' must be defined.");
+        url_ = url_.replace("{merchantUserId}", encodeURIComponent("" + merchantUserId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDeleteStaff(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDeleteStaff(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processDeleteStaff(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getAvailableSubRoles(): Observable<SubRoleLookupDto[]> {
+        let url_ = this.baseUrl + "/api/merchant/MerchantStaff/SubRoles";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAvailableSubRoles(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAvailableSubRoles(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SubRoleLookupDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SubRoleLookupDto[]>;
+        }));
+    }
+
+    protected processGetAvailableSubRoles(response: HttpResponseBase): Observable<SubRoleLookupDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(SubRoleLookupDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    activateStaff(merchantUserId: number): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/merchant/MerchantStaff/{merchantUserId}/activate";
+        if (merchantUserId === undefined || merchantUserId === null)
+            throw new Error("The parameter 'merchantUserId' must be defined.");
+        url_ = url_.replace("{merchantUserId}", encodeURIComponent("" + merchantUserId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processActivateStaff(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processActivateStaff(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processActivateStaff(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    deactivateStaff(merchantUserId: number): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/merchant/MerchantStaff/{merchantUserId}/deactivate";
+        if (merchantUserId === undefined || merchantUserId === null)
+            throw new Error("The parameter 'merchantUserId' must be defined.");
+        url_ = url_.replace("{merchantUserId}", encodeURIComponent("" + merchantUserId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDeactivateStaff(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDeactivateStaff(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processDeactivateStaff(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class MerchantVehicleClient {
     private http: HttpClient;
     private baseUrl: string;
@@ -1259,6 +1755,75 @@ export class MerchantVehicleClient {
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
     
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class AccessClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getMyAccess(): Observable<AccessResponse> {
+        let url_ = this.baseUrl + "/api/general/Access/MyAccess";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMyAccess(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMyAccess(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<AccessResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<AccessResponse>;
+        }));
+    }
+
+    protected processGetMyAccess(response: HttpResponseBase): Observable<AccessResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AccessResponse.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status === 400) {
@@ -13332,6 +13897,392 @@ export class SubCategoryClient {
 @Injectable({
     providedIn: 'root'
 })
+export class SubRoleClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getAll(scope?: number | null | undefined, isActive?: boolean | null | undefined): Observable<SubRoleDto[]> {
+        let url_ = this.baseUrl + "/api/admin/SubRole?";
+        if (scope !== undefined && scope !== null)
+            url_ += "Scope=" + encodeURIComponent("" + scope) + "&";
+        if (isActive !== undefined && isActive !== null)
+            url_ += "IsActive=" + encodeURIComponent("" + isActive) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SubRoleDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SubRoleDto[]>;
+        }));
+    }
+
+    protected processGetAll(response: HttpResponseBase): Observable<SubRoleDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(SubRoleDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    create(command: CreateSubRoleCommand): Observable<number> {
+        let url_ = this.baseUrl + "/api/admin/SubRole";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<number>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<number>;
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getById(subRoleId: number): Observable<SubRoleDetailDto> {
+        let url_ = this.baseUrl + "/api/admin/SubRole/{subRoleId}";
+        if (subRoleId === undefined || subRoleId === null)
+            throw new Error("The parameter 'subRoleId' must be defined.");
+        url_ = url_.replace("{subRoleId}", encodeURIComponent("" + subRoleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetById(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetById(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SubRoleDetailDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SubRoleDetailDto>;
+        }));
+    }
+
+    protected processGetById(response: HttpResponseBase): Observable<SubRoleDetailDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SubRoleDetailDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    update(subRoleId: number, command: UpdateSubRoleCommand): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/admin/SubRole/{subRoleId}";
+        if (subRoleId === undefined || subRoleId === null)
+            throw new Error("The parameter 'subRoleId' must be defined.");
+        url_ = url_.replace("{subRoleId}", encodeURIComponent("" + subRoleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    delete(subRoleId: number): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/admin/SubRole/{subRoleId}";
+        if (subRoleId === undefined || subRoleId === null)
+            throw new Error("The parameter 'subRoleId' must be defined.");
+        url_ = url_.replace("{subRoleId}", encodeURIComponent("" + subRoleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getPermissions(scope?: number | undefined): Observable<PermissionModuleDto[]> {
+        let url_ = this.baseUrl + "/api/admin/SubRole/Permissions?";
+        if (scope === null)
+            throw new Error("The parameter 'scope' cannot be null.");
+        else if (scope !== undefined)
+            url_ += "scope=" + encodeURIComponent("" + scope) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetPermissions(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetPermissions(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PermissionModuleDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PermissionModuleDto[]>;
+        }));
+    }
+
+    protected processGetPermissions(response: HttpResponseBase): Observable<PermissionModuleDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(PermissionModuleDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class VehicleClient {
     private http: HttpClient;
     private baseUrl: string;
@@ -14985,6 +15936,167 @@ export class SubCategoryDto {
     }
 }
 
+export class MerchantStaffDto {
+    merchantUserId!: number;
+    userId!: number;
+    fullName!: string;
+    userName!: string;
+    phoneNumber!: string | null;
+    email!: string | null;
+    subRoleId!: number;
+    subRoleName!: string;
+    subRoleNameAr!: string | null;
+    isOwner!: boolean;
+    isActive!: boolean;
+    createdDate!: Date;
+
+    init(_data?: any) {
+        if (_data) {
+            this.merchantUserId = _data["merchantUserId"] !== undefined ? _data["merchantUserId"] : <any>null;
+            this.userId = _data["userId"] !== undefined ? _data["userId"] : <any>null;
+            this.fullName = _data["fullName"] !== undefined ? _data["fullName"] : <any>null;
+            this.userName = _data["userName"] !== undefined ? _data["userName"] : <any>null;
+            this.phoneNumber = _data["phoneNumber"] !== undefined ? _data["phoneNumber"] : <any>null;
+            this.email = _data["email"] !== undefined ? _data["email"] : <any>null;
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
+            this.subRoleName = _data["subRoleName"] !== undefined ? _data["subRoleName"] : <any>null;
+            this.subRoleNameAr = _data["subRoleNameAr"] !== undefined ? _data["subRoleNameAr"] : <any>null;
+            this.isOwner = _data["isOwner"] !== undefined ? _data["isOwner"] : <any>null;
+            this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
+            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
+        }
+    }
+
+    static fromJS(data: any): MerchantStaffDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new MerchantStaffDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["merchantUserId"] = this.merchantUserId !== undefined ? this.merchantUserId : <any>null;
+        data["userId"] = this.userId !== undefined ? this.userId : <any>null;
+        data["fullName"] = this.fullName !== undefined ? this.fullName : <any>null;
+        data["userName"] = this.userName !== undefined ? this.userName : <any>null;
+        data["phoneNumber"] = this.phoneNumber !== undefined ? this.phoneNumber : <any>null;
+        data["email"] = this.email !== undefined ? this.email : <any>null;
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
+        data["subRoleName"] = this.subRoleName !== undefined ? this.subRoleName : <any>null;
+        data["subRoleNameAr"] = this.subRoleNameAr !== undefined ? this.subRoleNameAr : <any>null;
+        data["isOwner"] = this.isOwner !== undefined ? this.isOwner : <any>null;
+        data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
+        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
+        return data;
+    }
+}
+
+export class SubRoleLookupDto {
+    subRoleId!: number;
+    name!: string;
+    nameAr!: string | null;
+
+    init(_data?: any) {
+        if (_data) {
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.nameAr = _data["nameAr"] !== undefined ? _data["nameAr"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): SubRoleLookupDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SubRoleLookupDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["nameAr"] = this.nameAr !== undefined ? this.nameAr : <any>null;
+        return data;
+    }
+}
+
+export class CreateMerchantStaffCommand {
+    fullName!: string;
+    userName!: string;
+    phoneNumber!: string;
+    email!: string;
+    password!: string;
+    subRoleId!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.fullName = _data["fullName"] !== undefined ? _data["fullName"] : <any>null;
+            this.userName = _data["userName"] !== undefined ? _data["userName"] : <any>null;
+            this.phoneNumber = _data["phoneNumber"] !== undefined ? _data["phoneNumber"] : <any>null;
+            this.email = _data["email"] !== undefined ? _data["email"] : <any>null;
+            this.password = _data["password"] !== undefined ? _data["password"] : <any>null;
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): CreateMerchantStaffCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateMerchantStaffCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["fullName"] = this.fullName !== undefined ? this.fullName : <any>null;
+        data["userName"] = this.userName !== undefined ? this.userName : <any>null;
+        data["phoneNumber"] = this.phoneNumber !== undefined ? this.phoneNumber : <any>null;
+        data["email"] = this.email !== undefined ? this.email : <any>null;
+        data["password"] = this.password !== undefined ? this.password : <any>null;
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
+        return data;
+    }
+}
+
+export class UpdateMerchantStaffCommand {
+    merchantUserId!: number;
+    fullName!: string;
+    phoneNumber!: string;
+    email!: string;
+    subRoleId!: number;
+    password!: string | null;
+
+    init(_data?: any) {
+        if (_data) {
+            this.merchantUserId = _data["merchantUserId"] !== undefined ? _data["merchantUserId"] : <any>null;
+            this.fullName = _data["fullName"] !== undefined ? _data["fullName"] : <any>null;
+            this.phoneNumber = _data["phoneNumber"] !== undefined ? _data["phoneNumber"] : <any>null;
+            this.email = _data["email"] !== undefined ? _data["email"] : <any>null;
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
+            this.password = _data["password"] !== undefined ? _data["password"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): UpdateMerchantStaffCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateMerchantStaffCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["merchantUserId"] = this.merchantUserId !== undefined ? this.merchantUserId : <any>null;
+        data["fullName"] = this.fullName !== undefined ? this.fullName : <any>null;
+        data["phoneNumber"] = this.phoneNumber !== undefined ? this.phoneNumber : <any>null;
+        data["email"] = this.email !== undefined ? this.email : <any>null;
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
+        data["password"] = this.password !== undefined ? this.password : <any>null;
+        return data;
+    }
+}
+
 export class PagedResultOfVehicleDto {
     items!: VehicleDto[];
     totalCount!: number;
@@ -15219,6 +16331,61 @@ export class MerchantUpdateVehicleCommand {
         data["speedKmh"] = this.speedKmh !== undefined ? this.speedKmh : <any>null;
         data["engineCapacityCc"] = this.engineCapacityCc !== undefined ? this.engineCapacityCc : <any>null;
         data["imageUrl"] = this.imageUrl !== undefined ? this.imageUrl : <any>null;
+        return data;
+    }
+}
+
+export class AccessResponse {
+    role!: number;
+    subRoleId!: number | null;
+    subRoleName!: string | null;
+    subRoleNameAr!: string | null;
+    isFullAccess!: boolean;
+    isOwner!: boolean;
+    merchantId!: number | null;
+    permissions!: string[];
+
+    init(_data?: any) {
+        if (_data) {
+            this.role = _data["role"] !== undefined ? _data["role"] : <any>null;
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
+            this.subRoleName = _data["subRoleName"] !== undefined ? _data["subRoleName"] : <any>null;
+            this.subRoleNameAr = _data["subRoleNameAr"] !== undefined ? _data["subRoleNameAr"] : <any>null;
+            this.isFullAccess = _data["isFullAccess"] !== undefined ? _data["isFullAccess"] : <any>null;
+            this.isOwner = _data["isOwner"] !== undefined ? _data["isOwner"] : <any>null;
+            this.merchantId = _data["merchantId"] !== undefined ? _data["merchantId"] : <any>null;
+            if (Array.isArray(_data["permissions"])) {
+                this.permissions = [] as any;
+                for (let item of _data["permissions"])
+                    this.permissions!.push(item);
+            }
+            else {
+                this.permissions = <any>null;
+            }
+        }
+    }
+
+    static fromJS(data: any): AccessResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new AccessResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["role"] = this.role !== undefined ? this.role : <any>null;
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
+        data["subRoleName"] = this.subRoleName !== undefined ? this.subRoleName : <any>null;
+        data["subRoleNameAr"] = this.subRoleNameAr !== undefined ? this.subRoleNameAr : <any>null;
+        data["isFullAccess"] = this.isFullAccess !== undefined ? this.isFullAccess : <any>null;
+        data["isOwner"] = this.isOwner !== undefined ? this.isOwner : <any>null;
+        data["merchantId"] = this.merchantId !== undefined ? this.merchantId : <any>null;
+        if (Array.isArray(this.permissions)) {
+            data["permissions"] = [];
+            for (let item of this.permissions)
+                data["permissions"].push(item);
+        }
         return data;
     }
 }
@@ -17476,6 +18643,11 @@ export class AuthResponse {
     personalImage!: string | null;
     cityId!: number | null;
     cityName!: string | null;
+    subRoleId!: number | null;
+    subRoleName!: string | null;
+    subRoleNameAr!: string | null;
+    isOwner!: boolean;
+    permissions!: string[];
 
     init(_data?: any) {
         if (_data) {
@@ -17499,6 +18671,18 @@ export class AuthResponse {
             this.personalImage = _data["personalImage"] !== undefined ? _data["personalImage"] : <any>null;
             this.cityId = _data["cityId"] !== undefined ? _data["cityId"] : <any>null;
             this.cityName = _data["cityName"] !== undefined ? _data["cityName"] : <any>null;
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
+            this.subRoleName = _data["subRoleName"] !== undefined ? _data["subRoleName"] : <any>null;
+            this.subRoleNameAr = _data["subRoleNameAr"] !== undefined ? _data["subRoleNameAr"] : <any>null;
+            this.isOwner = _data["isOwner"] !== undefined ? _data["isOwner"] : <any>null;
+            if (Array.isArray(_data["permissions"])) {
+                this.permissions = [] as any;
+                for (let item of _data["permissions"])
+                    this.permissions!.push(item);
+            }
+            else {
+                this.permissions = <any>null;
+            }
         }
     }
 
@@ -17528,6 +18712,15 @@ export class AuthResponse {
         data["personalImage"] = this.personalImage !== undefined ? this.personalImage : <any>null;
         data["cityId"] = this.cityId !== undefined ? this.cityId : <any>null;
         data["cityName"] = this.cityName !== undefined ? this.cityName : <any>null;
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
+        data["subRoleName"] = this.subRoleName !== undefined ? this.subRoleName : <any>null;
+        data["subRoleNameAr"] = this.subRoleNameAr !== undefined ? this.subRoleNameAr : <any>null;
+        data["isOwner"] = this.isOwner !== undefined ? this.isOwner : <any>null;
+        if (Array.isArray(this.permissions)) {
+            data["permissions"] = [];
+            for (let item of this.permissions)
+                data["permissions"].push(item);
+        }
         return data;
     }
 }
@@ -22056,6 +23249,10 @@ export class UserDto {
     lastModifiedDate!: Date;
     lastModifiedBy!: string | null;
     isActive!: boolean;
+    fullName!: string | null;
+    subRoleId!: number | null;
+    subRoleName!: string | null;
+    subRoleNameAr!: string | null;
 
     init(_data?: any) {
         if (_data) {
@@ -22082,6 +23279,10 @@ export class UserDto {
             this.lastModifiedDate = _data["lastModifiedDate"] ? new Date(_data["lastModifiedDate"].toString()) : <any>null;
             this.lastModifiedBy = _data["lastModifiedBy"] !== undefined ? _data["lastModifiedBy"] : <any>null;
             this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
+            this.fullName = _data["fullName"] !== undefined ? _data["fullName"] : <any>null;
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
+            this.subRoleName = _data["subRoleName"] !== undefined ? _data["subRoleName"] : <any>null;
+            this.subRoleNameAr = _data["subRoleNameAr"] !== undefined ? _data["subRoleNameAr"] : <any>null;
         }
     }
 
@@ -22114,6 +23315,10 @@ export class UserDto {
         data["lastModifiedDate"] = this.lastModifiedDate ? this.lastModifiedDate.toISOString() : <any>null;
         data["lastModifiedBy"] = this.lastModifiedBy !== undefined ? this.lastModifiedBy : <any>null;
         data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
+        data["fullName"] = this.fullName !== undefined ? this.fullName : <any>null;
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
+        data["subRoleName"] = this.subRoleName !== undefined ? this.subRoleName : <any>null;
+        data["subRoleNameAr"] = this.subRoleNameAr !== undefined ? this.subRoleNameAr : <any>null;
         return data;
     }
 }
@@ -22128,6 +23333,7 @@ export class CreateUserCommand {
     cityId!: number | null;
     zoneId!: number | null;
     cashOnReceive!: boolean | null;
+    subRoleId!: number | null;
 
     init(_data?: any) {
         if (_data) {
@@ -22140,6 +23346,7 @@ export class CreateUserCommand {
             this.cityId = _data["cityId"] !== undefined ? _data["cityId"] : <any>null;
             this.zoneId = _data["zoneId"] !== undefined ? _data["zoneId"] : <any>null;
             this.cashOnReceive = _data["cashOnReceive"] !== undefined ? _data["cashOnReceive"] : <any>null;
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
         }
     }
 
@@ -22161,6 +23368,7 @@ export class CreateUserCommand {
         data["cityId"] = this.cityId !== undefined ? this.cityId : <any>null;
         data["zoneId"] = this.zoneId !== undefined ? this.zoneId : <any>null;
         data["cashOnReceive"] = this.cashOnReceive !== undefined ? this.cashOnReceive : <any>null;
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
         return data;
     }
 }
@@ -22172,6 +23380,7 @@ export class UpdateUserCommand {
     phoneNumber!: string | null;
     password!: string | null;
     roleId!: number;
+    subRoleId!: number | null;
 
     init(_data?: any) {
         if (_data) {
@@ -22181,6 +23390,7 @@ export class UpdateUserCommand {
             this.phoneNumber = _data["phoneNumber"] !== undefined ? _data["phoneNumber"] : <any>null;
             this.password = _data["password"] !== undefined ? _data["password"] : <any>null;
             this.roleId = _data["roleId"] !== undefined ? _data["roleId"] : <any>null;
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
         }
     }
 
@@ -22199,6 +23409,7 @@ export class UpdateUserCommand {
         data["phoneNumber"] = this.phoneNumber !== undefined ? this.phoneNumber : <any>null;
         data["password"] = this.password !== undefined ? this.password : <any>null;
         data["roleId"] = this.roleId !== undefined ? this.roleId : <any>null;
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
         return data;
     }
 }
@@ -23161,6 +24372,241 @@ export class UpdateSubCategoryCommand {
         data["categoryId"] = this.categoryId !== undefined ? this.categoryId : <any>null;
         data["isOffer"] = this.isOffer !== undefined ? this.isOffer : <any>null;
         data["imageUrl"] = this.imageUrl !== undefined ? this.imageUrl : <any>null;
+        return data;
+    }
+}
+
+export class SubRoleDto {
+    subRoleId!: number;
+    name!: string;
+    nameAr!: string | null;
+    scope!: number;
+    isSystem!: boolean;
+    isFullAccess!: boolean;
+    isActive!: boolean;
+    usersCount!: number;
+    permissionsCount!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.nameAr = _data["nameAr"] !== undefined ? _data["nameAr"] : <any>null;
+            this.scope = _data["scope"] !== undefined ? _data["scope"] : <any>null;
+            this.isSystem = _data["isSystem"] !== undefined ? _data["isSystem"] : <any>null;
+            this.isFullAccess = _data["isFullAccess"] !== undefined ? _data["isFullAccess"] : <any>null;
+            this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
+            this.usersCount = _data["usersCount"] !== undefined ? _data["usersCount"] : <any>null;
+            this.permissionsCount = _data["permissionsCount"] !== undefined ? _data["permissionsCount"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): SubRoleDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SubRoleDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["nameAr"] = this.nameAr !== undefined ? this.nameAr : <any>null;
+        data["scope"] = this.scope !== undefined ? this.scope : <any>null;
+        data["isSystem"] = this.isSystem !== undefined ? this.isSystem : <any>null;
+        data["isFullAccess"] = this.isFullAccess !== undefined ? this.isFullAccess : <any>null;
+        data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
+        data["usersCount"] = this.usersCount !== undefined ? this.usersCount : <any>null;
+        data["permissionsCount"] = this.permissionsCount !== undefined ? this.permissionsCount : <any>null;
+        return data;
+    }
+}
+
+export class SubRoleDetailDto extends SubRoleDto {
+    permissions!: string[];
+
+    override init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            if (Array.isArray(_data["permissions"])) {
+                this.permissions = [] as any;
+                for (let item of _data["permissions"])
+                    this.permissions!.push(item);
+            }
+            else {
+                this.permissions = <any>null;
+            }
+        }
+    }
+
+    static override fromJS(data: any): SubRoleDetailDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SubRoleDetailDto();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.permissions)) {
+            data["permissions"] = [];
+            for (let item of this.permissions)
+                data["permissions"].push(item);
+        }
+        super.toJSON(data);
+        return data;
+    }
+}
+
+export class PermissionModuleDto {
+    module!: string;
+    permissions!: PermissionItemDto[];
+
+    init(_data?: any) {
+        if (_data) {
+            this.module = _data["module"] !== undefined ? _data["module"] : <any>null;
+            if (Array.isArray(_data["permissions"])) {
+                this.permissions = [] as any;
+                for (let item of _data["permissions"])
+                    this.permissions!.push(PermissionItemDto.fromJS(item));
+            }
+            else {
+                this.permissions = <any>null;
+            }
+        }
+    }
+
+    static fromJS(data: any): PermissionModuleDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PermissionModuleDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["module"] = this.module !== undefined ? this.module : <any>null;
+        if (Array.isArray(this.permissions)) {
+            data["permissions"] = [];
+            for (let item of this.permissions)
+                data["permissions"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export class PermissionItemDto {
+    name!: string;
+    action!: string;
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.action = _data["action"] !== undefined ? _data["action"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): PermissionItemDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PermissionItemDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["action"] = this.action !== undefined ? this.action : <any>null;
+        return data;
+    }
+}
+
+export class CreateSubRoleCommand {
+    name!: string;
+    nameAr!: string | null;
+    scope!: number;
+    permissions!: string[];
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.nameAr = _data["nameAr"] !== undefined ? _data["nameAr"] : <any>null;
+            this.scope = _data["scope"] !== undefined ? _data["scope"] : <any>null;
+            if (Array.isArray(_data["permissions"])) {
+                this.permissions = [] as any;
+                for (let item of _data["permissions"])
+                    this.permissions!.push(item);
+            }
+            else {
+                this.permissions = <any>null;
+            }
+        }
+    }
+
+    static fromJS(data: any): CreateSubRoleCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateSubRoleCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["nameAr"] = this.nameAr !== undefined ? this.nameAr : <any>null;
+        data["scope"] = this.scope !== undefined ? this.scope : <any>null;
+        if (Array.isArray(this.permissions)) {
+            data["permissions"] = [];
+            for (let item of this.permissions)
+                data["permissions"].push(item);
+        }
+        return data;
+    }
+}
+
+export class UpdateSubRoleCommand {
+    subRoleId!: number;
+    name!: string;
+    nameAr!: string | null;
+    isActive!: boolean;
+    permissions!: string[];
+
+    init(_data?: any) {
+        if (_data) {
+            this.subRoleId = _data["subRoleId"] !== undefined ? _data["subRoleId"] : <any>null;
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.nameAr = _data["nameAr"] !== undefined ? _data["nameAr"] : <any>null;
+            this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
+            if (Array.isArray(_data["permissions"])) {
+                this.permissions = [] as any;
+                for (let item of _data["permissions"])
+                    this.permissions!.push(item);
+            }
+            else {
+                this.permissions = <any>null;
+            }
+        }
+    }
+
+    static fromJS(data: any): UpdateSubRoleCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateSubRoleCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["subRoleId"] = this.subRoleId !== undefined ? this.subRoleId : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["nameAr"] = this.nameAr !== undefined ? this.nameAr : <any>null;
+        data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
+        if (Array.isArray(this.permissions)) {
+            data["permissions"] = [];
+            for (let item of this.permissions)
+                data["permissions"].push(item);
+        }
         return data;
     }
 }

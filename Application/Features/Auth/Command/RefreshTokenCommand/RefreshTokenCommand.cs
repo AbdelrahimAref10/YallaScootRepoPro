@@ -23,19 +23,22 @@ namespace Application.Features.Auth.Command.RefreshTokenCommand
         private readonly IJwtTokenService _jwtTokenService;
         private readonly IJwtSettings _jwtSettings;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly IPermissionService _permissionService;
 
         public RefreshTokenCommandHandler(
             DatabaseContext context,
             UserManager<ApplicationUser> userManager,
             IJwtTokenService jwtTokenService,
             IJwtSettings jwtSettings,
-            IDateTimeProvider dateTimeProvider)
+            IDateTimeProvider dateTimeProvider,
+            IPermissionService permissionService)
         {
             _context = context;
             _userManager = userManager;
             _jwtTokenService = jwtTokenService;
             _jwtSettings = jwtSettings;
             _dateTimeProvider = dateTimeProvider;
+            _permissionService = permissionService;
         }
 
         public async Task<Result<RefreshTokenResponse>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -70,7 +73,11 @@ namespace Application.Features.Auth.Command.RefreshTokenCommand
             refreshToken.Revoke(_dateTimeProvider, newRefreshTokenValue);
 
             var roles = await _userManager.GetRolesAsync(user);
-            var newAccessToken = _jwtTokenService.GenerateToken(user, roles);
+            var panelScope = PermissionService.ResolvePanelScope(roles);
+            var access = panelScope.HasValue
+                ? await _permissionService.GetUserAccessAsync(user.Id, panelScope.Value, cancellationToken)
+                : null;
+            var newAccessToken = _jwtTokenService.GenerateToken(user, roles, access);
 
             await _context.RefreshTokens.AddAsync(RefreshToken.Create(
                 user.Id,

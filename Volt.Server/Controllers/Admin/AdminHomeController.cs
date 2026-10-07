@@ -9,16 +9,19 @@ using Application.Features.AdminHome.Query.GetHomeRevenueTrendQuery;
 using Application.Features.AdminHome.Query.GetHomeSummaryQuery;
 using Application.Features.AdminHome.Query.GetHomeTopPerformersQuery;
 using Application.Features.AdminHome.Query.GetHomeTreasurySnapshotQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 
 namespace Volt.Server.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class AdminHomeController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -28,6 +31,7 @@ namespace Volt.Server.Controllers.Admin
             _mediator = mediator;
         }
 
+        [HasPermission(Permissions.Admin.Dashboard.View)]
         [HttpGet("Summary")]
         [ProducesResponseType(typeof(HomeSummaryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -36,6 +40,7 @@ namespace Volt.Server.Controllers.Admin
             return await Send(query);
         }
 
+        [HasPermission(Permissions.Admin.Dashboard.View)]
         [HttpGet("RevenueTrend")]
         [ProducesResponseType(typeof(HomeRevenueTrendDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -44,6 +49,7 @@ namespace Volt.Server.Controllers.Admin
             return await Send(query);
         }
 
+        [HasPermission(Permissions.Admin.Dashboard.View)]
         [HttpGet("OrderPipeline")]
         [ProducesResponseType(typeof(HomeOrderPipelineDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -52,6 +58,7 @@ namespace Volt.Server.Controllers.Admin
             return await Send(query);
         }
 
+        [HasPermission(Permissions.Admin.Dashboard.View)]
         [HttpGet("CustomerGrowth")]
         [ProducesResponseType(typeof(HomeCustomerGrowthDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -60,6 +67,7 @@ namespace Volt.Server.Controllers.Admin
             return await Send(query);
         }
 
+        [HasPermission(Permissions.Admin.Dashboard.View)]
         [HttpGet("PaymentsMix")]
         [ProducesResponseType(typeof(HomePaymentsMixDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -68,6 +76,7 @@ namespace Volt.Server.Controllers.Admin
             return await Send(query);
         }
 
+        [HasPermission(Permissions.Admin.Dashboard.View)]
         [HttpGet("TreasurySnapshot")]
         [ProducesResponseType(typeof(HomeTreasurySnapshotDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -76,6 +85,7 @@ namespace Volt.Server.Controllers.Admin
             return await Send(query);
         }
 
+        [HasPermission(Permissions.Admin.Dashboard.View)]
         [HttpGet("Cancellations")]
         [ProducesResponseType(typeof(HomeCancellationsDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -84,6 +94,7 @@ namespace Volt.Server.Controllers.Admin
             return await Send(query);
         }
 
+        [HasPermission(Permissions.Admin.Dashboard.View)]
         [HttpGet("TopPerformers")]
         [ProducesResponseType(typeof(HomeTopPerformersDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -92,6 +103,7 @@ namespace Volt.Server.Controllers.Admin
             return await Send(query);
         }
 
+        [HasPermission(Permissions.Admin.Dashboard.View)]
         [HttpGet("CityPerformance")]
         [ProducesResponseType(typeof(HomeCityPerformanceDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -100,6 +112,7 @@ namespace Volt.Server.Controllers.Admin
             return await Send(query);
         }
 
+        [HasPermission(Permissions.Admin.Dashboard.View)]
         [HttpGet("RecentActivity")]
         [ProducesResponseType(typeof(HomeRecentActivityDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

@@ -61,6 +61,10 @@ namespace Infrastructure
             // Register JWT Token Service
             services.AddScoped<Infrastructure.Services.IJwtTokenService, Infrastructure.Services.JwtTokenService>();
 
+            // Register sub-role permission lookup (cached in memory)
+            services.AddMemoryCache();
+            services.AddScoped<Infrastructure.Services.IPermissionService, Infrastructure.Services.PermissionService>();
+
             // Register Email Service
             services.AddScoped<Infrastructure.Services.IEmailService, Infrastructure.Services.EmailService>();
 

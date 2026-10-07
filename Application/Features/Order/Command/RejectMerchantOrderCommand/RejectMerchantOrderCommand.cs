@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Order.Services;
 using CSharpFunctionalExtensions;
 using Domain.Common;
@@ -39,7 +40,8 @@ namespace Application.Features.Order.Command.RejectMerchantOrderCommand
 
             var merchant = await _context.Merchants
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.UserId == _userSession.UserId, cancellationToken);
+                .OfUser(_context, _userSession.UserId)
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (merchant == null)
                 return Result.Failure<bool>("Merchant profile not found for current user");

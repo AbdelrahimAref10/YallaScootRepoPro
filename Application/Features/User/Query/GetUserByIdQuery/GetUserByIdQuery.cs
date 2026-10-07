@@ -53,6 +53,7 @@ namespace Application.Features.User.Query.GetUserByIdQuery
                 IsActive = user.Active
             };
 
+            await UserSubRoleFiller.FillAsync(_context, new[] { userDto }, cancellationToken);
             return Result.Success(userDto);
         }
     }

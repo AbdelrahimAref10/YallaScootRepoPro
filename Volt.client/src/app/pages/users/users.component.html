@@ -5,12 +5,14 @@
       <p class="users__subtitle">{{ 'users.subtitle' | t }}</p>
     </div>
     <div class="users__header-actions">
-      <button type="button" class="users__add-btn" (click)="onAddNew()">
-        <svg class="users__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
-        </svg>
-        <span>{{ 'users.add' | t }}</span>
-      </button>
+      <ng-container *appHasPermission="'Admin.SystemUsers.Create'">
+        <button type="button" class="users__add-btn" (click)="onAddNew()">
+          <svg class="users__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          <span>{{ 'users.add' | t }}</span>
+        </button>
+      </ng-container>
     </div>
   </header>
 
@@ -132,6 +134,7 @@
               <td>
                 <div class="users__roles">
                   <span *ngFor="let role of user.roles" class="users__role-chip">{{ role }}</span>
+                  <span *ngIf="subRoleLabel(user) as subRole" class="users__role-chip users__role-chip--sub">{{ subRole }}</span>
                   <span *ngIf="!user.roles || user.roles.length === 0" class="users__role-chip users__role-chip--empty">
                     {{ 'users.noRoles' | t }}
                   </span>
@@ -161,41 +164,47 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                     </svg>
                   </button>
-                  <button
-                    type="button"
-                    class="users__action va-act va-act--edit"
-                    (click)="onEdit(user.id)"
-                    [attr.title]="'users.editUser' | t"
-                    [attr.aria-label]="'users.editUser' | t"
-                  >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                  </button>
-                  <button
-                    *ngIf="!user.active"
-                    type="button"
-                    class="users__action users__action--success va-act va-act--on"
-                    (click)="onActivate(user.id)"
-                    [attr.title]="'users.activateUser' | t"
-                    [attr.aria-label]="'users.activateUser' | t"
-                  >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                  </button>
-                  <button
-                    *ngIf="user.active"
-                    type="button"
-                    class="users__action users__action--warn va-act va-act--off"
-                    (click)="onDeactivate(user.id)"
-                    [attr.title]="'users.deactivateUser' | t"
-                    [attr.aria-label]="'users.deactivateUser' | t"
-                  >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                    </svg>
-                  </button>
+                  <ng-container *appHasPermission="'Admin.SystemUsers.Edit'">
+                    <button
+                      type="button"
+                      class="users__action va-act va-act--edit"
+                      (click)="onEdit(user.id)"
+                      [attr.title]="'users.editUser' | t"
+                      [attr.aria-label]="'users.editUser' | t"
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </button>
+                  </ng-container>
+                  <ng-container *appHasPermission="'Admin.SystemUsers.Edit'">
+                    <button
+                      *ngIf="!user.active"
+                      type="button"
+                      class="users__action users__action--success va-act va-act--on"
+                      (click)="onActivate(user.id)"
+                      [attr.title]="'users.activateUser' | t"
+                      [attr.aria-label]="'users.activateUser' | t"
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </button>
+                  </ng-container>
+                  <ng-container *appHasPermission="'Admin.SystemUsers.Edit'">
+                    <button
+                      *ngIf="user.active"
+                      type="button"
+                      class="users__action users__action--warn va-act va-act--off"
+                      (click)="onDeactivate(user.id)"
+                      [attr.title]="'users.deactivateUser' | t"
+                      [attr.aria-label]="'users.deactivateUser' | t"
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                      </svg>
+                    </button>
+                  </ng-container>
                 </div>
               </td>
             </tr>
@@ -222,12 +231,14 @@
       </div>
       <h2 class="users__empty-title">{{ 'users.empty' | t }}</h2>
       <p class="users__empty-text">{{ 'users.emptyHint' | t }}</p>
-      <button type="button" class="users__add-btn" (click)="onAddNew()">
-        <svg class="users__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
-        </svg>
-        <span>{{ 'users.add' | t }}</span>
-      </button>
+      <ng-container *appHasPermission="'Admin.SystemUsers.Create'">
+        <button type="button" class="users__add-btn" (click)="onAddNew()">
+          <svg class="users__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          <span>{{ 'users.add' | t }}</span>
+        </button>
+      </ng-container>
     </div>
   </section>
 </div>
@@ -401,6 +412,20 @@
             [placeholder]="'users.selectRole' | t"
           ></app-multi-select>
           <p *ngIf="hasFieldError('role')" class="entity-form__error">{{ getFieldError('role') }}</p>
+        </div>
+
+        <div *ngIf="needsSubRole" class="entity-form__field">
+          <label class="entity-form__label">
+            {{ 'users.subRole' | t }}<span class="entity-form__req">*</span>
+          </label>
+          <app-multi-select
+            formControlName="subRoleId"
+            [multiple]="false"
+            [options]="subRoleFormOptions"
+            [clearable]="false"
+            [placeholder]="'users.selectSubRole' | t"
+          ></app-multi-select>
+          <p *ngIf="hasFieldError('subRoleId')" class="entity-form__error">{{ getFieldError('subRoleId') }}</p>
         </div>
 
         <div class="users-modal__status-note">

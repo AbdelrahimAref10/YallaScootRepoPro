@@ -6,9 +6,11 @@
       <h1 class="home-hero__title">{{ summary ? ('dashboard.welcome' | t:{ name: summary.fullName }) : ('merchant.homeTitle' | t) }}</h1>
       <p class="home-hero__sub">{{ 'merchant.heroSub' | t }}</p>
     </div>
-    <a class="home-hero__cta" routerLink="/merchant/orders">
-      {{ 'merchant.openOrders' | t }}
-    </a>
+    <ng-container *appHasPermission="'Merchant.Orders.View'">
+      <a class="home-hero__cta" routerLink="/merchant/orders">
+        {{ 'merchant.openOrders' | t }}
+      </a>
+    </ng-container>
 
     <div class="mh-balance" *ngIf="summary">
       <div>
@@ -34,14 +36,16 @@
 
   <ng-container *ngIf="summary">
     <section class="home-kpis">
-      <a class="home-kpi mh-link" routerLink="/merchant/orders" [queryParams]="{ pendingOnly: true }">
-        <div class="home-kpi__label">
-          <span class="home-kpi__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
-          {{ 'merchant.pendingInvites' | t }}
-        </div>
-        <div class="home-kpi__value">{{ summary.pendingInvitationsCount }}</div>
-        <div class="home-kpi__foot">{{ 'merchant.pendingInvitesHint' | t }} <span class="mh-arrow" aria-hidden="true">→</span></div>
-      </a>
+      <ng-container *appHasPermission="'Merchant.Orders.View'">
+        <a class="home-kpi mh-link" routerLink="/merchant/orders" [queryParams]="{ pendingOnly: true }">
+          <div class="home-kpi__label">
+            <span class="home-kpi__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
+            {{ 'merchant.pendingInvites' | t }}
+          </div>
+          <div class="home-kpi__value">{{ summary.pendingInvitationsCount }}</div>
+          <div class="home-kpi__foot">{{ 'merchant.pendingInvitesHint' | t }} <span class="mh-arrow" aria-hidden="true">→</span></div>
+        </a>
+      </ng-container>
 
       <a
         class="home-kpi mh-link"
@@ -57,23 +61,27 @@
         <div class="home-kpi__foot">{{ 'merchant.awaitingHandoverHint' | t }} <span class="mh-arrow" aria-hidden="true">→</span></div>
       </a>
 
-      <a class="home-kpi mh-link" routerLink="/merchant/orders">
-        <div class="home-kpi__label">
-          <span class="home-kpi__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></span>
-          {{ 'merchant.activeOrders' | t }}
-        </div>
-        <div class="home-kpi__value">{{ summary.activeOrdersCount }}</div>
-        <div class="home-kpi__foot">{{ 'merchant.activeOrdersHint' | t }} <span class="mh-arrow" aria-hidden="true">→</span></div>
-      </a>
+      <ng-container *appHasPermission="'Merchant.Orders.View'">
+        <a class="home-kpi mh-link" routerLink="/merchant/orders">
+          <div class="home-kpi__label">
+            <span class="home-kpi__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></span>
+            {{ 'merchant.activeOrders' | t }}
+          </div>
+          <div class="home-kpi__value">{{ summary.activeOrdersCount }}</div>
+          <div class="home-kpi__foot">{{ 'merchant.activeOrdersHint' | t }} <span class="mh-arrow" aria-hidden="true">→</span></div>
+        </a>
+      </ng-container>
 
-      <a class="home-kpi mh-link" routerLink="/merchant/vehicles">
-        <div class="home-kpi__label">
-          <span class="home-kpi__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.5 20a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm13 0a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 17.5h6l2.5-6H19M14 6h2.5l2 5.5M8 17.5L11 11h3.5"/></svg></span>
-          {{ 'merchant.myVehicles' | t }}
-        </div>
-        <div class="home-kpi__value">{{ summary.myVehiclesCount }}</div>
-        <div class="home-kpi__foot">{{ 'merchant.myVehiclesHint' | t }} <span class="mh-arrow" aria-hidden="true">→</span></div>
-      </a>
+      <ng-container *appHasPermission="'Merchant.Vehicles.View'">
+        <a class="home-kpi mh-link" routerLink="/merchant/vehicles">
+          <div class="home-kpi__label">
+            <span class="home-kpi__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.5 20a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm13 0a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 17.5h6l2.5-6H19M14 6h2.5l2 5.5M8 17.5L11 11h3.5"/></svg></span>
+            {{ 'merchant.myVehicles' | t }}
+          </div>
+          <div class="home-kpi__value">{{ summary.myVehiclesCount }}</div>
+          <div class="home-kpi__foot">{{ 'merchant.myVehiclesHint' | t }} <span class="mh-arrow" aria-hidden="true">→</span></div>
+        </a>
+      </ng-container>
     </section>
 
     <section class="home-grid home-grid--2">
@@ -123,24 +131,32 @@
           </div>
         </header>
         <div class="mh-actions">
-          <a routerLink="/merchant/orders" [queryParams]="{ pendingOnly: true }" class="mh-action">
-            <span class="mh-action__badge" *ngIf="summary.pendingInvitationsCount">{{ summary.pendingInvitationsCount }}</span>
-            <strong>{{ 'merchant.actionReplyInvites' | t }}</strong>
-            <small>{{ 'merchant.actionReplyInvitesHint' | t }}</small>
-          </a>
-          <a routerLink="/merchant/orders" [queryParams]="{ awaitingHandover: true }" class="mh-action">
-            <span class="mh-action__badge" *ngIf="summary.awaitingHandoverCount">{{ summary.awaitingHandoverCount }}</span>
-            <strong>{{ 'merchant.actionHandover' | t }}</strong>
-            <small>{{ 'merchant.actionHandoverHint' | t }}</small>
-          </a>
-          <a routerLink="/merchant/vehicles/new" class="mh-action">
-            <strong>{{ 'merchant.actionAddVehicle' | t }}</strong>
-            <small>{{ 'merchant.actionAddVehicleHint' | t }}</small>
-          </a>
-          <a routerLink="/merchant/payments" class="mh-action">
-            <strong>{{ 'merchant.viewPayments' | t }}</strong>
-            <small>{{ 'merchant.actionPaymentsHint' | t }}</small>
-          </a>
+          <ng-container *appHasPermission="'Merchant.Orders.View'">
+            <a routerLink="/merchant/orders" [queryParams]="{ pendingOnly: true }" class="mh-action">
+              <span class="mh-action__badge" *ngIf="summary.pendingInvitationsCount">{{ summary.pendingInvitationsCount }}</span>
+              <strong>{{ 'merchant.actionReplyInvites' | t }}</strong>
+              <small>{{ 'merchant.actionReplyInvitesHint' | t }}</small>
+            </a>
+          </ng-container>
+          <ng-container *appHasPermission="'Merchant.Orders.View'">
+            <a routerLink="/merchant/orders" [queryParams]="{ awaitingHandover: true }" class="mh-action">
+              <span class="mh-action__badge" *ngIf="summary.awaitingHandoverCount">{{ summary.awaitingHandoverCount }}</span>
+              <strong>{{ 'merchant.actionHandover' | t }}</strong>
+              <small>{{ 'merchant.actionHandoverHint' | t }}</small>
+            </a>
+          </ng-container>
+          <ng-container *appHasPermission="'Merchant.Vehicles.Create'">
+            <a routerLink="/merchant/vehicles/new" class="mh-action">
+              <strong>{{ 'merchant.actionAddVehicle' | t }}</strong>
+              <small>{{ 'merchant.actionAddVehicleHint' | t }}</small>
+            </a>
+          </ng-container>
+          <ng-container *appHasPermission="'Merchant.Payments.View'">
+            <a routerLink="/merchant/payments" class="mh-action">
+              <strong>{{ 'merchant.viewPayments' | t }}</strong>
+              <small>{{ 'merchant.actionPaymentsHint' | t }}</small>
+            </a>
+          </ng-container>
         </div>
       </article>
     </section>

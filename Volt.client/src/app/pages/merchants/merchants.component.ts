@@ -10,11 +10,12 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-merchants',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './merchants.component.html',
   styleUrls: ['./merchants.component.css', '../../shared/styles/list-filters.css']
 })

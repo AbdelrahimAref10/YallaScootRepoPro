@@ -1183,11 +1183,17 @@ namespace Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("LastModifiedDate");
 
+                    b.Property<int?>("SubRoleId")
+                        .HasColumnType("int")
+                        .HasColumnName("SubRoleId");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int")
                         .HasColumnName("UserId");
 
                     b.HasKey("EmployeeId");
+
+                    b.HasIndex("SubRoleId");
 
                     b.HasIndex("UserId")
                         .IsUnique()
@@ -1503,6 +1509,81 @@ namespace Infrastructure.Migrations
                         .HasDatabaseName("IX_VO_MerchantOrderPaymentDetail_Order_Vehicle");
 
                     b.ToTable("VO_MerchantOrderPaymentDetail", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Models.MerchantUser", b =>
+                {
+                    b.Property<int>("MerchantUserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("MerchantUserId");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MerchantUserId"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("CreatedBy");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreatedDate");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("FullName");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
+                        .HasColumnName("IsActive");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsOwner")
+                        .HasColumnType("bit")
+                        .HasColumnName("IsOwner");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("LastModifiedBy");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModifiedDate");
+
+                    b.Property<int>("MerchantId")
+                        .HasColumnType("int")
+                        .HasColumnName("MerchantId");
+
+                    b.Property<int>("SubRoleId")
+                        .HasColumnType("int")
+                        .HasColumnName("SubRoleId");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("UserId");
+
+                    b.HasKey("MerchantUserId");
+
+                    b.HasIndex("MerchantId")
+                        .HasDatabaseName("IX_MerchantUser_MerchantId");
+
+                    b.HasIndex("SubRoleId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_MerchantUser_UserId");
+
+                    b.ToTable("VO_MerchantUser", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Models.Order", b =>
@@ -2026,6 +2107,12 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PermissionId"));
 
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("Action");
+
                     b.Property<string>("CreatedBy")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
@@ -2067,6 +2154,10 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("PermissionName");
+
+                    b.Property<int>("Scope")
+                        .HasColumnType("int")
+                        .HasColumnName("Scope");
 
                     b.HasKey("PermissionId");
 
@@ -2302,49 +2393,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("VO_ReservedVehiclesPerDays", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Models.RolePermission", b =>
-                {
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int")
-                        .HasColumnName("RoleId");
-
-                    b.Property<int>("PermissionId")
-                        .HasColumnType("int")
-                        .HasColumnName("PermissionId");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)")
-                        .HasColumnName("CreatedBy");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreatedDate");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)")
-                        .HasColumnName("LastModifiedBy");
-
-                    b.Property<DateTime>("LastModifiedDate")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("LastModifiedDate");
-
-                    b.HasKey("RoleId", "PermissionId");
-
-                    b.HasIndex("PermissionId")
-                        .HasDatabaseName("IX_RolePermissions_PermissionId");
-
-                    b.HasIndex("RoleId")
-                        .HasDatabaseName("IX_RolePermissions_RoleId");
-
-                    b.HasIndex("RoleId", "PermissionId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_RolePermissions_RoleId_PermissionId");
-
-                    b.ToTable("VO_RolePermission", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Models.Shift", b =>
                 {
                     b.Property<int>("ShiftId")
@@ -2489,6 +2537,107 @@ namespace Infrastructure.Migrations
                         .HasDatabaseName("IX_VO_SubCategory_Name");
 
                     b.ToTable("VO_SubCategory", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Models.SubRole", b =>
+                {
+                    b.Property<int>("SubRoleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("SubRoleId");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubRoleId"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("CreatedBy");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreatedDate");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
+                        .HasColumnName("IsActive");
+
+                    b.Property<bool>("IsFullAccess")
+                        .HasColumnType("bit")
+                        .HasColumnName("IsFullAccess");
+
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("bit")
+                        .HasColumnName("IsSystem");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("LastModifiedBy");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModifiedDate");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("Name");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("NameAr");
+
+                    b.Property<int>("Scope")
+                        .HasColumnType("int")
+                        .HasColumnName("Scope");
+
+                    b.HasKey("SubRoleId");
+
+                    b.HasIndex("Scope", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_SubRole_Scope_Name");
+
+                    b.ToTable("VO_SubRole", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Models.SubRolePermission", b =>
+                {
+                    b.Property<int>("SubRoleId")
+                        .HasColumnType("int")
+                        .HasColumnName("SubRoleId");
+
+                    b.Property<int>("PermissionId")
+                        .HasColumnType("int")
+                        .HasColumnName("PermissionId");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("CreatedBy");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreatedDate");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("LastModifiedBy");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModifiedDate");
+
+                    b.HasKey("SubRoleId", "PermissionId");
+
+                    b.HasIndex("PermissionId")
+                        .HasDatabaseName("IX_SubRolePermission_PermissionId");
+
+                    b.ToTable("VO_SubRolePermission", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Models.Support", b =>
@@ -3246,11 +3395,18 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Employee", b =>
                 {
+                    b.HasOne("Domain.Models.SubRole", "SubRole")
+                        .WithMany()
+                        .HasForeignKey("SubRoleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Domain.Models.ApplicationUser", "User")
                         .WithOne("Employee")
                         .HasForeignKey("Domain.Models.Employee", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("SubRole");
 
                     b.Navigation("User");
                 });
@@ -3344,6 +3500,33 @@ namespace Infrastructure.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("Domain.Models.MerchantUser", b =>
+                {
+                    b.HasOne("Domain.Models.Merchant", "Merchant")
+                        .WithMany()
+                        .HasForeignKey("MerchantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.SubRole", "SubRole")
+                        .WithMany()
+                        .HasForeignKey("SubRoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.ApplicationUser", "User")
+                        .WithOne("MerchantUser")
+                        .HasForeignKey("Domain.Models.MerchantUser", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Merchant");
+
+                    b.Navigation("SubRole");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Models.Order", b =>
@@ -3496,25 +3679,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Vehicle");
                 });
 
-            modelBuilder.Entity("Domain.Models.RolePermission", b =>
-                {
-                    b.HasOne("Domain.Models.Permission", "Permission")
-                        .WithMany("RolePermissions")
-                        .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Models.ApplicationRole", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Permission");
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("Domain.Models.Shift", b =>
                 {
                     b.HasOne("Domain.Models.City", "City")
@@ -3535,6 +3699,25 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("Domain.Models.SubRolePermission", b =>
+                {
+                    b.HasOne("Domain.Models.Permission", "Permission")
+                        .WithMany("SubRolePermissions")
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.SubRole", "SubRole")
+                        .WithMany("SubRolePermissions")
+                        .HasForeignKey("SubRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permission");
+
+                    b.Navigation("SubRole");
                 });
 
             modelBuilder.Entity("Domain.Models.TieredDiscount", b =>
@@ -3665,6 +3848,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("Employee");
 
                     b.Navigation("Merchant");
+
+                    b.Navigation("MerchantUser");
                 });
 
             modelBuilder.Entity("Domain.Models.Category", b =>
@@ -3715,7 +3900,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Permission", b =>
                 {
-                    b.Navigation("RolePermissions");
+                    b.Navigation("SubRolePermissions");
                 });
 
             modelBuilder.Entity("Domain.Models.Shift", b =>
@@ -3726,6 +3911,11 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Models.SubCategory", b =>
                 {
                     b.Navigation("Vehicles");
+                });
+
+            modelBuilder.Entity("Domain.Models.SubRole", b =>
+                {
+                    b.Navigation("SubRolePermissions");
                 });
 
             modelBuilder.Entity("Domain.Models.ZoneGroup", b =>

@@ -13,33 +13,39 @@
       <span>{{ 'merchant.nav.orders' | t }}</span>
     </button>
     <div class="mod__hero-actions mod-bar__actions" *ngIf="order.canAccept || order.canReject || order.canHandover">
-      <button
-        *ngIf="order.canReject"
-        type="button"
-        class="mod__btn mod__btn--ghost"
-        [disabled]="!!actionLoading"
-        (click)="openReject()"
-      >
-        {{ 'merchant.rejectWholeOrder' | t }}
-      </button>
-      <button
-        *ngIf="order.canHandover"
-        type="button"
-        class="mod__btn mod__btn--warn"
-        [disabled]="!!actionLoading"
-        (click)="openHandover()"
-      >
-        {{ 'orders.markHandover' | t }}
-      </button>
-      <button
-        *ngIf="order.canAccept"
-        type="button"
-        class="mod__btn mod__btn--primary"
-        [disabled]="isBusy('accept') || !confirmedVehicleIds.length"
-        (click)="onAccept()"
-      >
-        {{ isBusy('accept') ? ('orders.processing' | t) : ('merchant.confirmSelectedVehicles' | t) }}
-      </button>
+      <ng-container *appHasPermission="'Merchant.Orders.Edit'">
+        <button
+          *ngIf="order.canReject"
+          type="button"
+          class="mod__btn mod__btn--ghost"
+          [disabled]="!!actionLoading"
+          (click)="openReject()"
+        >
+          {{ 'merchant.rejectWholeOrder' | t }}
+        </button>
+      </ng-container>
+      <ng-container *appHasPermission="'Merchant.Orders.Edit'">
+        <button
+          *ngIf="order.canHandover"
+          type="button"
+          class="mod__btn mod__btn--warn"
+          [disabled]="!!actionLoading"
+          (click)="openHandover()"
+        >
+          {{ 'orders.markHandover' | t }}
+        </button>
+      </ng-container>
+      <ng-container *appHasPermission="'Merchant.Orders.Edit'">
+        <button
+          *ngIf="order.canAccept"
+          type="button"
+          class="mod__btn mod__btn--primary"
+          [disabled]="isBusy('accept') || !confirmedVehicleIds.length"
+          (click)="onAccept()"
+        >
+          {{ isBusy('accept') ? ('orders.processing' | t) : ('merchant.confirmSelectedVehicles' | t) }}
+        </button>
+      </ng-container>
     </div>
   </header>
 
@@ -233,15 +239,17 @@
                 <ng-container *ngIf="h.receivedFromMerchantAt"> · {{ h.receivedFromMerchantAt | date:'MMM d, y · HH:mm' }}</ng-container>
               </span>
             </div>
-            <button
-              *ngIf="order.canHandover && h.assignedToDelivery && !h.deliveryReceivedFromMerchant"
-              type="button"
-              class="mod__btn mod__btn--warn mod__btn--sm"
-              [disabled]="!!actionLoading"
-              (click)="handoverSingle(h.vehicleId)"
-            >
-              {{ 'orders.markHandover' | t }}
-            </button>
+            <ng-container *appHasPermission="'Merchant.Orders.Edit'">
+              <button
+                *ngIf="order.canHandover && h.assignedToDelivery && !h.deliveryReceivedFromMerchant"
+                type="button"
+                class="mod__btn mod__btn--warn mod__btn--sm"
+                [disabled]="!!actionLoading"
+                (click)="handoverSingle(h.vehicleId)"
+              >
+                {{ 'orders.markHandover' | t }}
+              </button>
+            </ng-container>
             <span
               *ngIf="h.deliveryReceivedFromMerchant"
               class="mod__chip mod__chip--ok"

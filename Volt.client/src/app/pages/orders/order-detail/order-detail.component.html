@@ -44,33 +44,43 @@
         </button>
         <div class="ox-menu__backdrop" *ngIf="showMoreMenu" (click)="showMoreMenu = false"></div>
         <div class="ox-menu__list" *ngIf="showMoreMenu" role="menu">
-          <button *ngIf="canEdit()" type="button" role="menuitem" (click)="showMoreMenu = false; onEdit()">{{ 'common.edit' | t }}</button>
-          <button type="button" role="menuitem" (click)="showMoreMenu = false; onGoSettlements()">{{ 'orders.openSettlements' | t }}</button>
-          <button
-            *ngIf="canCancel()"
-            type="button"
-            role="menuitem"
-            class="ox-menu__danger"
-            (click)="showMoreMenu = false; onCancelOrder()"
-            [disabled]="isActionLoading('cancel')"
-          >{{ 'orders.cancelOrder' | t }}</button>
+          <ng-container *appHasPermission="'Admin.Orders.Edit'">
+            <button *ngIf="canEdit()" type="button" role="menuitem" (click)="showMoreMenu = false; onEdit()">{{ 'common.edit' | t }}</button>
+          </ng-container>
+          <ng-container *appHasPermission="'Admin.Settlements.View'">
+            <button type="button" role="menuitem" (click)="showMoreMenu = false; onGoSettlements()">{{ 'orders.openSettlements' | t }}</button>
+          </ng-container>
+          <ng-container *appHasPermission="'Admin.Orders.Edit'">
+            <button
+              *ngIf="canCancel()"
+              type="button"
+              role="menuitem"
+              class="ox-menu__danger"
+              (click)="showMoreMenu = false; onCancelOrder()"
+              [disabled]="isActionLoading('cancel')"
+            >{{ 'orders.cancelOrder' | t }}</button>
+          </ng-container>
         </div>
       </div>
 
-      <button
-        *ngIf="canSendToMerchants()"
-        type="button"
-        class="ox-btn ox-btn--primary"
-        (click)="onOpenSendToMerchants()"
-        [disabled]="isActionLoading('sendMerchants')"
-      >{{ isActionLoading('sendMerchants') ? ('orders.processing' | t) : ('orders.sendToMerchants' | t) }}</button>
-      <button
-        *ngIf="canConfirm()"
-        type="button"
-        class="ox-btn ox-btn--primary"
-        (click)="onConfirmOrder()"
-        [disabled]="isActionLoading('confirm')"
-      >{{ isActionLoading('confirm') ? ('orders.confirming' | t) : ('orders.confirmOrder' | t) }}</button>
+      <ng-container *appHasPermission="'Admin.Orders.Edit'">
+        <button
+          *ngIf="canSendToMerchants()"
+          type="button"
+          class="ox-btn ox-btn--primary"
+          (click)="onOpenSendToMerchants()"
+          [disabled]="isActionLoading('sendMerchants')"
+        >{{ isActionLoading('sendMerchants') ? ('orders.processing' | t) : ('orders.sendToMerchants' | t) }}</button>
+      </ng-container>
+      <ng-container *appHasPermission="'Admin.Orders.Edit'">
+        <button
+          *ngIf="canConfirm()"
+          type="button"
+          class="ox-btn ox-btn--primary"
+          (click)="onConfirmOrder()"
+          [disabled]="isActionLoading('confirm')"
+        >{{ isActionLoading('confirm') ? ('orders.confirming' | t) : ('orders.confirmOrder' | t) }}</button>
+      </ng-container>
     </div>
   </header>
 
@@ -101,12 +111,16 @@
         <p *ngIf="nextStepKey">{{ nextStepKey | t }}</p>
       </div>
       <div class="ox-next__actions">
-        <button *ngIf="canAssignAnyVehicle" type="button" class="ox-btn" (click)="onOpenAssignDelivery()" [disabled]="isActionLoading('assignDelivery')">
-          {{ (hasAnyLegRider ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
-        </button>
-        <button *ngIf="canMarkHandover()" type="button" class="ox-btn ox-btn--primary" (click)="onOpenHandover()" [disabled]="isActionLoading('handover')">
-          {{ isActionLoading('handover') ? ('orders.processing' | t) : ('orders.markHandover' | t) }}
-        </button>
+        <ng-container *appHasPermission="'Admin.Orders.Edit'">
+          <button *ngIf="canAssignAnyVehicle" type="button" class="ox-btn" (click)="onOpenAssignDelivery()" [disabled]="isActionLoading('assignDelivery')">
+            {{ (hasAnyLegRider ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
+          </button>
+        </ng-container>
+        <ng-container *appHasPermission="'Admin.Orders.Edit'">
+          <button *ngIf="canMarkHandover()" type="button" class="ox-btn ox-btn--primary" (click)="onOpenHandover()" [disabled]="isActionLoading('handover')">
+            {{ isActionLoading('handover') ? ('orders.processing' | t) : ('orders.markHandover' | t) }}
+          </button>
+        </ng-container>
       </div>
     </div>
   </section>
@@ -189,28 +203,40 @@
             class="ox-line__actions"
             *ngIf="nextVehicleAction(vehicle) || canAssignVehicle(vehicle) || canFailVehicle(vehicle) || canReplaceVehicle() || canRemoveVehicle(vehicle)"
           >
-            <button *ngIf="nextVehicleAction(vehicle) as step" type="button" class="ox-btn ox-btn--primary ox-btn--sm" (click)="openLifecycleModal(vehicle, step)">
-              {{ lifecycleActionLabel(step) }}
-            </button>
-            <button *ngIf="canAssignVehicle(vehicle)" type="button" class="ox-btn ox-btn--sm" (click)="onOpenAssignDelivery(vehicle)" [disabled]="isActionLoading('assignDelivery')">
-              {{ (hasAnyRider(vehicle.vehicleId) ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
-            </button>
-            <button *ngIf="canReplaceVehicle()" type="button" class="ox-btn ox-btn--sm" (click)="onOpenReplaceVehicle(vehicle.vehicleId)">{{ 'orders.replaceVehicle' | t }}</button>
+            <ng-container *appHasPermission="'Admin.Orders.Edit'">
+              <button *ngIf="nextVehicleAction(vehicle) as step" type="button" class="ox-btn ox-btn--primary ox-btn--sm" (click)="openLifecycleModal(vehicle, step)">
+                {{ lifecycleActionLabel(step) }}
+              </button>
+            </ng-container>
+            <ng-container *appHasPermission="'Admin.Orders.Edit'">
+              <button *ngIf="canAssignVehicle(vehicle)" type="button" class="ox-btn ox-btn--sm" (click)="onOpenAssignDelivery(vehicle)" [disabled]="isActionLoading('assignDelivery')">
+                {{ (hasAnyRider(vehicle.vehicleId) ? 'orders.reassignRiders' : 'orders.assignRiders') | t }}
+              </button>
+            </ng-container>
+            <ng-container *appHasPermission="'Admin.Orders.Edit'">
+              <button *ngIf="canReplaceVehicle()" type="button" class="ox-btn ox-btn--sm" (click)="onOpenReplaceVehicle(vehicle.vehicleId)">{{ 'orders.replaceVehicle' | t }}</button>
+            </ng-container>
             <span class="ox-line__spacer"></span>
-            <button *ngIf="canFailVehicle(vehicle)" type="button" class="ox-btn ox-btn--sm ox-btn--link-danger" (click)="openVehicleNotReceived(vehicle)">{{ 'orders.cancelVehicle' | t }}</button>
-            <button *ngIf="canRemoveVehicle(vehicle)" type="button" class="ox-btn ox-btn--sm ox-btn--link-danger" (click)="onOpenRemoveVehicle(vehicle.vehicleId)">{{ 'orders.removeVehicle' | t }}</button>
+            <ng-container *appHasPermission="'Admin.Orders.Edit'">
+              <button *ngIf="canFailVehicle(vehicle)" type="button" class="ox-btn ox-btn--sm ox-btn--link-danger" (click)="openVehicleNotReceived(vehicle)">{{ 'orders.cancelVehicle' | t }}</button>
+            </ng-container>
+            <ng-container *appHasPermission="'Admin.Orders.Edit'">
+              <button *ngIf="canRemoveVehicle(vehicle)" type="button" class="ox-btn ox-btn--sm ox-btn--link-danger" (click)="onOpenRemoveVehicle(vehicle.vehicleId)">{{ 'orders.removeVehicle' | t }}</button>
+            </ng-container>
           </div>
           <p class="ox-line__fail" *ngIf="vehicle.deliveryFailed">{{ 'orders.vehicleCancelled' | t }}</p>
         </article>
 
         <footer class="ox-fulfil__foot">
           <span>{{ 'orders.merchantResponse' | t }}: <b>{{ merchantInviteLabel(group.merchantId) }}</b></span>
-          <button
-            *ngIf="merchantInviteRejected(group.merchantId) && order.orderState === OrderState.MerchantPending"
-            type="button"
-            class="ox-btn ox-btn--sm"
-            (click)="onOpenReassign(group.merchantId)"
-          >{{ 'orders.reassignMerchant' | t }}</button>
+          <ng-container *appHasPermission="'Admin.Orders.Edit'">
+            <button
+              *ngIf="merchantInviteRejected(group.merchantId) && order.orderState === OrderState.MerchantPending"
+              type="button"
+              class="ox-btn ox-btn--sm"
+              (click)="onOpenReassign(group.merchantId)"
+            >{{ 'orders.reassignMerchant' | t }}</button>
+          </ng-container>
         </footer>
       </section>
 
@@ -225,18 +251,20 @@
           </div>
           <div class="ox-panel__head-actions">
             <span class="ox-muted">{{ getPaymentMethodLabel(order.paymentMethod) }}</span>
-            <button
-              *ngIf="canChangeToCash()"
-              type="button"
-              class="ox-btn ox-btn--sm"
-              (click)="onChangeToCash()"
-              [disabled]="isActionLoading('changeToCash')"
-            >
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-              </svg>
-              {{ 'orders.changeToCash' | t }}
-            </button>
+            <ng-container *appHasPermission="'Admin.Orders.Edit'">
+              <button
+                *ngIf="canChangeToCash()"
+                type="button"
+                class="ox-btn ox-btn--sm"
+                (click)="onChangeToCash()"
+                [disabled]="isActionLoading('changeToCash')"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                {{ 'orders.changeToCash' | t }}
+              </button>
+            </ng-container>
           </div>
         </header>
         <div class="ox-pay-table" *ngIf="order.orderTotals as totals">
@@ -271,9 +299,11 @@
             <strong>{{ 'orders.paypalRefund' | t }} · {{ refund.refundableAmount | number:'1.2-2' }} {{ 'common.currency' | t }}</strong>
             <span class="ox-muted">{{ (order.moneyRefunded ? 'orders.moneyRefunded' : 'orders.refundPending') | t }}</span>
           </div>
-          <button *ngIf="canMarkMoneyRefunded()" type="button" class="ox-btn ox-btn--sm ox-btn--primary" (click)="onMarkMoneyRefunded()" [disabled]="isActionLoading('markRefunded')">
-            {{ isActionLoading('markRefunded') ? ('orders.updating' | t) : ('orders.markAsRefunded' | t) }}
-          </button>
+          <ng-container *appHasPermission="'Admin.Orders.Edit'">
+            <button *ngIf="canMarkMoneyRefunded()" type="button" class="ox-btn ox-btn--sm ox-btn--primary" (click)="onMarkMoneyRefunded()" [disabled]="isActionLoading('markRefunded')">
+              {{ isActionLoading('markRefunded') ? ('orders.updating' | t) : ('orders.markAsRefunded' | t) }}
+            </button>
+          </ng-container>
         </div>
       </section>
 
@@ -370,7 +400,9 @@
       <section class="ox-panel">
         <header class="ox-panel__head"><h2 class="ox-panel__title">{{ 'orders.customer' | t }}</h2></header>
         <div class="ox-panel__body ox-card-lines">
-          <a class="ox-link" [routerLink]="['/main/customers', order.customerId]">{{ order.customerName }}</a>
+          <ng-container *appHasPermission="'Admin.Customers.View'">
+            <a class="ox-link" [routerLink]="['/main/customers', order.customerId]">{{ order.customerName }}</a>
+          </ng-container>
           <h3 class="ox-card-lines__label">{{ 'orders.contactInfo' | t }}</h3>
           <div class="ox-copyline" *ngIf="order.customerMobileNumber">
             <span class="ox-ltr">{{ order.customerMobileNumber }}</span>

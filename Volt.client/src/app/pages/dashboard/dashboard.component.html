@@ -29,12 +29,14 @@
           <input type="date" [(ngModel)]="globalRange.to" (change)="onGlobalRangeChange()" />
         </label>
       </div>
-      <a routerLink="/main/orders/new" class="home-hero__cta">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-width="2.4" d="M12 5v14M5 12h14" />
-        </svg>
-        {{ 'dashboard.newOrder' | t }}
-      </a>
+      <ng-container *appHasPermission="'Admin.Orders.Create'">
+        <a routerLink="/main/orders/new" class="home-hero__cta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-width="2.4" d="M12 5v14M5 12h14" />
+          </svg>
+          {{ 'dashboard.newOrder' | t }}
+        </a>
+      </ng-container>
     </div>
   </header>
 
@@ -116,11 +118,13 @@
           <strong>{{ formatNumber(summary?.activeRentals) }}</strong>
         </li>
         <li>
-          <a routerLink="/main/orders" class="home-ops__row">
-            <span class="home-ops__icon home-ops__icon--warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
-            <span class="home-ops__text">{{ 'dashboard.pendingOrders' | t }}</span>
-            <strong>{{ formatNumber(summary?.pendingOrders) }}</strong>
-          </a>
+          <ng-container *appHasPermission="'Admin.Orders.View'">
+            <a routerLink="/main/orders" class="home-ops__row">
+              <span class="home-ops__icon home-ops__icon--warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+              <span class="home-ops__text">{{ 'dashboard.pendingOrders' | t }}</span>
+              <strong>{{ formatNumber(summary?.pendingOrders) }}</strong>
+            </a>
+          </ng-container>
         </li>
         <li>
           <span class="home-ops__icon home-ops__icon--red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
@@ -157,7 +161,9 @@
           <h2>{{ 'dashboard.recentOrders' | t }}</h2>
           <p>{{ 'dashboard.recentOrdersHint' | t }}</p>
         </div>
-        <a routerLink="/main/orders" class="home-panel__link">{{ 'dashboard.viewAllOrders' | t }}</a>
+        <ng-container *appHasPermission="'Admin.Orders.View'">
+          <a routerLink="/main/orders" class="home-panel__link">{{ 'dashboard.viewAllOrders' | t }}</a>
+        </ng-container>
       </header>
 
       <div class="home-table-wrap" *ngIf="recentActivity?.recentOrders?.length; else emptyOrders">

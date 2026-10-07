@@ -2,9 +2,12 @@ using Application.Features.Shifts.Command.DeleteShiftCommand;
 using Application.Features.Shifts.Command.SaveShiftCommand;
 using Application.Features.Shifts.DTOs;
 using Application.Features.Shifts.Query.GetShiftsQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 using System.Collections.Generic;
 
@@ -13,7 +16,7 @@ namespace Volt.Server.Controllers.Admin
     /// <summary>Rider shifts per city. Riders can only go online inside one of their shifts.</summary>
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class ShiftController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -23,6 +26,7 @@ namespace Volt.Server.Controllers.Admin
             _mediator = mediator;
         }
 
+        [HasPermission(Permissions.Admin.Shifts.View)]
         [HttpGet]
         [ProducesResponseType(typeof(List<ShiftDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -34,6 +38,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Shifts.View)]
         [HttpGet("{shiftId:int}")]
         [ProducesResponseType(typeof(ShiftDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -48,6 +53,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(shift);
         }
 
+        [HasPermission(Permissions.Admin.Shifts.Create)]
         [HttpPost]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -60,6 +66,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Shifts.Edit)]
         [HttpPut("{shiftId:int}")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -72,6 +79,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Shifts.Delete)]
         [HttpDelete("{shiftId:int}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

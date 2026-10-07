@@ -6,9 +6,12 @@ using Application.Features.Order.DTOs;
 using Application.Features.Order.Query.GetMyMerchantDashboardQuery;
 using Application.Features.SubCategory.DTOs;
 using Application.Features.SubCategory.Query.GetSubCategoriesByCategoryQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 using System.Collections.Generic;
 
@@ -16,7 +19,7 @@ namespace Volt.Server.Controllers.Merchant
 {
     [Route("api/merchant/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.Merchant)]
     public class MerchantProfileController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -37,6 +40,7 @@ namespace Volt.Server.Controllers.Merchant
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Merchant.Home.View)]
         [HttpGet("dashboard")]
         [ProducesResponseType(typeof(MerchantDashboardSummaryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

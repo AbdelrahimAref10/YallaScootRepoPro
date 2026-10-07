@@ -69,6 +69,7 @@ import {
   isStepDone,
   nextLifecycleAction
 } from '../../../shared/order-cycle/order-vehicle-cycle';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 interface PipelineStep {
   state: OrderState;
@@ -128,7 +129,7 @@ type OrderDetailTab = 'merchants' | 'riders' | 'journal' | 'documents';
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, ConfirmDialogComponent, VehicleSpecsComponent, MultiSelectComponent, RiderPickerComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, ConfirmDialogComponent, VehicleSpecsComponent, MultiSelectComponent, RiderPickerComponent, HasPermissionDirective],
   templateUrl: './order-detail.component.html',
   styleUrls: [
     './order-detail.component.css',

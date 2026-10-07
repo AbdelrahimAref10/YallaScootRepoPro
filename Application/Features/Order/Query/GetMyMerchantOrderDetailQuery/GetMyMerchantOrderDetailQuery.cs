@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Order.DTOs;
 using CSharpFunctionalExtensions;
 using Domain.Common;
@@ -40,7 +41,8 @@ namespace Application.Features.Order.Query.GetMyMerchantOrderDetailQuery
         {
             var merchant = await _context.Merchants
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.UserId == _userSession.UserId && !m.IsDeleted, cancellationToken);
+                .OfUser(_context, _userSession.UserId)
+                .FirstOrDefaultAsync(m => !m.IsDeleted, cancellationToken);
 
             if (merchant == null)
                 return Result.Failure<MerchantPortalOrderDetailDto>("Merchant profile not found for current user");

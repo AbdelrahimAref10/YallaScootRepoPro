@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Auth.DTOs;
 using CSharpFunctionalExtensions;
 using Domain.Enums;
@@ -200,6 +201,8 @@ namespace Application.Features.Auth.Command.RegisterCommand
                         "System");
 
                     _context.Merchants.Add(merchant);
+                    _context.MerchantUsers.Add(MerchantUser.CreateOwner(
+                        merchant, await SubRoleLookup.MerchantOwnerIdAsync(_context, cancellationToken), "System"));
                     var saveResult = await _context.SaveChangesAsyncWithResult(cancellationToken);
                     if (!saveResult.IsSuccess)
                     {

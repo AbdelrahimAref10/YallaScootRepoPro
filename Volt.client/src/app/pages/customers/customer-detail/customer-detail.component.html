@@ -145,69 +145,81 @@
           <div class="customer-detail__action-group">
             <h3 class="customer-detail__action-title">{{ 'customers.accountStatus' | t }}</h3>
 
-            <button
-              *ngIf="canActivate()"
-              type="button"
-              class="entity-form__btn entity-form__btn--primary customer-detail__action-btn"
-              (click)="onActivate()"
-              [disabled]="isActionLoading('activate')"
-            >
-              {{ isActionLoading('activate') ? ('customers.activating' | t) : ('customers.activateAccount' | t) }}
-            </button>
+            <ng-container *appHasPermission="'Admin.Customers.Edit'">
+              <button
+                *ngIf="canActivate()"
+                type="button"
+                class="entity-form__btn entity-form__btn--primary customer-detail__action-btn"
+                (click)="onActivate()"
+                [disabled]="isActionLoading('activate')"
+              >
+                {{ isActionLoading('activate') ? ('customers.activating' | t) : ('customers.activateAccount' | t) }}
+              </button>
+            </ng-container>
 
-            <button
-              *ngIf="canDeactivate()"
-              type="button"
-              class="entity-form__btn entity-form__btn--ghost customer-detail__action-btn"
-              (click)="onDeactivate()"
-              [disabled]="isActionLoading('deactivate')"
-            >
-              {{ isActionLoading('deactivate') ? ('customers.deactivating' | t) : ('customers.deactivateAccount' | t) }}
-            </button>
+            <ng-container *appHasPermission="'Admin.Customers.Edit'">
+              <button
+                *ngIf="canDeactivate()"
+                type="button"
+                class="entity-form__btn entity-form__btn--ghost customer-detail__action-btn"
+                (click)="onDeactivate()"
+                [disabled]="isActionLoading('deactivate')"
+              >
+                {{ isActionLoading('deactivate') ? ('customers.deactivating' | t) : ('customers.deactivateAccount' | t) }}
+              </button>
+            </ng-container>
 
-            <button
-              *ngIf="canBlock()"
-              type="button"
-              class="entity-form__btn customer-detail__action-btn customer-detail__action-btn--danger"
-              (click)="onBlock()"
-              [disabled]="isActionLoading('block')"
-            >
-              {{ isActionLoading('block') ? ('customers.blocking' | t) : ('customers.blockAccount' | t) }}
-            </button>
+            <ng-container *appHasPermission="'Admin.Customers.Edit'">
+              <button
+                *ngIf="canBlock()"
+                type="button"
+                class="entity-form__btn customer-detail__action-btn customer-detail__action-btn--danger"
+                (click)="onBlock()"
+                [disabled]="isActionLoading('block')"
+              >
+                {{ isActionLoading('block') ? ('customers.blocking' | t) : ('customers.blockAccount' | t) }}
+              </button>
+            </ng-container>
 
-            <button
-              *ngIf="canUnblock()"
-              type="button"
-              class="entity-form__btn entity-form__btn--primary customer-detail__action-btn"
-              (click)="onUnblock()"
-              [disabled]="isActionLoading('unblock')"
-            >
-              {{ isActionLoading('unblock') ? ('customers.unblocking' | t) : ('customers.unblockAccount' | t) }}
-            </button>
+            <ng-container *appHasPermission="'Admin.Customers.Edit'">
+              <button
+                *ngIf="canUnblock()"
+                type="button"
+                class="entity-form__btn entity-form__btn--primary customer-detail__action-btn"
+                (click)="onUnblock()"
+                [disabled]="isActionLoading('unblock')"
+              >
+                {{ isActionLoading('unblock') ? ('customers.unblocking' | t) : ('customers.unblockAccount' | t) }}
+              </button>
+            </ng-container>
           </div>
 
           <div class="customer-detail__action-group">
             <h3 class="customer-detail__action-title">{{ 'customers.cashPaymentStatus' | t }}</h3>
 
-            <button
-              *ngIf="!customer.cashBlock"
-              type="button"
-              class="entity-form__btn customer-detail__action-btn customer-detail__action-btn--danger"
-              (click)="onBlockCash()"
-              [disabled]="isActionLoading('blockCash')"
-            >
-              {{ isActionLoading('blockCash') ? ('customers.blocking' | t) : ('customers.blockCash' | t) }}
-            </button>
+            <ng-container *appHasPermission="'Admin.Customers.Edit'">
+              <button
+                *ngIf="!customer.cashBlock"
+                type="button"
+                class="entity-form__btn customer-detail__action-btn customer-detail__action-btn--danger"
+                (click)="onBlockCash()"
+                [disabled]="isActionLoading('blockCash')"
+              >
+                {{ isActionLoading('blockCash') ? ('customers.blocking' | t) : ('customers.blockCash' | t) }}
+              </button>
+            </ng-container>
 
-            <button
-              *ngIf="customer.cashBlock"
-              type="button"
-              class="entity-form__btn entity-form__btn--primary customer-detail__action-btn"
-              (click)="onUnblockCash()"
-              [disabled]="isActionLoading('unblockCash')"
-            >
-              {{ isActionLoading('unblockCash') ? ('customers.unblocking' | t) : ('customers.unblockCash' | t) }}
-            </button>
+            <ng-container *appHasPermission="'Admin.Customers.Edit'">
+              <button
+                *ngIf="customer.cashBlock"
+                type="button"
+                class="entity-form__btn entity-form__btn--primary customer-detail__action-btn"
+                (click)="onUnblockCash()"
+                [disabled]="isActionLoading('unblockCash')"
+              >
+                {{ isActionLoading('unblockCash') ? ('customers.unblocking' | t) : ('customers.unblockCash' | t) }}
+              </button>
+            </ng-container>
 
             <p class="customer-detail__hint">{{ 'customers.cashPaymentHint' | t }}</p>
           </div>

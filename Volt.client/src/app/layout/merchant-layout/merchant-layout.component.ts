@@ -3,10 +3,8 @@ import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { DashboardHeaderComponent } from '../dashboard-header/dashboard-header.component';
-import {
-  DashboardMenuItem,
-  DashboardSidebarComponent
-} from '../dashboard-sidebar/dashboard-sidebar.component';
+import { DashboardSidebarComponent } from '../dashboard-sidebar/dashboard-sidebar.component';
+import { DashboardMenuItem, MERCHANT_MENU_ITEMS } from '../../core/models/panel-menus';
 import { LocaleService } from '../../core/services/locale.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SignalRService } from '../../core/services/signalr.service';
@@ -34,12 +32,7 @@ export class MerchantLayoutComponent implements OnInit, OnDestroy {
   isMobileNavOpen = false;
   isCompactViewport = false;
 
-  readonly menuItems: DashboardMenuItem[] = [
-    { labelKey: 'merchant.nav.home', route: '/merchant/home', icon: 'dashboard' },
-    { labelKey: 'merchant.nav.orders', route: '/merchant/orders', icon: 'orders' },
-    { labelKey: 'merchant.nav.vehicles', route: '/merchant/vehicles', icon: 'vehicles' },
-    { labelKey: 'merchant.nav.payments', route: '/merchant/payments', icon: 'money' }
-  ];
+  readonly menuItems: DashboardMenuItem[] = MERCHANT_MENU_ITEMS;
 
   private mediaQuery?: MediaQueryList;
   private mediaListener?: (event: MediaQueryListEvent) => void;
@@ -56,6 +49,7 @@ export class MerchantLayoutComponent implements OnInit, OnDestroy {
     void this.localeService.ensureAdminLocale();
 
     if (this.authService.isAuthenticated()) {
+      this.authService.refreshAccess(true);
       const token = this.authService.getToken();
       if (token) {
         this.signalRService.StartMerchantNotificationConnection(token);

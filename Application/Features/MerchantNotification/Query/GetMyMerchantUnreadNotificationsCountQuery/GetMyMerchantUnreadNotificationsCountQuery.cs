@@ -1,3 +1,4 @@
+using Application.Common;
 using CSharpFunctionalExtensions;
 using Domain.Common;
 using Infrastructure;
@@ -28,7 +29,8 @@ namespace Application.Features.MerchantNotification.Query.GetMyMerchantUnreadNot
         {
             var merchantId = await _context.Merchants
                 .AsNoTracking()
-                .Where(m => m.UserId == _userSession.UserId && !m.IsDeleted)
+                .OfUser(_context, _userSession.UserId)
+                .Where(m => !m.IsDeleted)
                 .Select(m => (int?)m.MerchantId)
                 .FirstOrDefaultAsync(cancellationToken);
 

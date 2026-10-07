@@ -1,3 +1,6 @@
+using Domain.Authorization;
+using Domain.Enums;
+using Presentation.Authorization;
 using System.Collections.Generic;
 using Application.Common;
 using Application.Features.Category.Command.CreateCategoryCommand;
@@ -18,7 +21,7 @@ namespace Volt.Server.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class CategoryController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -41,6 +44,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Categories.View)]
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -67,6 +71,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Categories.Create)]
         [HttpPost]
         [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -80,6 +85,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Categories.Edit)]
         [HttpPut]
         [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -93,6 +99,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Categories.Edit)]
         [HttpPost("{id}/activate")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -106,6 +113,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Categories.Edit)]
         [HttpPost("{id}/deactivate")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -119,6 +127,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Categories.Delete)]
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

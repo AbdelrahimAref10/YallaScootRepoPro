@@ -10,9 +10,12 @@ using Application.Features.Customer.DTOs;
 using Application.Features.Customer.Query.GetAllCustomersQuery;
 using Application.Features.Customer.Query.GetCustomerByIdQuery;
 using Application.Features.Customer.Query.SearchCustomersByMobileQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 using System.Collections.Generic;
 
@@ -20,7 +23,7 @@ namespace Volt.Server.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class AdminCustomerController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -30,6 +33,7 @@ namespace Volt.Server.Controllers.Admin
             _mediator = mediator;
         }
 
+        [HasPermission(Permissions.Admin.Customers.View, Permissions.Admin.Reports.View)]
         [HttpGet]
         [ProducesResponseType(typeof(PagedResult<CustomerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -46,6 +50,7 @@ namespace Volt.Server.Controllers.Admin
         /// <summary>
         /// Lightweight phone lookup for admin flows (e.g. create order). Does not load the full customer list.
         /// </summary>
+        [HasPermission(Permissions.Admin.Customers.View, Permissions.Admin.Orders.Create, Permissions.Admin.Orders.Edit)]
         [HttpGet("search-by-mobile")]
         [ProducesResponseType(typeof(List<CustomerLookupDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -64,6 +69,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Customers.View)]
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(CustomerDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -79,6 +85,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Customers.Create)]
         [HttpPost]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -92,6 +99,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Customers.Edit)]
         [HttpPost("{id}/block")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -106,6 +114,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Customers.Edit)]
         [HttpPost("{id}/unblock")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -120,6 +129,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Customers.Edit)]
         [HttpPost("{id}/activate")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -134,6 +144,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Customers.Edit)]
         [HttpPost("{id}/deactivate")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -148,6 +159,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Customers.Edit)]
         [HttpPost("{id}/block-cash")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -162,6 +174,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Customers.Edit)]
         [HttpPost("{id}/unblock-cash")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

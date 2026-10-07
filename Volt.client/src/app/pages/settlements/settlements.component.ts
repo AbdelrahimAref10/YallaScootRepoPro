@@ -23,13 +23,14 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 type SettlementTab = 'payDelivery' | 'collect' | 'payMerchant';
 
 @Component({
   selector: 'app-settlements',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe, MultiSelectComponent],
+  imports: [CommonModule, FormsModule, TranslatePipe, MultiSelectComponent, HasPermissionDirective],
   templateUrl: './settlements.component.html',
   styleUrls: ['./settlements.component.css']
 })

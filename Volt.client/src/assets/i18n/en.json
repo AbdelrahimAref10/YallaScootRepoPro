@@ -145,7 +145,8 @@
     "darkMode": "Dark mode",
     "language": "Language",
     "english": "English",
-    "arabic": "العربية"
+    "arabic": "العربية",
+    "noPermission": "You don't have permission to do this."
   },
   "nav": {
     "groupOverview": "Overview",
@@ -251,7 +252,8 @@
       "home": "Home",
       "orders": "Orders",
       "vehicles": "Vehicles",
-      "payments": "Payments"
+      "payments": "Payments",
+      "staff": "Staff"
     },
     "ordersTitle": "My orders",
     "ordersSubtitle": "Confirm vehicles, hand over to delivery, and follow each order through pickup and return",
@@ -313,7 +315,27 @@
     "selectCategory": "Select category first",
     "selectSubCategory": "Select subcategory",
     "vehicleFormSubtitle": "Vehicle is saved to the shared fleet under your merchant account",
-    "vehicleCascadeHint": "Choose category first, then subcategory. You cannot create categories."
+    "vehicleCascadeHint": "Choose category first, then subcategory. You cannot create categories.",
+    "staff": {
+      "title": "Staff",
+      "subtitle": "People who can sign in to your merchant account and what they can do",
+      "add": "Add staff",
+      "empty": "No staff yet",
+      "createTitle": "Add staff member",
+      "editTitle": "Edit staff member",
+      "formHint": "They sign in with their username or phone number.",
+      "fieldRequired": "This field is required",
+      "emailInvalid": "Enter a valid email",
+      "passwordKeep": "Leave empty to keep the current password",
+      "passwordInvalid": "At least 8 characters with upper and lower case letters and a digit",
+      "noRolesHint": "No staff roles yet. Ask the administrator to create one.",
+      "activateTitle": "Activate",
+      "activateConfirm": "Allow {{name}} to sign in again?",
+      "deactivateTitle": "Deactivate",
+      "deactivateConfirm": "{{name}} will not be able to sign in. Continue?",
+      "deleteTitle": "Delete staff member",
+      "deleteConfirm": "Delete {{name}}? They will lose access immediately."
+    }
   },
   "dashboard": {
     "liveOps": "Live operations",
@@ -804,22 +826,25 @@
     "deactivateConfirm": "Are you sure you want to deactivate this user?",
     "deleteTitle": "Delete user",
     "activateTitle": "Activate user",
-    "deactivateTitle": "Deactivate user"
+    "deactivateTitle": "Deactivate user",
+    "subRole": "Sub-role",
+    "selectSubRole": "Select a sub-role",
+    "subRoleRequired": "Sub-role is required"
   },
   "roles": {
-    "title": "Roles",
-    "subtitle": "Manage access roles and permissions",
+    "title": "Roles & permissions",
+    "subtitle": "Sub-roles of the admin and merchant panels and what each one can access",
     "empty": "No roles found",
-    "emptyHint": "Create a role to control admin access.",
+    "emptyHint": "Create a role and choose its permissions.",
     "permissions": "Permissions",
-    "add": "Add Role",
+    "add": "Add role",
     "name": "Role Name",
     "id": "ID",
     "createTitle": "Create Role",
     "editTitle": "Edit Role",
     "createSubtitle": "Define a new access role",
     "editSubtitle": "Update this role name",
-    "namePlaceholder": "e.g. Admin, Manager",
+    "namePlaceholder": "e.g. Operation",
     "nameRequired": "Role name is required",
     "nameMinLength": "Role name must be at least 2 characters",
     "namePattern": "Must start with a letter and contain only letters and numbers",
@@ -828,7 +853,23 @@
     "deleteMessage": "Are you sure you want to delete the role \"{{name}}\"?",
     "failedToCreate": "Failed to create role. Please try again.",
     "failedToUpdate": "Failed to update role. Please try again.",
-    "failedToDelete": "Failed to delete role. Please try again."
+    "failedToDelete": "Failed to delete role. Please try again.",
+    "scopeAdmin": "Admin panel",
+    "scopeMerchant": "Merchant panel",
+    "system": "System",
+    "fullAccess": "Full access",
+    "usersCount": "{{count}} users",
+    "permissionsCount": "{{count}} permissions",
+    "viewTitle": "Role permissions",
+    "systemHint": "System roles always have full access and cannot be changed.",
+    "matrixHint": "Pick what this role can see and do in each module.",
+    "nameAr": "Arabic name",
+    "active": "Active",
+    "module": "Module",
+    "actionView": "View",
+    "actionCreate": "Add",
+    "actionEdit": "Edit",
+    "actionDelete": "Delete"
   },
   "cities": {
     "title": "Cities",
@@ -1730,5 +1771,30 @@
     "noCity": "No city selected",
     "saveChanges": "Save changes",
     "create": "Create shift"
+  },
+  "access": {
+    "noAccessTitle": "No access",
+    "noAccessBody": "Your role does not include any page yet. Ask your administrator to grant you permissions."
+  },
+  "modules": {
+    "Dashboard": "Home page",
+    "Orders": "Orders",
+    "Shifts": "Shifts",
+    "Merchants": "Merchants",
+    "Deliveries": "Deliveries",
+    "Customers": "Customers",
+    "Vehicles": "Vehicles",
+    "Categories": "Categories",
+    "SubCategories": "Subcategories",
+    "Cities": "Cities",
+    "Settlements": "Settlements",
+    "Journals": "Journal movements",
+    "Reports": "Reports",
+    "SystemUsers": "System users",
+    "Roles": "Roles",
+    "Support": "Support",
+    "Home": "Home",
+    "Payments": "Payments",
+    "Staff": "Staff"
   }
 }

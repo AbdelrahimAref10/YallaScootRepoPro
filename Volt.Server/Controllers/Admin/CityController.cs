@@ -11,16 +11,19 @@ using Application.Features.Zone.Command.UpdateZoneDeliveryRatesCommand;
 using Application.Features.Zone.Query.GetZoneDeliveryMatrixQuery;
 using Application.Features.Zone.Query.GetZoneGroupsLookupQuery;
 using Application.Features.Zone.Query.GetZonesByCityQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 
 namespace Volt.Server.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class CityController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -43,6 +46,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Cities.View)]
         [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(CityDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -80,6 +84,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Cities.View)]
         [HttpGet("DeliveryMatrix")]
         [ProducesResponseType(typeof(ZoneDeliveryMatrixDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -91,6 +96,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Cities.Edit)]
         [HttpPut("DeliveryRates")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -102,6 +108,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Cities.Create)]
         [HttpPost]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -115,6 +122,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Cities.Edit)]
         [HttpPut]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -128,6 +136,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Cities.Edit)]
         [HttpPost("{id}/deactivate")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -142,6 +151,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Cities.Edit)]
         [HttpPost("{id}/activate")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -156,6 +166,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Cities.Delete)]
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -170,6 +181,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Cities.Delete)]
         [HttpDelete("{id}/permanent")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

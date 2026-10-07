@@ -6,16 +6,19 @@ using Application.Features.AdminReport.Query.GetCancelledOrdersReportQuery;
 using Application.Features.AdminReport.Query.GetOrdersDetailsReportQuery;
 using Application.Features.AdminReport.Query.GetPayPalRefundsReportQuery;
 using Application.Features.AdminReport.Query.GetPaymentsReportQuery;
+using Domain.Authorization;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 
 namespace Volt.Server.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class AdminReportController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -29,6 +32,7 @@ namespace Volt.Server.Controllers.Admin
 
         // ───────────── Orders Details ─────────────
 
+        [HasPermission(Permissions.Admin.Reports.View)]
         [HttpGet("OrdersDetails")]
         [ProducesResponseType(typeof(OrdersDetailsReportDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -40,6 +44,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Reports.View)]
         [HttpGet("OrdersDetails/Export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -57,6 +62,7 @@ namespace Volt.Server.Controllers.Admin
 
         // ───────────── Cancelled Orders ─────────────
 
+        [HasPermission(Permissions.Admin.Reports.View)]
         [HttpGet("CancelledOrders")]
         [ProducesResponseType(typeof(CancelledOrdersReportDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -68,6 +74,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Reports.View)]
         [HttpGet("CancelledOrders/Export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -85,6 +92,7 @@ namespace Volt.Server.Controllers.Admin
 
         // ───────────── Cancellation Debts ─────────────
 
+        [HasPermission(Permissions.Admin.Reports.View)]
         [HttpGet("CancellationDebts")]
         [ProducesResponseType(typeof(CancellationDebtsReportDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -96,6 +104,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Reports.View)]
         [HttpGet("CancellationDebts/Export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -113,6 +122,7 @@ namespace Volt.Server.Controllers.Admin
 
         // ───────────── Payments ─────────────
 
+        [HasPermission(Permissions.Admin.Reports.View)]
         [HttpGet("Payments")]
         [ProducesResponseType(typeof(PaymentsReportDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -124,6 +134,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Reports.View)]
         [HttpGet("Payments/Export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -141,6 +152,7 @@ namespace Volt.Server.Controllers.Admin
 
         // ───────────── PayPal Refunds ─────────────
 
+        [HasPermission(Permissions.Admin.Reports.View)]
         [HttpGet("PayPalRefunds")]
         [ProducesResponseType(typeof(PayPalRefundsReportDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -152,6 +164,7 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
+        [HasPermission(Permissions.Admin.Reports.View)]
         [HttpGet("PayPalRefunds/Export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

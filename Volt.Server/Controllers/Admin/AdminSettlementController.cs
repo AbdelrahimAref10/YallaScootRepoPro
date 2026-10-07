@@ -4,10 +4,12 @@ using Application.Features.Order.Command.AdminPayMerchantCommand;
 using Application.Features.Order.DTOs;
 using Application.Features.Order.Query.GetAllOrderJournalsQuery;
 using Application.Features.Order.Query.GetPartyLedgerQuery;
+using Domain.Authorization;
 using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Authorization;
 using Presentation.Response;
 
 namespace Volt.Server.Controllers.Admin
@@ -18,7 +20,7 @@ namespace Volt.Server.Controllers.Admin
     /// </summary>
     [Route("api/admin/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = AppRoleNames.SuperAdmin)]
     public class AdminSettlementController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -32,6 +34,7 @@ namespace Volt.Server.Controllers.Admin
         /// All journal movements for admin. Optional filters: orderCode, deliveryId, merchantId.
         /// Totals (credit/debit/balance) are over the filtered visible set. Balance = credit − debit.
         /// </summary>
+        [HasPermission(Permissions.Admin.Journals.View)]
         [HttpGet("journals")]
         [ProducesResponseType(typeof(OrderJournalListDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -44,6 +47,7 @@ namespace Volt.Server.Controllers.Admin
         }
 
         /// <summary>Ledger timeline + balance for a delivery or merchant (includes float rows).</summary>
+        [HasPermission(Permissions.Admin.Settlements.View)]
         [HttpGet("ledger")]
         [ProducesResponseType(typeof(PartyLedgerDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -62,6 +66,7 @@ namespace Volt.Server.Controllers.Admin
         /// <summary>
         /// ادفع للدليفري — Kind: CashFloat (عُهدة بدون أوردر) أو OrderPayout (سداد مستحق على أوردر).
         /// </summary>
+        [HasPermission(Permissions.Admin.Settlements.Create)]
         [HttpPost("PayDelivery")]
         [ProducesResponseType(typeof(SettlementResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -76,6 +81,7 @@ namespace Volt.Server.Controllers.Admin
         /// <summary>
         /// اقبض من الدليفري — Kind: OrderCashRemittance أو FloatReturn.
         /// </summary>
+        [HasPermission(Permissions.Admin.Settlements.Create)]
         [HttpPost("CollectFromDelivery")]
         [ProducesResponseType(typeof(SettlementResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
@@ -88,6 +94,7 @@ namespace Volt.Server.Controllers.Admin
         }
 
         /// <summary>ادفع للميرشانت — سداد مستحق إيجار على أوردر.</summary>
+        [HasPermission(Permissions.Admin.Settlements.Create)]
         [HttpPost("PayMerchant")]
         [ProducesResponseType(typeof(SettlementResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]

@@ -7,16 +7,18 @@ namespace Domain.Models
         public int EmployeeId { get; private set; }
         public int UserId { get; private set; }
         public string FullName { get; private set; } = string.Empty;
+        public int? SubRoleId { get; private set; }
         public string? CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; }
         public string? LastModifiedBy { get; set; }
         public DateTime LastModifiedDate { get; set; }
 
         public ApplicationUser User { get; private set; } = null!;
+        public SubRole? SubRole { get; private set; }
 
         private Employee() { }
 
-        public static Employee Create(int userId, string fullName, string? createdBy = null)
+        public static Employee Create(int userId, string fullName, string? createdBy = null, int? subRoleId = null)
         {
             if (userId <= 0)
                 throw new ArgumentException("User ID must be greater than zero", nameof(userId));
@@ -28,6 +30,7 @@ namespace Domain.Models
             {
                 UserId = userId,
                 FullName = fullName.Trim(),
+                SubRoleId = subRoleId,
                 CreatedBy = createdBy,
                 CreatedDate = DateTime.UtcNow,
                 LastModifiedDate = DateTime.UtcNow
@@ -40,6 +43,16 @@ namespace Domain.Models
                 throw new ArgumentException("Full name cannot be empty", nameof(fullName));
 
             FullName = fullName.Trim();
+            LastModifiedBy = modifiedBy;
+            LastModifiedDate = DateTime.UtcNow;
+        }
+
+        public void SetSubRole(int subRoleId, string? modifiedBy = null)
+        {
+            if (subRoleId <= 0)
+                throw new ArgumentException("Sub-role ID must be greater than zero", nameof(subRoleId));
+
+            SubRoleId = subRoleId;
             LastModifiedBy = modifiedBy;
             LastModifiedDate = DateTime.UtcNow;
         }

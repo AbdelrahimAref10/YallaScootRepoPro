@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Order.Command.OrderVehicleLifecycleCommands;
 using Application.Features.Order.Services;
 using CSharpFunctionalExtensions;
@@ -56,7 +57,8 @@ namespace Application.Features.Order.Command.MarkMerchantHandoverToDeliveryComma
             {
                 sessionMerchant = await _context.Merchants
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(m => m.UserId == _userSession.UserId, cancellationToken);
+                    .OfUser(_context, _userSession.UserId)
+                    .FirstOrDefaultAsync(cancellationToken);
 
                 if (sessionMerchant == null)
                     return Result.Failure<bool>("Merchant profile not found for current user");

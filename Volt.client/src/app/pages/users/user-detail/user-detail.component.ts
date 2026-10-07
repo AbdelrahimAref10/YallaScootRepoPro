@@ -2,7 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AdminUserClient, UserDto, UpdateUserCommand, RoleClient, RoleDto } from '../../../core/services/clientAPI';
+import { AdminUserClient, UserDto, UpdateUserCommand, RoleClient, RoleDto, SubRoleClient, SubRoleDto } from '../../../core/services/clientAPI';
+import { AppRole, AppRoleNames } from '../../../core/models/app-role';
 import { LocaleService } from '../../../core/services/locale.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -10,11 +11,12 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-user-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MultiSelectComponent, TranslatePipe, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MultiSelectComponent, TranslatePipe, ConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './user-detail.component.html',
   styleUrls: ['./user-detail.component.css', '../../../shared/styles/entity-form.css']
 })
@@ -23,6 +25,7 @@ export class UserDetailComponent implements OnInit {
   private router = inject(Router);
   private adminUserClient = inject(AdminUserClient);
   private roleClient = inject(RoleClient);
+  private subRoleClient = inject(SubRoleClient);
   private fb = inject(FormBuilder);
   private localeService = inject(LocaleService);
 
@@ -36,6 +39,7 @@ export class UserDetailComponent implements OnInit {
 
   userForm: FormGroup;
   availableRoles: RoleDto[] = [];
+  subRoles: SubRoleDto[] = [];
   isLoadingRoles = false;
   showPassword = false;
   showConfirmDialog = false;
@@ -50,6 +54,21 @@ export class UserDetailComponent implements OnInit {
       }));
   }
 
+  get subRoleOptions(): MultiSelectOption[] {
+    const ar = this.localeService.locale() === 'ar';
+    return this.subRoles.map(r => ({ value: r.subRoleId, label: ar && r.nameAr ? r.nameAr : r.name }));
+  }
+
+  /** Sub-roles only apply to Super Admin users. */
+  get needsSubRole(): boolean {
+    return this.userForm.get('role')?.value === AppRoleNames.SuperAdmin;
+  }
+
+  get subRoleLabel(): string | null {
+    if (!this.user) return null;
+    return (this.localeService.locale() === 'ar' ? this.user.subRoleNameAr || this.user.subRoleName : this.user.subRoleName) || null;
+  }
+
   get isUserActive(): boolean {
     if (!this.user) return false;
     return this.user.isActive ?? this.user.active;
@@ -61,7 +80,14 @@ export class UserDetailComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', [Validators.required]],
       password: [''],
-      role: [null, [Validators.required]]
+      role: [null, [Validators.required]],
+      subRoleId: [null]
+    });
+
+    this.userForm.get('role')!.valueChanges.subscribe(() => {
+      const subRole = this.userForm.get('subRoleId')!;
+      subRole.setValidators(this.needsSubRole ? [Validators.required] : []);
+      subRole.updateValueAndValidity({ emitEvent: false });
     });
   }
 
@@ -71,6 +97,7 @@ export class UserDetailComponent implements OnInit {
       if (this.userId) {
         this.loadUser();
         this.loadRoles();
+        this.loadSubRoles();
       }
     });
 
@@ -92,7 +119,8 @@ export class UserDetailComponent implements OnInit {
           email: user.email || '',
           phoneNumber: user.phoneNumber || '',
           password: '',
-          role: user.roles && user.roles.length > 0 ? user.roles[0] : null
+          role: user.roles && user.roles.length > 0 ? user.roles[0] : null,
+          subRoleId: user.subRoleId ?? null
         });
         this.isLoading = false;
       },
@@ -115,6 +143,13 @@ export class UserDetailComponent implements OnInit {
         console.error('Error loading roles:', error);
         this.isLoadingRoles = false;
       }
+    });
+  }
+
+  loadSubRoles(): void {
+    this.subRoleClient.getAll(AppRole.SuperAdmin, true).subscribe({
+      next: roles => (this.subRoles = roles),
+      error: () => (this.subRoles = [])
     });
   }
 
@@ -173,7 +208,8 @@ export class UserDetailComponent implements OnInit {
         email: this.user.email || '',
         phoneNumber: this.user.phoneNumber || '',
         password: '',
-        role: this.user.roles && this.user.roles.length > 0 ? this.user.roles[0] : null
+        role: this.user.roles && this.user.roles.length > 0 ? this.user.roles[0] : null,
+        subRoleId: this.user.subRoleId ?? null
       });
     }
   }
@@ -200,6 +236,7 @@ export class UserDetailComponent implements OnInit {
       return;
     }
     command.roleId = roleId;
+    command.subRoleId = this.needsSubRole ? formValue.subRoleId : null;
 
     this.adminUserClient.update(this.userId, command).subscribe({
       next: () => {

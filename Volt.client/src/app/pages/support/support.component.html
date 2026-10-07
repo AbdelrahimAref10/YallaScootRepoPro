@@ -8,14 +8,16 @@
     </div>
 
     <div class="entity-form__top-actions" *ngIf="!isLoading">
-      <button
-        type="button"
-        class="entity-form__btn entity-form__btn--primary"
-        (click)="onSubmit()"
-        [disabled]="supportForm.invalid || isSaving"
-      >
-        {{ isSaving ? ('common.saving' | t) : ('common.save' | t) }}
-      </button>
+      <ng-container *appHasPermission="'Admin.Support.Edit'">
+        <button
+          type="button"
+          class="entity-form__btn entity-form__btn--primary"
+          (click)="onSubmit()"
+          [disabled]="supportForm.invalid || isSaving"
+        >
+          {{ isSaving ? ('common.saving' | t) : ('common.save' | t) }}
+        </button>
+      </ng-container>
     </div>
   </div>
 
