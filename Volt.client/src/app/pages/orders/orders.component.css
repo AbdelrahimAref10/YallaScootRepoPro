@@ -206,16 +206,7 @@
   background: var(--volt-text-muted);
 }
 
-.orders__pipe--pending .orders__pipe-dot,
-.orders__pipe--merchant-pending .orders__pipe-dot { background: var(--volt-warn); }
-.orders__pipe--merchant-confirmed .orders__pipe-dot { background: #6366f1; }
-.orders__pipe--confirmed .orders__pipe-dot,
-.orders__pipe--delivery-assigned .orders__pipe-dot { background: var(--volt-info); }
-.orders__pipe--onway .orders__pipe-dot { background: #0891b2; }
-.orders__pipe--received .orders__pipe-dot { background: #7c3aed; }
-.orders__pipe--rejected-receipt .orders__pipe-dot { background: var(--volt-accent); }
-.orders__pipe--completed .orders__pipe-dot { background: var(--volt-ok); }
-.orders__pipe--cancelled .orders__pipe-dot { background: #64748b; }
+.orders__pipe-dot { background: var(--tone, var(--volt-text-muted)); }
 
 .orders__pipe-count {
   display: inline-flex;
@@ -244,6 +235,108 @@
 .orders__pipe--active .orders__pipe-count {
   background: var(--volt-text-primary);
   color: var(--volt-surface);
+}
+
+/* Admin: the states as a board of tinted cards, each with its count */
+.orders__pipe--pending { --tone: var(--volt-warn); }
+.orders__pipe--merchant-pending { --tone: var(--volt-gold-strong); }
+.orders__pipe--merchant-confirmed { --tone: #6d4fd8; }
+.orders__pipe--confirmed { --tone: var(--volt-info); }
+.orders__pipe--delivery-assigned { --tone: #0e8aa3; }
+.orders__pipe--onway { --tone: #0f766e; }
+.orders__pipe--received { --tone: #8b3fd1; }
+.orders__pipe--rejected-receipt { --tone: var(--volt-accent); }
+.orders__pipe--completed { --tone: var(--volt-ok); }
+.orders__pipe--cancelled { --tone: #5b6675; }
+
+html.dark .orders__pipe--merchant-confirmed { --tone: #9d86ff; }
+html.dark .orders__pipe--delivery-assigned { --tone: #3cc4dd; }
+html.dark .orders__pipe--onway { --tone: #34c7b5; }
+html.dark .orders__pipe--received { --tone: #c08cff; }
+html.dark .orders__pipe--cancelled { --tone: #9aa4b2; }
+
+.orders__pipeline--board {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+  padding: 1rem 1.4rem 1.3rem;
+  overflow: visible;
+}
+
+.orders__pipeline--board .orders__pipe {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.4rem;
+  height: auto;
+  min-height: 4.6rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--tone) 22%, var(--volt-border));
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--tone) 6%, var(--volt-surface));
+  color: var(--volt-text-secondary);
+  text-align: start;
+  white-space: normal;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.orders__pipeline--board .orders__pipe::after {
+  content: none;
+}
+
+.orders__pipeline--board .orders__pipe:hover {
+  border-color: color-mix(in srgb, var(--tone) 45%, var(--volt-border));
+  background: color-mix(in srgb, var(--tone) 10%, var(--volt-surface));
+}
+
+.orders__pipeline--board .orders__pipe-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.orders__pipeline--board .orders__pipe-dot {
+  background: var(--tone);
+}
+
+.orders__pipeline--board .orders__pipe-count {
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--tone);
+  font-family: var(--volt-font-heading);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.orders__pipeline--board .orders__pipe--active {
+  border-color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 13%, var(--volt-surface));
+  color: var(--volt-text-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone) 18%, transparent);
+}
+
+.orders__pipeline--board .orders__pipe--active .orders__pipe-count {
+  background: none;
+  color: var(--tone);
+}
+
+@media (max-width: 1100px) {
+  .orders__pipeline--board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .orders__pipeline--board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0.85rem 1rem 1rem;
+  }
 }
 
 /* Alerts */

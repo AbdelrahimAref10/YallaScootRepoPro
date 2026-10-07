@@ -1,6 +1,7 @@
 import { ApplicationRef, Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { versioned } from '../utils/build-version';
 
 export type AppLocale = 'en' | 'ar';
 
@@ -43,7 +44,7 @@ export class LocaleService {
 
   async init(): Promise<void> {
     const en = await firstValueFrom(
-      this.http.get<Record<string, unknown>>('assets/i18n/en.json')
+      this.http.get<Record<string, unknown>>(versioned('assets/i18n/en.json'))
     );
     this.englishFallback.set(flatten(en));
 
@@ -97,7 +98,7 @@ export class LocaleService {
     }
     try {
       const data = await firstValueFrom(
-        this.http.get<Record<string, unknown>>(`assets/i18n/${locale}.json`)
+        this.http.get<Record<string, unknown>>(versioned(`assets/i18n/${locale}.json`))
       );
       this.translations.set(flatten(data));
     } catch {
