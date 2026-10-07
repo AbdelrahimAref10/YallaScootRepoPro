@@ -2,12 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  AdminCollectFromDeliveryCommand,
-  AdminCollectFromDeliveryKind,
-  AdminPayDeliveryCommand,
-  AdminPayDeliveryKind,
-  AdminPayMerchantCommand,
   AdminSettlementClient,
+  CreateSettlementVoucherCommand,
   DeliveryClient,
   DeliveryLookupDto,
   JournalDirection,
@@ -15,7 +11,13 @@ import {
   MerchantClient,
   MerchantLookupDto,
   OrderJournalEntryKind,
-  PartyLedgerDto
+  PartyLedgerDto,
+  SettlementAllocationKind,
+  SettlementDirection,
+  SettlementOpenItemDto,
+  SettlementSummaryDto,
+  SettlementVoucherDetailDto,
+  SettlementVoucherDto
 } from '../../core/services/clientAPI';
 import { LocaleService } from '../../core/services/locale.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
@@ -25,8 +27,19 @@ import {
 } from '../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
-type SettlementTab = 'payDelivery' | 'collect' | 'payMerchant';
+type SettlementTab = 'delivery' | 'merchant';
 
+/** One line of the "what this voucher settles" preview. */
+interface PreviewLine {
+  item: SettlementOpenItemDto;
+  amount: number;
+  full: boolean;
+}
+
+/**
+ * Settlement vouchers: collect from / pay a delivery (cash and commission are netted) or pay a merchant,
+ * fully or partially. The amount is applied to the oldest open orders first.
+ */
 @Component({
   selector: 'app-settlements',
   standalone: true,
@@ -40,78 +53,83 @@ export class SettlementsComponent implements OnInit {
   private readonly deliveryClient = inject(DeliveryClient);
   private readonly merchantClient = inject(MerchantClient);
 
-  activeTab: SettlementTab = 'payDelivery';
+  readonly JournalDirection = JournalDirection;
+  readonly SettlementDirection = SettlementDirection;
+
+  activeTab: SettlementTab = 'delivery';
   deliveries: DeliveryLookupDto[] = [];
   merchants: MerchantLookupDto[] = [];
   isLoadingLookups = false;
+
+  partyId: number | null = null;
+  summary: SettlementSummaryDto | null = null;
+  ledger: PartyLedgerDto | null = null;
+  vouchers: SettlementVoucherDto[] = [];
+  openVoucher: SettlementVoucherDetailDto | null = null;
+  isLoadingParty = false;
+
+  amount: number | null = null;
+  note = '';
+  /** Generated once per form so a double click posts one voucher. */
+  private requestId = crypto.randomUUID();
   isSubmitting = false;
-  isLoadingLedger = false;
   errorMessage = '';
   successMessage = '';
-  ledger: PartyLedgerDto | null = null;
 
-  // Pay Delivery
-  payDeliveryKind: AdminPayDeliveryKind = AdminPayDeliveryKind.CashFloat;
-  payDeliveryId: number | null = null;
-  payDeliveryAmount: number | null = null;
-  payDeliveryOrderId: number | null = null;
-  payDeliveryNote = '';
-
-  // Collect
-  collectKind: AdminCollectFromDeliveryKind = AdminCollectFromDeliveryKind.OrderCashRemittance;
-  collectDeliveryId: number | null = null;
-  collectAmount: number | null = null;
-  collectOrderId: number | null = null;
-  collectNote = '';
-
-  // Pay Merchant
-  payMerchantId: number | null = null;
-  payMerchantOrderId: number | null = null;
-  payMerchantAmount: number | null = null;
-  payMerchantNote = '';
-
-  readonly AdminPayDeliveryKind = AdminPayDeliveryKind;
-  readonly AdminCollectFromDeliveryKind = AdminCollectFromDeliveryKind;
-  readonly JournalDirection = JournalDirection;
-
-  get deliveryOptions(): MultiSelectOption[] {
-    return this.deliveries
-      .filter(d => d.deliveryId != null)
-      .map(d => ({
-        value: d.deliveryId as number,
-        label: d.fullName || String(d.deliveryId),
-        description: d.mobileNumber || '—'
-      }));
+  get partyType(): LedgerPartyType {
+    return this.activeTab === 'merchant' ? LedgerPartyType.Merchant : LedgerPartyType.Delivery;
   }
 
-  get merchantOptions(): MultiSelectOption[] {
-    return this.merchants
-      .filter(m => m.merchantId != null)
-      .map(m => ({
-        value: m.merchantId as number,
-        label: m.fullName || String(m.merchantId),
-        description: m.mobileNumber || '—'
-      }));
+  get partyOptions(): MultiSelectOption[] {
+    return this.activeTab === 'merchant'
+      ? this.merchants.filter(m => m.merchantId != null).map(m => ({
+          value: m.merchantId as number,
+          label: m.fullName || String(m.merchantId),
+          description: m.mobileNumber || '—'
+        }))
+      : this.deliveries.filter(d => d.deliveryId != null).map(d => ({
+          value: d.deliveryId as number,
+          label: d.fullName || String(d.deliveryId),
+          description: d.mobileNumber || '—'
+        }));
   }
 
-  get payDeliveryKindOptions(): MultiSelectOption[] {
-    return [
-      { value: AdminPayDeliveryKind.CashFloat, label: this.localeService.translate('settlements.cashFloat') },
-      { value: AdminPayDeliveryKind.OrderPayout, label: this.localeService.translate('settlements.orderPayout') }
-    ];
+  get isCollecting(): boolean {
+    return this.summary?.direction === SettlementDirection.CollectFromParty;
   }
 
-  get collectKindOptions(): MultiSelectOption[] {
-    return [
-      {
-        value: AdminCollectFromDeliveryKind.OrderCashRemittance,
-        label: this.localeService.translate('settlements.remittance')
-      },
-      {
-        value: AdminCollectFromDeliveryKind.FloatReturn,
-        label: this.localeService.translate('settlements.floatReturn')
-      }
-    ];
+  /** Delivery cash and commission that cancel out can be settled without cash. */
+  get allowsZero(): boolean {
+    return !!this.summary && this.summary.cashOwedToCompany > 0 && this.summary.owedByCompany > 0;
+  }
+
+  get amountError(): string | null {
+    if (!this.summary?.direction) return null;
+    const value = this.amount ?? 0;
+    if (value < 0 || (value === 0 && !this.allowsZero)) return this.localeService.translate('settlements.amountRequired');
+    if (value > this.summary.maxAmount) {
+      return this.localeService.translate('settlements.amountTooHigh', { max: this.summary.maxAmount.toFixed(2) });
+    }
+    return null;
+  }
+
+  /** Same allocation the server does: the smaller delivery side is offset, the rest goes oldest first. */
+  get preview(): PreviewLine[] {
+    if (!this.summary?.direction || this.amountError) return [];
+    const collecting = this.isCollecting;
+    const isDelivery = this.partyType === LedgerPartyType.Delivery;
+    const smallSide = isDelivery ? (collecting ? this.summary.owedByCompany : this.summary.cashOwedToCompany) : 0;
+    let remaining = smallSide + (this.amount ?? 0);
+
+    const lines: PreviewLine[] = [];
+    for (const item of this.summary.openItems) {
+      const isCash = item.kind === SettlementAllocationKind.DeliveryCash || item.kind === SettlementAllocationKind.DeliveryLegacyFloat;
+      const onLargeSide = !isDelivery || isCash === collecting;
+      const take = onLargeSide ? Math.min(item.open, remaining) : item.open;
+      if (onLargeSide) remaining -= take;
+      if (take > 0) lines.push({ item, amount: take, full: take >= item.open });
+    }
+    return lines;
   }
 
   ngOnInit(): void {
@@ -119,173 +137,101 @@ export class SettlementsComponent implements OnInit {
   }
 
   setTab(tab: SettlementTab): void {
+    if (this.activeTab === tab) return;
     this.activeTab = tab;
+    this.partyId = null;
+    this.resetParty();
+  }
+
+  onPartySelected(value: unknown): void {
+    this.partyId = value != null && value !== '' ? Number(value) : null;
+    this.resetParty();
+    if (this.partyId) this.loadParty();
+  }
+
+  private resetParty(): void {
+    this.summary = null;
+    this.ledger = null;
+    this.vouchers = [];
+    this.openVoucher = null;
+    this.amount = null;
+    this.note = '';
     this.errorMessage = '';
-    this.successMessage = '';
-    // Show the statement of whoever is already picked on this tab.
-    const partyId = tab === 'payDelivery' ? this.payDeliveryId : tab === 'collect' ? this.collectDeliveryId : this.payMerchantId;
-    this.onPartySelected(tab === 'payMerchant' ? 'merchant' : 'delivery', partyId);
   }
 
-  /** Load the selected rider's / merchant's statement as soon as they are picked. */
-  onPartySelected(kind: 'delivery' | 'merchant', value: unknown): void {
-    const id = value != null && value !== '' ? Number(value) : null;
-    if (!id) {
-      this.ledger = null;
-      return;
-    }
-    this.loadLedger(kind === 'merchant' ? LedgerPartyType.Merchant : LedgerPartyType.Delivery, id);
-  }
-
-  loadLookups(): void {
+  private loadLookups(): void {
     this.isLoadingLookups = true;
     let pending = 2;
     const done = () => {
       pending -= 1;
       if (pending <= 0) this.isLoadingLookups = false;
     };
+    this.deliveryClient.getActive().subscribe({ next: list => { this.deliveries = list || []; done(); }, error: () => done() });
+    this.merchantClient.getActive().subscribe({ next: list => { this.merchants = list || []; done(); }, error: () => done() });
+  }
 
-    this.deliveryClient.getActive().subscribe({
-      next: (list) => {
-        this.deliveries = list || [];
-        done();
+  loadParty(): void {
+    if (!this.partyId) return;
+    const partyType = this.partyType;
+    const partyId = this.partyId;
+    this.isLoadingParty = true;
+
+    this.settlementClient.getSummary(partyType, partyId).subscribe({
+      next: summary => {
+        this.summary = summary;
+        this.amount = summary.maxAmount;
+        this.isLoadingParty = false;
       },
-      error: () => done()
+      error: (error: any) => {
+        this.isLoadingParty = false;
+        this.showError(error?.errorMessage || this.localeService.translate('settlements.ledgerFailed'));
+      }
     });
-
-    this.merchantClient.getActive().subscribe({
-      next: (list) => {
-        this.merchants = list || [];
-        done();
-      },
-      error: () => done()
-    });
+    this.settlementClient.getLedger(partyType, partyId).subscribe({ next: ledger => (this.ledger = ledger) });
+    this.settlementClient.getVouchers(partyType, partyId, 1, 20).subscribe({ next: page => (this.vouchers = page.items ?? []) });
   }
 
-  get needsPayDeliveryOrderId(): boolean {
-    return this.payDeliveryKind === AdminPayDeliveryKind.OrderPayout;
-  }
-
-  get needsCollectOrderId(): boolean {
-    return this.collectKind === AdminCollectFromDeliveryKind.OrderCashRemittance;
-  }
-
-  onSubmitPayDelivery(): void {
-    if (!this.payDeliveryId || !this.payDeliveryAmount || this.payDeliveryAmount <= 0) {
-      this.showError(this.localeService.translate('settlements.validationRequired'));
-      return;
-    }
-    if (this.needsPayDeliveryOrderId && !this.payDeliveryOrderId) {
-      this.showError(this.localeService.translate('settlements.orderIdRequired'));
-      return;
-    }
+  onSubmit(): void {
+    if (!this.partyId || !this.summary?.direction || this.amountError) return;
 
     this.isSubmitting = true;
-    const command = new AdminPayDeliveryCommand();
-    command.deliveryId = this.payDeliveryId;
-    command.kind = this.payDeliveryKind;
-    command.amount = this.payDeliveryAmount;
-    command.orderId = this.needsPayDeliveryOrderId ? this.payDeliveryOrderId : null;
-    command.note = this.payDeliveryNote?.trim() || null;
-
-    this.settlementClient.payDelivery(command).subscribe({
-      next: (result) => {
-        this.showSuccess(result?.message || this.localeService.translate('settlements.success'));
-        this.loadLedger(LedgerPartyType.Delivery, this.payDeliveryId!);
+    this.settlementClient.createVoucher(CreateSettlementVoucherCommand.fromJS({
+      partyType: this.partyType,
+      partyId: this.partyId,
+      amount: this.amount ?? 0,
+      note: this.note.trim() || null,
+      requestId: this.requestId
+    })).subscribe({
+      next: voucher => {
         this.isSubmitting = false;
+        this.requestId = crypto.randomUUID();
+        this.showSuccess(this.localeService.translate('settlements.voucherPosted', { no: voucher.voucherNo }));
+        this.loadParty();
+        this.openVoucher = voucher;
       },
       error: (error: any) => {
-        this.showError(
-          error?.errorMessage || error?.error?.errorMessage || this.localeService.translate('settlements.failed')
-        );
         this.isSubmitting = false;
+        this.showError(error?.errorMessage || this.localeService.translate('settlements.failed'));
       }
     });
   }
 
-  onSubmitCollect(): void {
-    if (!this.collectDeliveryId || !this.collectAmount || this.collectAmount <= 0) {
-      this.showError(this.localeService.translate('settlements.validationRequired'));
+  toggleVoucher(voucher: SettlementVoucherDto): void {
+    if (this.openVoucher?.settlementVoucherId === voucher.settlementVoucherId) {
+      this.openVoucher = null;
       return;
     }
-    if (this.needsCollectOrderId && !this.collectOrderId) {
-      this.showError(this.localeService.translate('settlements.orderIdRequired'));
-      return;
-    }
-
-    this.isSubmitting = true;
-    const command = new AdminCollectFromDeliveryCommand();
-    command.deliveryId = this.collectDeliveryId;
-    command.kind = this.collectKind;
-    command.amount = this.collectAmount;
-    command.orderId = this.needsCollectOrderId ? this.collectOrderId : null;
-    command.note = this.collectNote?.trim() || null;
-    command.reason = null;
-
-    this.settlementClient.collectFromDelivery(command).subscribe({
-      next: (result) => {
-        this.showSuccess(result?.message || this.localeService.translate('settlements.success'));
-        this.loadLedger(LedgerPartyType.Delivery, this.collectDeliveryId!);
-        this.isSubmitting = false;
-      },
-      error: (error: any) => {
-        this.showError(
-          error?.errorMessage || error?.error?.errorMessage || this.localeService.translate('settlements.failed')
-        );
-        this.isSubmitting = false;
-      }
-    });
+    this.settlementClient.getVoucher(voucher.settlementVoucherId).subscribe({ next: detail => (this.openVoucher = detail) });
   }
 
-  onSubmitPayMerchant(): void {
-    if (!this.payMerchantId || !this.payMerchantOrderId) {
-      this.showError(this.localeService.translate('settlements.validationRequired'));
-      return;
-    }
-
-    this.isSubmitting = true;
-    const command = new AdminPayMerchantCommand();
-    command.merchantId = this.payMerchantId;
-    command.orderId = this.payMerchantOrderId;
-    command.amount = this.payMerchantAmount && this.payMerchantAmount > 0 ? this.payMerchantAmount : null;
-    command.note = this.payMerchantNote?.trim() || null;
-
-    this.settlementClient.payMerchant(command).subscribe({
-      next: (result) => {
-        this.showSuccess(result?.message || this.localeService.translate('settlements.success'));
-        this.loadLedger(LedgerPartyType.Merchant, this.payMerchantId!);
-        this.isSubmitting = false;
-      },
-      error: (error: any) => {
-        this.showError(
-          error?.errorMessage || error?.error?.errorMessage || this.localeService.translate('settlements.failed')
-        );
-        this.isSubmitting = false;
-      }
-    });
+  itemLabel(kind: SettlementAllocationKind): string {
+    return this.localeService.translate(`settlements.item.${SettlementAllocationKind[kind]}`);
   }
 
-  loadLedger(partyType: LedgerPartyType, partyId: number): void {
-    this.isLoadingLedger = true;
-    this.ledger = null;
-    this.settlementClient.getLedger(partyType, partyId).subscribe({
-      next: (ledger) => {
-        this.ledger = ledger;
-        this.isLoadingLedger = false;
-      },
-      error: (error: any) => {
-        this.showError(
-          error?.errorMessage || error?.error?.errorMessage || this.localeService.translate('settlements.ledgerFailed')
-        );
-        this.isLoadingLedger = false;
-      }
-    });
-  }
-
-  getJournalDirectionLabel(direction: JournalDirection): string {
-    return direction === JournalDirection.Debit
-      ? this.localeService.translate('orders.journalDebit')
-      : this.localeService.translate('orders.journalCredit');
+  directionLabel(direction: SettlementDirection | undefined | null): string {
+    return direction === SettlementDirection.CollectFromParty
+      ? this.localeService.translate('settlements.collect')
+      : this.localeService.translate('settlements.pay');
   }
 
   getJournalKindLabel(kind: OrderJournalEntryKind): string {
@@ -297,12 +243,12 @@ export class SettlementsComponent implements OnInit {
   private showSuccess(message: string): void {
     this.successMessage = message;
     this.errorMessage = '';
-    setTimeout(() => { this.successMessage = ''; }, 5000);
+    setTimeout(() => (this.successMessage = ''), 6000);
   }
 
   private showError(message: string): void {
     this.errorMessage = message;
     this.successMessage = '';
-    setTimeout(() => { this.errorMessage = ''; }, 6000);
+    setTimeout(() => (this.errorMessage = ''), 6000);
   }
 }

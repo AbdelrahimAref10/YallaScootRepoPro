@@ -1,9 +1,10 @@
-using Application.Features.Order.Command.AdminCollectFromDeliveryCommand;
-using Application.Features.Order.Command.AdminPayDeliveryCommand;
-using Application.Features.Order.Command.AdminPayMerchantCommand;
+using Application.Common;
 using Application.Features.Order.DTOs;
 using Application.Features.Order.Query.GetAllOrderJournalsQuery;
 using Application.Features.Order.Query.GetPartyLedgerQuery;
+using Application.Features.Settlement.Command.CreateSettlementVoucherCommand;
+using Application.Features.Settlement.DTOs;
+using Application.Features.Settlement.Query;
 using Domain.Authorization;
 using Domain.Enums;
 using MediatR;
@@ -15,8 +16,8 @@ using Presentation.Response;
 namespace Volt.Server.Controllers.Admin
 {
     /// <summary>
-    /// Admin settlement hub APIs: pay delivery, collect from delivery, pay merchant.
-    /// Frontend: one "تسويات" screen with 3 tabs calling these endpoints.
+    /// Admin settlement APIs: journals, party ledger and settlement vouchers
+    /// (collect from / pay a delivery, pay a merchant).
     /// </summary>
     [Route("api/admin/[controller]")]
     [ApiController]
@@ -64,28 +65,30 @@ namespace Volt.Server.Controllers.Admin
         }
 
         /// <summary>
-        /// ادفع للدليفري — Kind: CashFloat (عُهدة بدون أوردر) أو OrderPayout (سداد مستحق على أوردر).
+        /// What the company and the merchant / delivery owe each other, and the open orders (oldest first)
+        /// a voucher would settle.
         /// </summary>
-        [HasPermission(Permissions.Admin.Settlements.Create)]
-        [HttpPost("PayDelivery")]
-        [ProducesResponseType(typeof(SettlementResultDto), StatusCodes.Status200OK)]
+        [HasPermission(Permissions.Admin.Settlements.View)]
+        [HttpGet("Summary")]
+        [ProducesResponseType(typeof(SettlementSummaryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PayDelivery([FromBody] AdminPayDeliveryCommand command)
+        public async Task<IActionResult> GetSummary([FromQuery] LedgerPartyType partyType, [FromQuery] int partyId)
         {
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(new GetSettlementSummaryQuery(partyType, partyId));
             if (result.IsFailure)
                 return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
             return Ok(result.Value);
         }
 
         /// <summary>
-        /// اقبض من الدليفري — Kind: OrderCashRemittance أو FloatReturn.
+        /// Collects from / pays a merchant or delivery (full or partial balance). Posts the party and company
+        /// lines on the oldest open orders and a treasury record.
         /// </summary>
         [HasPermission(Permissions.Admin.Settlements.Create)]
-        [HttpPost("CollectFromDelivery")]
-        [ProducesResponseType(typeof(SettlementResultDto), StatusCodes.Status200OK)]
+        [HttpPost("Vouchers")]
+        [ProducesResponseType(typeof(SettlementVoucherDetailDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CollectFromDelivery([FromBody] AdminCollectFromDeliveryCommand command)
+        public async Task<IActionResult> CreateVoucher([FromBody] CreateSettlementVoucherCommand command)
         {
             var result = await _mediator.Send(command);
             if (result.IsFailure)
@@ -93,14 +96,25 @@ namespace Volt.Server.Controllers.Admin
             return Ok(result.Value);
         }
 
-        /// <summary>ادفع للميرشانت — سداد مستحق إيجار على أوردر.</summary>
-        [HasPermission(Permissions.Admin.Settlements.Create)]
-        [HttpPost("PayMerchant")]
-        [ProducesResponseType(typeof(SettlementResultDto), StatusCodes.Status200OK)]
+        [HasPermission(Permissions.Admin.Settlements.View)]
+        [HttpGet("Vouchers")]
+        [ProducesResponseType(typeof(PagedResult<SettlementVoucherDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PayMerchant([FromBody] AdminPayMerchantCommand command)
+        public async Task<IActionResult> GetVouchers([FromQuery] GetSettlementVouchersQuery query)
         {
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(query);
+            if (result.IsFailure)
+                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
+            return Ok(result.Value);
+        }
+
+        [HasPermission(Permissions.Admin.Settlements.View)]
+        [HttpGet("Vouchers/{settlementVoucherId:int}")]
+        [ProducesResponseType(typeof(SettlementVoucherDetailDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetVoucher(int settlementVoucherId)
+        {
+            var result = await _mediator.Send(new GetSettlementVoucherByIdQuery(settlementVoucherId));
             if (result.IsFailure)
                 return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
             return Ok(result.Value);

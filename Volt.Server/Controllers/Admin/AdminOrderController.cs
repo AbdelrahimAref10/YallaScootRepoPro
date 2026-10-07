@@ -2,7 +2,6 @@ using Application.Common;
 using Application.Features.Order.Command.AdminCreateOrderCommand;
 using Application.Features.Order.Command.AdminUpdateOrderCommand;
 using Application.Features.Order.Command.AssignDeliveryToOrderCommand;
-using Application.Features.Order.Command.DeliveryRemittanceToCompanyCommand;
 using Application.Features.Order.Command.MarkCustomerRejectedReceiptCommand;
 using Application.Features.Order.Command.MarkMerchantHandoverToDeliveryCommand;
 using Application.Features.Order.Command.MarkOrderCancellationFeePaidCommand;
@@ -14,8 +13,6 @@ using Application.Features.Order.Command.OrderVehicleLifecycleCommands;
 using Application.Features.Order.Command.ReassignMerchantOrderCommand;
 using Application.Features.Order.Command.RejectOrderCommand;
 using Application.Features.Order.Command.SendOrderToMerchantsCommand;
-using Application.Features.Order.Command.SettleDeliveryPayoutCommand;
-using Application.Features.Order.Command.SettleMerchantPayoutCommand;
 using Application.Features.Order.Command.UpdateOrderStateCommand;
 using Application.Features.Order.DTOs;
 using Application.Features.Order.Query.AdminCalculateOrderTotalsQuery;
@@ -331,45 +328,6 @@ namespace Volt.Server.Controllers.Admin
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RejectReceipt(int orderId, [FromBody] MarkCustomerRejectedReceiptCommand command)
-        {
-            command.OrderId = orderId;
-            var result = await _mediator.Send(command);
-            if (result.IsFailure)
-                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
-            return Ok(result.Value);
-        }
-
-        [HasPermission(Permissions.Admin.Orders.Edit)]
-        [HttpPost("{orderId}/DeliveryRemittance")]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeliveryRemittance(int orderId, [FromBody] DeliveryRemittanceToCompanyCommand command)
-        {
-            command.OrderId = orderId;
-            var result = await _mediator.Send(command);
-            if (result.IsFailure)
-                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
-            return Ok(result.Value);
-        }
-
-        [HasPermission(Permissions.Admin.Orders.Edit)]
-        [HttpPost("{orderId}/SettleMerchant")]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> SettleMerchant(int orderId, [FromBody] SettleMerchantPayoutCommand command)
-        {
-            command.OrderId = orderId;
-            var result = await _mediator.Send(command);
-            if (result.IsFailure)
-                return BadRequest(ProblemDetail.CreateProblemDetail(result.Error));
-            return Ok(result.Value);
-        }
-
-        [HasPermission(Permissions.Admin.Orders.Edit)]
-        [HttpPost("{orderId}/SettleDelivery")]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetail), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> SettleDelivery(int orderId, [FromBody] SettleDeliveryPayoutCommand command)
         {
             command.OrderId = orderId;
             var result = await _mediator.Send(command);

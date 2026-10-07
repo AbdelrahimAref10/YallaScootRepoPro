@@ -9202,195 +9202,6 @@ export class AdminOrderClient {
         return _observableOf(null as any);
     }
 
-    deliveryRemittance(orderId: number, command: DeliveryRemittanceToCompanyCommand): Observable<boolean> {
-        let url_ = this.baseUrl + "/api/admin/AdminOrder/{orderId}/DeliveryRemittance";
-        if (orderId === undefined || orderId === null)
-            throw new Error("The parameter 'orderId' must be defined.");
-        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(command);
-
-        let options_ : any = {
-            body: content_,
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processDeliveryRemittance(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processDeliveryRemittance(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<boolean>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<boolean>;
-        }));
-    }
-
-    protected processDeliveryRemittance(response: HttpResponseBase): Observable<boolean> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-                result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    settleMerchant(orderId: number, command: SettleMerchantPayoutCommand): Observable<boolean> {
-        let url_ = this.baseUrl + "/api/admin/AdminOrder/{orderId}/SettleMerchant";
-        if (orderId === undefined || orderId === null)
-            throw new Error("The parameter 'orderId' must be defined.");
-        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(command);
-
-        let options_ : any = {
-            body: content_,
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processSettleMerchant(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processSettleMerchant(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<boolean>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<boolean>;
-        }));
-    }
-
-    protected processSettleMerchant(response: HttpResponseBase): Observable<boolean> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-                result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    settleDelivery(orderId: number, command: SettleDeliveryPayoutCommand): Observable<boolean> {
-        let url_ = this.baseUrl + "/api/admin/AdminOrder/{orderId}/SettleDelivery";
-        if (orderId === undefined || orderId === null)
-            throw new Error("The parameter 'orderId' must be defined.");
-        url_ = url_.replace("{orderId}", encodeURIComponent("" + orderId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(command);
-
-        let options_ : any = {
-            body: content_,
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processSettleDelivery(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processSettleDelivery(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<boolean>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<boolean>;
-        }));
-    }
-
-    protected processSettleDelivery(response: HttpResponseBase): Observable<boolean> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-                result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
     rejectOrder(orderId: number): Observable<boolean> {
         let url_ = this.baseUrl + "/api/admin/AdminOrder/{orderId}/RejectOrder";
         if (orderId === undefined || orderId === null)
@@ -10520,37 +10331,41 @@ export class AdminSettlementClient {
         return _observableOf(null as any);
     }
 
-    payDelivery(command: AdminPayDeliveryCommand): Observable<SettlementResultDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminSettlement/PayDelivery";
+    getSummary(partyType?: LedgerPartyType | undefined, partyId?: number | undefined): Observable<SettlementSummaryDto> {
+        let url_ = this.baseUrl + "/api/admin/AdminSettlement/Summary?";
+        if (partyType === null)
+            throw new Error("The parameter 'partyType' cannot be null.");
+        else if (partyType !== undefined)
+            url_ += "partyType=" + encodeURIComponent("" + partyType) + "&";
+        if (partyId === null)
+            throw new Error("The parameter 'partyId' cannot be null.");
+        else if (partyId !== undefined)
+            url_ += "partyId=" + encodeURIComponent("" + partyId) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(command);
-
         let options_ : any = {
-            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json",
                 "Accept": "application/json"
             })
         };
 
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processPayDelivery(response_);
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetSummary(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPayDelivery(response_ as any);
+                    return this.processGetSummary(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<SettlementResultDto>;
+                    return _observableThrow(e) as any as Observable<SettlementSummaryDto>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<SettlementResultDto>;
+                return _observableThrow(response_) as any as Observable<SettlementSummaryDto>;
         }));
     }
 
-    protected processPayDelivery(response: HttpResponseBase): Observable<SettlementResultDto> {
+    protected processGetSummary(response: HttpResponseBase): Observable<SettlementSummaryDto> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -10561,7 +10376,7 @@ export class AdminSettlementClient {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = SettlementResultDto.fromJS(resultData200);
+            result200 = SettlementSummaryDto.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status === 400) {
@@ -10579,8 +10394,8 @@ export class AdminSettlementClient {
         return _observableOf(null as any);
     }
 
-    collectFromDelivery(command: AdminCollectFromDeliveryCommand): Observable<SettlementResultDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminSettlement/CollectFromDelivery";
+    createVoucher(command: CreateSettlementVoucherCommand): Observable<SettlementVoucherDetailDto> {
+        let url_ = this.baseUrl + "/api/admin/AdminSettlement/Vouchers";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(command);
@@ -10596,20 +10411,20 @@ export class AdminSettlementClient {
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processCollectFromDelivery(response_);
+            return this.processCreateVoucher(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processCollectFromDelivery(response_ as any);
+                    return this.processCreateVoucher(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<SettlementResultDto>;
+                    return _observableThrow(e) as any as Observable<SettlementVoucherDetailDto>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<SettlementResultDto>;
+                return _observableThrow(response_) as any as Observable<SettlementVoucherDetailDto>;
         }));
     }
 
-    protected processCollectFromDelivery(response: HttpResponseBase): Observable<SettlementResultDto> {
+    protected processCreateVoucher(response: HttpResponseBase): Observable<SettlementVoucherDetailDto> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -10620,7 +10435,7 @@ export class AdminSettlementClient {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = SettlementResultDto.fromJS(resultData200);
+            result200 = SettlementVoucherDetailDto.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status === 400) {
@@ -10638,37 +10453,45 @@ export class AdminSettlementClient {
         return _observableOf(null as any);
     }
 
-    payMerchant(command: AdminPayMerchantCommand): Observable<SettlementResultDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminSettlement/PayMerchant";
+    getVouchers(partyType?: LedgerPartyType | null | undefined, partyId?: number | null | undefined, pageNumber?: number | undefined, pageSize?: number | undefined): Observable<PagedResultOfSettlementVoucherDto> {
+        let url_ = this.baseUrl + "/api/admin/AdminSettlement/Vouchers?";
+        if (partyType !== undefined && partyType !== null)
+            url_ += "PartyType=" + encodeURIComponent("" + partyType) + "&";
+        if (partyId !== undefined && partyId !== null)
+            url_ += "PartyId=" + encodeURIComponent("" + partyId) + "&";
+        if (pageNumber === null)
+            throw new Error("The parameter 'pageNumber' cannot be null.");
+        else if (pageNumber !== undefined)
+            url_ += "PageNumber=" + encodeURIComponent("" + pageNumber) + "&";
+        if (pageSize === null)
+            throw new Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "PageSize=" + encodeURIComponent("" + pageSize) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(command);
-
         let options_ : any = {
-            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json",
                 "Accept": "application/json"
             })
         };
 
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processPayMerchant(response_);
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetVouchers(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPayMerchant(response_ as any);
+                    return this.processGetVouchers(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<SettlementResultDto>;
+                    return _observableThrow(e) as any as Observable<PagedResultOfSettlementVoucherDto>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<SettlementResultDto>;
+                return _observableThrow(response_) as any as Observable<PagedResultOfSettlementVoucherDto>;
         }));
     }
 
-    protected processPayMerchant(response: HttpResponseBase): Observable<SettlementResultDto> {
+    protected processGetVouchers(response: HttpResponseBase): Observable<PagedResultOfSettlementVoucherDto> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -10679,7 +10502,65 @@ export class AdminSettlementClient {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = SettlementResultDto.fromJS(resultData200);
+            result200 = PagedResultOfSettlementVoucherDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getVoucher(settlementVoucherId: number): Observable<SettlementVoucherDetailDto> {
+        let url_ = this.baseUrl + "/api/admin/AdminSettlement/Vouchers/{settlementVoucherId}";
+        if (settlementVoucherId === undefined || settlementVoucherId === null)
+            throw new Error("The parameter 'settlementVoucherId' must be defined.");
+        url_ = url_.replace("{settlementVoucherId}", encodeURIComponent("" + settlementVoucherId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetVoucher(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetVoucher(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SettlementVoucherDetailDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SettlementVoucherDetailDto>;
+        }));
+    }
+
+    protected processGetVoucher(response: HttpResponseBase): Observable<SettlementVoucherDetailDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SettlementVoucherDetailDto.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status === 400) {
@@ -15584,6 +15465,9 @@ export enum OrderJournalEntryKind {
     CompanyReturnLegCommissionCharged = 17,
     MerchantCompanyCommissionCharged = 18,
     CompanyMerchantCommissionAccrued = 19,
+    CompanyCashReceivedFromDelivery = 20,
+    CompanyPaidMerchant = 21,
+    CompanyPaidDelivery = 22,
 }
 
 export class PartyLedgerDto {
@@ -22332,99 +22216,6 @@ export class MarkCustomerRejectedReceiptCommand {
     }
 }
 
-export class DeliveryRemittanceToCompanyCommand {
-    orderId!: number;
-    deliveryId!: number;
-    amount!: number | null;
-    reason!: string | null;
-    note!: string | null;
-
-    init(_data?: any) {
-        if (_data) {
-            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
-            this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
-            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
-            this.reason = _data["reason"] !== undefined ? _data["reason"] : <any>null;
-            this.note = _data["note"] !== undefined ? _data["note"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): DeliveryRemittanceToCompanyCommand {
-        data = typeof data === 'object' ? data : {};
-        let result = new DeliveryRemittanceToCompanyCommand();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
-        data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
-        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
-        data["reason"] = this.reason !== undefined ? this.reason : <any>null;
-        data["note"] = this.note !== undefined ? this.note : <any>null;
-        return data;
-    }
-}
-
-export class SettleMerchantPayoutCommand {
-    orderId!: number;
-    merchantId!: number;
-    amount!: number | null;
-
-    init(_data?: any) {
-        if (_data) {
-            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
-            this.merchantId = _data["merchantId"] !== undefined ? _data["merchantId"] : <any>null;
-            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): SettleMerchantPayoutCommand {
-        data = typeof data === 'object' ? data : {};
-        let result = new SettleMerchantPayoutCommand();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
-        data["merchantId"] = this.merchantId !== undefined ? this.merchantId : <any>null;
-        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
-        return data;
-    }
-}
-
-export class SettleDeliveryPayoutCommand {
-    orderId!: number;
-    deliveryId!: number;
-    amount!: number | null;
-
-    init(_data?: any) {
-        if (_data) {
-            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
-            this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
-            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): SettleDeliveryPayoutCommand {
-        data = typeof data === 'object' ? data : {};
-        let result = new SettleDeliveryPayoutCommand();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
-        data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
-        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
-        return data;
-    }
-}
-
 export class OrdersDetailsReportDto {
     items!: OrdersDetailsReportRowDto[];
     totals!: OrdersDetailsReportTotalsDto;
@@ -23127,149 +22918,312 @@ export class PayPalRefundsReportTotalsDto {
     }
 }
 
-export class SettlementResultDto {
-    success!: boolean;
-    postedAmount!: number;
-    partyBalanceAfter!: number;
-    message!: string;
+export class SettlementSummaryDto {
+    partyType!: LedgerPartyType;
+    partyId!: number;
+    partyName!: string;
+    cashOwedToCompany!: number;
+    owedByCompany!: number;
+    net!: number;
+    direction!: SettlementDirection | null;
+    maxAmount!: number;
+    openItems!: SettlementOpenItemDto[];
 
     init(_data?: any) {
         if (_data) {
-            this.success = _data["success"] !== undefined ? _data["success"] : <any>null;
-            this.postedAmount = _data["postedAmount"] !== undefined ? _data["postedAmount"] : <any>null;
-            this.partyBalanceAfter = _data["partyBalanceAfter"] !== undefined ? _data["partyBalanceAfter"] : <any>null;
-            this.message = _data["message"] !== undefined ? _data["message"] : <any>null;
+            this.partyType = _data["partyType"] !== undefined ? _data["partyType"] : <any>null;
+            this.partyId = _data["partyId"] !== undefined ? _data["partyId"] : <any>null;
+            this.partyName = _data["partyName"] !== undefined ? _data["partyName"] : <any>null;
+            this.cashOwedToCompany = _data["cashOwedToCompany"] !== undefined ? _data["cashOwedToCompany"] : <any>null;
+            this.owedByCompany = _data["owedByCompany"] !== undefined ? _data["owedByCompany"] : <any>null;
+            this.net = _data["net"] !== undefined ? _data["net"] : <any>null;
+            this.direction = _data["direction"] !== undefined ? _data["direction"] : <any>null;
+            this.maxAmount = _data["maxAmount"] !== undefined ? _data["maxAmount"] : <any>null;
+            if (Array.isArray(_data["openItems"])) {
+                this.openItems = [] as any;
+                for (let item of _data["openItems"])
+                    this.openItems!.push(SettlementOpenItemDto.fromJS(item));
+            }
+            else {
+                this.openItems = <any>null;
+            }
         }
     }
 
-    static fromJS(data: any): SettlementResultDto {
+    static fromJS(data: any): SettlementSummaryDto {
         data = typeof data === 'object' ? data : {};
-        let result = new SettlementResultDto();
+        let result = new SettlementSummaryDto();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["success"] = this.success !== undefined ? this.success : <any>null;
-        data["postedAmount"] = this.postedAmount !== undefined ? this.postedAmount : <any>null;
-        data["partyBalanceAfter"] = this.partyBalanceAfter !== undefined ? this.partyBalanceAfter : <any>null;
-        data["message"] = this.message !== undefined ? this.message : <any>null;
+        data["partyType"] = this.partyType !== undefined ? this.partyType : <any>null;
+        data["partyId"] = this.partyId !== undefined ? this.partyId : <any>null;
+        data["partyName"] = this.partyName !== undefined ? this.partyName : <any>null;
+        data["cashOwedToCompany"] = this.cashOwedToCompany !== undefined ? this.cashOwedToCompany : <any>null;
+        data["owedByCompany"] = this.owedByCompany !== undefined ? this.owedByCompany : <any>null;
+        data["net"] = this.net !== undefined ? this.net : <any>null;
+        data["direction"] = this.direction !== undefined ? this.direction : <any>null;
+        data["maxAmount"] = this.maxAmount !== undefined ? this.maxAmount : <any>null;
+        if (Array.isArray(this.openItems)) {
+            data["openItems"] = [];
+            for (let item of this.openItems)
+                data["openItems"].push(item.toJSON());
+        }
         return data;
     }
 }
 
-export class AdminPayDeliveryCommand {
-    deliveryId!: number;
-    kind!: AdminPayDeliveryKind;
+export enum SettlementDirection {
+    CollectFromParty = 1,
+    PayToParty = 2,
+}
+
+export class SettlementOpenItemDto {
     orderId!: number | null;
+    orderCode!: string | null;
+    date!: Date;
+    kind!: SettlementAllocationKind;
+    open!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
+            this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>null;
+            this.kind = _data["kind"] !== undefined ? _data["kind"] : <any>null;
+            this.open = _data["open"] !== undefined ? _data["open"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): SettlementOpenItemDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SettlementOpenItemDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
+        data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
+        data["date"] = this.date ? this.date.toISOString() : <any>null;
+        data["kind"] = this.kind !== undefined ? this.kind : <any>null;
+        data["open"] = this.open !== undefined ? this.open : <any>null;
+        return data;
+    }
+}
+
+export enum SettlementAllocationKind {
+    DeliveryCash = 1,
+    DeliveryCommission = 2,
+    MerchantEarnings = 3,
+    DeliveryLegacyFloat = 4,
+}
+
+export class SettlementVoucherDto {
+    settlementVoucherId!: number;
+    voucherNo!: string;
+    partyType!: LedgerPartyType;
+    partyId!: number;
+    partyName!: string;
+    direction!: SettlementDirection;
     amount!: number;
     note!: string | null;
+    createdBy!: string | null;
+    createdDate!: Date;
 
     init(_data?: any) {
         if (_data) {
-            this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
-            this.kind = _data["kind"] !== undefined ? _data["kind"] : <any>null;
-            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
+            this.settlementVoucherId = _data["settlementVoucherId"] !== undefined ? _data["settlementVoucherId"] : <any>null;
+            this.voucherNo = _data["voucherNo"] !== undefined ? _data["voucherNo"] : <any>null;
+            this.partyType = _data["partyType"] !== undefined ? _data["partyType"] : <any>null;
+            this.partyId = _data["partyId"] !== undefined ? _data["partyId"] : <any>null;
+            this.partyName = _data["partyName"] !== undefined ? _data["partyName"] : <any>null;
+            this.direction = _data["direction"] !== undefined ? _data["direction"] : <any>null;
             this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
             this.note = _data["note"] !== undefined ? _data["note"] : <any>null;
+            this.createdBy = _data["createdBy"] !== undefined ? _data["createdBy"] : <any>null;
+            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
         }
     }
 
-    static fromJS(data: any): AdminPayDeliveryCommand {
+    static fromJS(data: any): SettlementVoucherDto {
         data = typeof data === 'object' ? data : {};
-        let result = new AdminPayDeliveryCommand();
+        let result = new SettlementVoucherDto();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
-        data["kind"] = this.kind !== undefined ? this.kind : <any>null;
-        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
+        data["settlementVoucherId"] = this.settlementVoucherId !== undefined ? this.settlementVoucherId : <any>null;
+        data["voucherNo"] = this.voucherNo !== undefined ? this.voucherNo : <any>null;
+        data["partyType"] = this.partyType !== undefined ? this.partyType : <any>null;
+        data["partyId"] = this.partyId !== undefined ? this.partyId : <any>null;
+        data["partyName"] = this.partyName !== undefined ? this.partyName : <any>null;
+        data["direction"] = this.direction !== undefined ? this.direction : <any>null;
         data["amount"] = this.amount !== undefined ? this.amount : <any>null;
         data["note"] = this.note !== undefined ? this.note : <any>null;
+        data["createdBy"] = this.createdBy !== undefined ? this.createdBy : <any>null;
+        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
         return data;
     }
 }
 
-export enum AdminPayDeliveryKind {
-    CashFloat = 1,
-    OrderPayout = 2,
+export class SettlementVoucherDetailDto extends SettlementVoucherDto {
+    allocations!: SettlementAllocationDto[];
+
+    override init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            if (Array.isArray(_data["allocations"])) {
+                this.allocations = [] as any;
+                for (let item of _data["allocations"])
+                    this.allocations!.push(SettlementAllocationDto.fromJS(item));
+            }
+            else {
+                this.allocations = <any>null;
+            }
+        }
+    }
+
+    static override fromJS(data: any): SettlementVoucherDetailDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SettlementVoucherDetailDto();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.allocations)) {
+            data["allocations"] = [];
+            for (let item of this.allocations)
+                data["allocations"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data;
+    }
 }
 
-export class AdminCollectFromDeliveryCommand {
-    deliveryId!: number;
-    kind!: AdminCollectFromDeliveryKind;
+export class SettlementAllocationDto {
     orderId!: number | null;
+    orderCode!: string | null;
+    kind!: SettlementAllocationKind;
     amount!: number;
-    reason!: string | null;
-    note!: string | null;
 
     init(_data?: any) {
         if (_data) {
-            this.deliveryId = _data["deliveryId"] !== undefined ? _data["deliveryId"] : <any>null;
-            this.kind = _data["kind"] !== undefined ? _data["kind"] : <any>null;
             this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
+            this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
+            this.kind = _data["kind"] !== undefined ? _data["kind"] : <any>null;
             this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
-            this.reason = _data["reason"] !== undefined ? _data["reason"] : <any>null;
-            this.note = _data["note"] !== undefined ? _data["note"] : <any>null;
         }
     }
 
-    static fromJS(data: any): AdminCollectFromDeliveryCommand {
+    static fromJS(data: any): SettlementAllocationDto {
         data = typeof data === 'object' ? data : {};
-        let result = new AdminCollectFromDeliveryCommand();
+        let result = new SettlementAllocationDto();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["deliveryId"] = this.deliveryId !== undefined ? this.deliveryId : <any>null;
-        data["kind"] = this.kind !== undefined ? this.kind : <any>null;
         data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
+        data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
+        data["kind"] = this.kind !== undefined ? this.kind : <any>null;
         data["amount"] = this.amount !== undefined ? this.amount : <any>null;
-        data["reason"] = this.reason !== undefined ? this.reason : <any>null;
-        data["note"] = this.note !== undefined ? this.note : <any>null;
         return data;
     }
 }
 
-export enum AdminCollectFromDeliveryKind {
-    OrderCashRemittance = 1,
-    FloatReturn = 2,
-}
-
-export class AdminPayMerchantCommand {
-    merchantId!: number;
-    orderId!: number;
-    amount!: number | null;
+export class CreateSettlementVoucherCommand {
+    partyType!: LedgerPartyType;
+    partyId!: number;
+    amount!: number;
     note!: string | null;
+    requestId!: string;
 
     init(_data?: any) {
         if (_data) {
-            this.merchantId = _data["merchantId"] !== undefined ? _data["merchantId"] : <any>null;
-            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
+            this.partyType = _data["partyType"] !== undefined ? _data["partyType"] : <any>null;
+            this.partyId = _data["partyId"] !== undefined ? _data["partyId"] : <any>null;
             this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
             this.note = _data["note"] !== undefined ? _data["note"] : <any>null;
+            this.requestId = _data["requestId"] !== undefined ? _data["requestId"] : <any>null;
         }
     }
 
-    static fromJS(data: any): AdminPayMerchantCommand {
+    static fromJS(data: any): CreateSettlementVoucherCommand {
         data = typeof data === 'object' ? data : {};
-        let result = new AdminPayMerchantCommand();
+        let result = new CreateSettlementVoucherCommand();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["merchantId"] = this.merchantId !== undefined ? this.merchantId : <any>null;
-        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
+        data["partyType"] = this.partyType !== undefined ? this.partyType : <any>null;
+        data["partyId"] = this.partyId !== undefined ? this.partyId : <any>null;
         data["amount"] = this.amount !== undefined ? this.amount : <any>null;
         data["note"] = this.note !== undefined ? this.note : <any>null;
+        data["requestId"] = this.requestId !== undefined ? this.requestId : <any>null;
+        return data;
+    }
+}
+
+export class PagedResultOfSettlementVoucherDto {
+    items!: SettlementVoucherDto[];
+    totalCount!: number;
+    pageNumber!: number;
+    pageSize!: number;
+    totalPages!: number;
+    hasPreviousPage!: boolean;
+    hasNextPage!: boolean;
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(SettlementVoucherDto.fromJS(item));
+            }
+            else {
+                this.items = <any>null;
+            }
+            this.totalCount = _data["totalCount"] !== undefined ? _data["totalCount"] : <any>null;
+            this.pageNumber = _data["pageNumber"] !== undefined ? _data["pageNumber"] : <any>null;
+            this.pageSize = _data["pageSize"] !== undefined ? _data["pageSize"] : <any>null;
+            this.totalPages = _data["totalPages"] !== undefined ? _data["totalPages"] : <any>null;
+            this.hasPreviousPage = _data["hasPreviousPage"] !== undefined ? _data["hasPreviousPage"] : <any>null;
+            this.hasNextPage = _data["hasNextPage"] !== undefined ? _data["hasNextPage"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): PagedResultOfSettlementVoucherDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PagedResultOfSettlementVoucherDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        data["totalCount"] = this.totalCount !== undefined ? this.totalCount : <any>null;
+        data["pageNumber"] = this.pageNumber !== undefined ? this.pageNumber : <any>null;
+        data["pageSize"] = this.pageSize !== undefined ? this.pageSize : <any>null;
+        data["totalPages"] = this.totalPages !== undefined ? this.totalPages : <any>null;
+        data["hasPreviousPage"] = this.hasPreviousPage !== undefined ? this.hasPreviousPage : <any>null;
+        data["hasNextPage"] = this.hasNextPage !== undefined ? this.hasNextPage : <any>null;
         return data;
     }
 }

@@ -28,6 +28,12 @@ namespace Domain.Enums
         /// <summary>Merchant debit for the company's percentage of the vehicle rental (on customer delivery).</summary>
         MerchantCompanyCommissionCharged = 18,
         /// <summary>Company credit for its percentage of the merchant's vehicle rental (on customer delivery).</summary>
-        CompanyMerchantCommissionAccrued = 19
+        CompanyMerchantCommissionAccrued = 19,
+        /// <summary>Company debit: cash received from a delivery (pairs with <see cref="DeliveryRemittanceToCompany"/> or <see cref="DeliveryCashFloatReturned"/>).</summary>
+        CompanyCashReceivedFromDelivery = 20,
+        /// <summary>Company credit: money paid to a merchant (pairs with <see cref="MerchantPaidByCompany"/>).</summary>
+        CompanyPaidMerchant = 21,
+        /// <summary>Company credit: commission paid to a delivery (pairs with <see cref="DeliveryPaidByCompany"/>).</summary>
+        CompanyPaidDelivery = 22
     }
 }
