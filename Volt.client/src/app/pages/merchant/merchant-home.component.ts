@@ -12,7 +12,7 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
   imports: [CommonModule, RouterModule, TranslatePipe, HasPermissionDirective],
   templateUrl: './merchant-home.component.html',
   styleUrls: [
-    '../dashboard/dashboard.component.css',
+    './merchant-home-base.component.css',
     './merchant-home.component.css'
   ]
 })

@@ -1,367 +1,407 @@
-<div class="home">
-  <!-- Hero: greeting, live status, one period filter for the whole page -->
-  <header class="home-hero">
-    <div class="home-hero__text">
-      <p class="home-hero__eyebrow">{{ today | date: 'EEEE, d MMMM y' }}</p>
-      <h1 class="home-hero__title">{{ 'dashboard.welcome' | t:{ name: userName } }}</h1>
-      <p class="home-hero__sub">
-        {{ 'dashboard.heroStatus' | t:{ active: formatNumber(summary?.activeRentals), pending: formatNumber(summary?.pendingOrders) } }}
+<div class="dsh">
+  <!-- ───────────── Header ───────────── -->
+  <header class="dsh-head">
+    <div class="dsh-head__text">
+      <p class="dsh-eyebrow">{{ 'dash.eyebrow' | t }}</p>
+      <h1 class="dsh-title">{{ greetingKey | t: { name: userName } }}</h1>
+      <p class="dsh-sub" *ngIf="data() as d">
+        {{ 'dash.periodLine' | t: { period: periodLabel() } }}
+        <span class="dsh-sub__sep">·</span>
+        {{ 'dash.updatedAt' | t: { time: formatTime(d.generatedAt) } }}
       </p>
     </div>
-
-    <div class="home-hero__controls">
-      <div class="home-presets" role="group" [attr.aria-label]="'dashboard.period' | t">
-        <button
-          *ngFor="let p of presets"
-          type="button"
-          class="home-presets__btn"
-          [class.home-presets__btn--on]="activePreset === p.key"
-          (click)="applyPreset(p.key)"
-        >{{ p.labelKey | t }}</button>
-      </div>
-      <div class="home-hero__dates">
-        <label>
-          <span>{{ 'dashboard.from' | t }}</span>
-          <input type="date" [(ngModel)]="globalRange.from" (change)="onGlobalRangeChange()" />
-        </label>
-        <label>
-          <span>{{ 'dashboard.to' | t }}</span>
-          <input type="date" [(ngModel)]="globalRange.to" (change)="onGlobalRangeChange()" />
-        </label>
-      </div>
-      <ng-container *appHasPermission="'Admin.Orders.Create'">
-        <a routerLink="/main/orders/new" class="home-hero__cta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-width="2.4" d="M12 5v14M5 12h14" />
-          </svg>
-          {{ 'dashboard.newOrder' | t }}
-        </a>
-      </ng-container>
+    <div class="dsh-head__actions">
+      <button type="button" class="dsh-btn dsh-btn--ghost" (click)="refresh()" [disabled]="loading()" [attr.aria-label]="'dash.refresh' | t">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" [class.dsh-spin]="loading()">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.6 15A7 7 0 0018 17.4M18.4 9A7 7 0 006 6.6"/>
+        </svg>
+        <span>{{ 'dash.refresh' | t }}</span>
+      </button>
+      <a *appHasPermission="'Admin.Orders.Create'" routerLink="/main/orders/new" class="dsh-btn dsh-btn--primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-width="2.4" d="M12 5v14M5 12h14"/></svg>
+        <span>{{ 'dash.newOrder' | t }}</span>
+      </a>
     </div>
   </header>
 
-  <!-- Overview: metric tabs + main chart, live operations beside it -->
-  <section class="home-overview">
-    <article class="home-panel home-perf" [class.home--loading]="loading.summary || loading.revenue">
-      <div class="home-metrics" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          class="home-metric"
-          [class.home-metric--on]="activeMetric === 'revenue'"
-          (click)="activeMetric = 'revenue'"
-        >
-          <span class="home-metric__label">{{ 'dashboard.revenue' | t }}</span>
-          <span class="home-metric__value">{{ formatAmount(summary?.revenue) }} <small>{{ 'common.currency' | t }}</small></span>
-          <span class="home-delta" [ngClass]="deltaClass(summary?.revenueChangePercent)">{{ formatPercent(summary?.revenueChangePercent) }}</span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          class="home-metric"
-          [class.home-metric--on]="activeMetric === 'orders'"
-          (click)="activeMetric = 'orders'"
-        >
-          <span class="home-metric__label">{{ 'dashboard.orders' | t }}</span>
-          <span class="home-metric__value">{{ formatNumber(summary?.ordersCount) }}</span>
-          <span class="home-delta" [ngClass]="deltaClass(summary?.ordersChangePercent)">{{ formatPercent(summary?.ordersChangePercent) }}</span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          class="home-metric"
-          [class.home-metric--on]="activeMetric === 'customers'"
-          (click)="activeMetric = 'customers'"
-        >
-          <span class="home-metric__label">{{ 'dashboard.newCustomers' | t }}</span>
-          <span class="home-metric__value">{{ formatNumber(summary?.newCustomers) }}</span>
-          <span class="home-delta" [ngClass]="deltaClass(summary?.newCustomersChangePercent)">{{ formatPercent(summary?.newCustomersChangePercent) }}</span>
-        </button>
-        <div class="home-metric home-metric--static">
-          <span class="home-metric__label">{{ 'dashboard.avgOrderValue' | t }}</span>
-          <span class="home-metric__value">{{ formatAmount(summary?.averageOrderValue) }} <small>{{ 'common.currency' | t }}</small></span>
-          <span class="home-metric__hint">{{ 'dashboard.completedOrders' | t }}</span>
-        </div>
-      </div>
-      <div class="home-perf__chart">
-        <volt-chart
-          *ngIf="activeMetric !== 'customers'"
-          [type]="activeMetric === 'orders' ? 'bar' : 'line'"
-          [labels]="revenueLabels"
-          [datasets]="activeMetric === 'orders' ? ordersDatasets : revenueDatasets"
-          [currency]="activeMetric === 'revenue'"
-          [legend]="false"
-          [emptyLabel]="'dashboard.noChartData' | t"
-        ></volt-chart>
-        <volt-chart
-          *ngIf="activeMetric === 'customers'"
-          type="line"
-          [labels]="customerLabels"
-          [datasets]="customerDatasets"
-          [legend]="false"
-          [emptyLabel]="'dashboard.noChartData' | t"
-        ></volt-chart>
-      </div>
-    </article>
-
-    <aside class="home-panel home-ops" [class.home--loading]="loading.summary">
-      <header class="home-panel__head">
-        <div>
-          <h2>{{ 'dashboard.liveOps' | t }}</h2>
-          <p>{{ 'dashboard.liveOpsHint' | t }}</p>
-        </div>
-      </header>
-      <ul class="home-ops__list">
-        <li>
-          <span class="home-ops__icon home-ops__icon--ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.5 20a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm13 0a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 17.5h6l2.5-6H19M14 6h2.5l2 5.5M8 17.5L11 11h3.5"/></svg></span>
-          <span class="home-ops__text">{{ 'dashboard.activeRentals' | t }}</span>
-          <strong>{{ formatNumber(summary?.activeRentals) }}</strong>
-        </li>
-        <li>
-          <ng-container *appHasPermission="'Admin.Orders.View'">
-            <a routerLink="/main/orders" class="home-ops__row">
-              <span class="home-ops__icon home-ops__icon--warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
-              <span class="home-ops__text">{{ 'dashboard.pendingOrders' | t }}</span>
-              <strong>{{ formatNumber(summary?.pendingOrders) }}</strong>
-            </a>
-          </ng-container>
-        </li>
-        <li>
-          <span class="home-ops__icon home-ops__icon--red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
-          <span class="home-ops__text">{{ 'dashboard.urgent' | t }}</span>
-          <strong>{{ formatNumber(pipeline?.urgentInRange) }}</strong>
-        </li>
-        <li>
-          <span class="home-ops__icon home-ops__icon--info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"/></svg></span>
-          <span class="home-ops__text">{{ 'dashboard.treasuryBalance' | t }}</span>
-          <strong>{{ formatAmount(summary?.treasuryBalance) }}</strong>
-        </li>
-        <li [class.home-ops__alert]="(summary?.unpaidCancellationFeesCount || 0) > 0">
-          <span class="home-ops__icon home-ops__icon--warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/></svg></span>
-          <span class="home-ops__text">{{ 'dashboard.unpaidFees' | t }}</span>
-          <strong>{{ formatNumber(summary?.unpaidCancellationFeesCount) }}</strong>
-        </li>
-      </ul>
-      <div class="home-ops__fleet">
-        <div class="home-ops__fleet-top">
-          <span>{{ 'dashboard.vehicleUtilization' | t }}</span>
-          <strong>{{ formatPlainPercent(summary?.vehicleUtilizationPercent) }}%</strong>
-        </div>
-        <div class="home-kpi__meter"><span [style.width.%]="clampPercent(summary?.vehicleUtilizationPercent)"></span></div>
-        <small>{{ formatNumber(summary?.availableVehicles) }} / {{ formatNumber(summary?.totalVehicles) }} {{ 'dashboard.available' | t }}</small>
-      </div>
-    </aside>
+  <!-- ───────────── Filters: one row, scope everything below ───────────── -->
+  <section class="dsh-filters" [attr.aria-label]="'dash.filters' | t">
+    <div class="dsh-seg" role="group" [attr.aria-label]="'dash.period' | t">
+      <button
+        *ngFor="let p of presets"
+        type="button"
+        class="dsh-seg__btn"
+        [class.dsh-seg__btn--on]="preset() === p.key"
+        [attr.aria-pressed]="preset() === p.key"
+        (click)="applyPreset(p.key)">{{ p.labelKey | t }}</button>
+    </div>
+    <div class="dsh-range" [class.dsh-range--on]="preset() === 'custom'">
+      <label>
+        <span>{{ 'dash.from' | t }}</span>
+        <input type="date" [(ngModel)]="fromDate" [max]="toDate" (change)="onDateChange()" />
+      </label>
+      <span class="dsh-range__dash" aria-hidden="true">→</span>
+      <label>
+        <span>{{ 'dash.to' | t }}</span>
+        <input type="date" [(ngModel)]="toDate" [min]="fromDate" (change)="onDateChange()" />
+      </label>
+    </div>
+    <div class="dsh-filters__city">
+      <app-multi-select
+        [placeholder]="'dash.allCities' | t"
+        [options]="cityOptions()"
+        [values]="cityIds()"
+        (valuesChange)="onCitiesChange($event)"></app-multi-select>
+    </div>
   </section>
 
-  <!-- Recent orders + pipeline -->
-  <section class="home-grid home-grid--2-1">
-  <article class="home-panel home-panel--table" [class.home--loading]="loading.recent">
-      <header class="home-panel__head">
-        <div>
-          <h2>{{ 'dashboard.recentOrders' | t }}</h2>
-          <p>{{ 'dashboard.recentOrdersHint' | t }}</p>
-        </div>
-        <ng-container *appHasPermission="'Admin.Orders.View'">
-          <a routerLink="/main/orders" class="home-panel__link">{{ 'dashboard.viewAllOrders' | t }}</a>
-        </ng-container>
-      </header>
+  <div class="dsh-alert" *ngIf="error()" role="alert">{{ error() }}</div>
 
-      <div class="home-table-wrap" *ngIf="recentActivity?.recentOrders?.length; else emptyOrders">
-        <table class="home-table">
+  <div class="dsh-body" [class.dsh-body--loading]="loading() && data()">
+    <!-- ───────────── Hero: profit + position ───────────── -->
+    <section class="dsh-hero">
+      <div class="dsh-hero__profit">
+        <p class="dsh-hero__label">{{ 'dash.netProfit' | t }}</p>
+        <p class="dsh-hero__value">
+          <span>{{ money(profit()?.netProfit) }}</span>
+          <small>{{ 'common.currency' | t }}</small>
+        </p>
+        <div class="dsh-hero__meta">
+          <span class="dsh-delta dsh-delta--onink" [ngClass]="deltaClass(profit()?.netProfitChangePercent)">{{ delta(profit()?.netProfitChangePercent) }}</span>
+          <span>{{ 'dash.vsPrevious' | t: { period: previousLabel() } }}</span>
+        </div>
+        <dl class="dsh-hero__facts">
+          <div>
+            <dt>{{ 'dash.grossBookings' | t }}</dt>
+            <dd>{{ money(profit()?.grossBookings) }} <span class="dsh-delta dsh-delta--onink dsh-delta--sm" [ngClass]="deltaClass(profit()?.grossBookingsChangePercent)">{{ delta(profit()?.grossBookingsChangePercent) }}</span></dd>
+          </div>
+          <div>
+            <dt>{{ 'dash.margin' | t }}</dt>
+            <dd>{{ percent(profit()?.marginPercent) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'dash.profitPerOrder' | t }}</dt>
+            <dd>{{ money(orders()?.averageProfitPerOrder) }}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="dsh-hero__position">
+        <a routerLink="/main/settlements" class="dsh-pos dsh-pos--in">
+          <span class="dsh-pos__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m0 0l-6-6m6 6l6-6"/></svg>
+          </span>
+          <span class="dsh-pos__label">{{ 'dash.owedToYou' | t }}</span>
+          <span class="dsh-pos__value">{{ money(position()?.owedToCompany) }} <small>{{ 'common.currency' | t }}</small></span>
+          <span class="dsh-pos__hint">{{ 'dash.owedToYouHint' | t }}</span>
+        </a>
+        <a routerLink="/main/settlements" class="dsh-pos dsh-pos--out">
+          <span class="dsh-pos__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0l-6 6m6-6l6 6"/></svg>
+          </span>
+          <span class="dsh-pos__label">{{ 'dash.youOwe' | t }}</span>
+          <span class="dsh-pos__value">{{ money(position()?.companyOwes) }} <small>{{ 'common.currency' | t }}</small></span>
+          <span class="dsh-pos__hint">{{ 'dash.youOweHint' | t }}</span>
+        </a>
+        <div class="dsh-pos dsh-pos--net">
+          <span class="dsh-pos__label">{{ 'dash.netPosition' | t }}</span>
+          <span class="dsh-pos__value" [class.dsh-neg]="(position()?.netPosition ?? 0) < 0">{{ money(position()?.netPosition) }} <small>{{ 'common.currency' | t }}</small></span>
+          <span class="dsh-pos__hint">{{ ((position()?.netPosition ?? 0) >= 0 ? 'dash.netPositionPlus' : 'dash.netPositionMinus') | t }}</span>
+        </div>
+        <a routerLink="/main/reports/treasury" class="dsh-pos dsh-pos--cash">
+          <span class="dsh-pos__label">{{ 'dash.treasury' | t }}</span>
+          <span class="dsh-pos__value">{{ money(position()?.treasuryBalance) }} <small>{{ 'common.currency' | t }}</small></span>
+          <span class="dsh-pos__hint">{{ 'dash.treasuryHint' | t }}</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ───────────── Trend + profit breakdown ───────────── -->
+    <section class="dsh-grid dsh-grid--trend">
+      <article class="dsh-card dsh-trend">
+        <header class="dsh-card__head">
+          <div>
+            <h2 class="dsh-card__title">{{ 'dash.trendTitle' | t }}</h2>
+            <p class="dsh-card__sub" *ngIf="data() as d">{{ ('dash.bucket.' + d.bucket) | t }}</p>
+          </div>
+          <div class="dsh-tabs" role="tablist">
+            <button type="button" role="tab" class="dsh-tabs__btn" [class.dsh-tabs__btn--on]="metric() === 'profit'" [attr.aria-selected]="metric() === 'profit'" (click)="metric.set('profit')">{{ 'dash.metric.profit' | t }}</button>
+            <button type="button" role="tab" class="dsh-tabs__btn" [class.dsh-tabs__btn--on]="metric() === 'bookings'" [attr.aria-selected]="metric() === 'bookings'" (click)="metric.set('bookings')">{{ 'dash.metric.bookings' | t }}</button>
+            <button type="button" role="tab" class="dsh-tabs__btn" [class.dsh-tabs__btn--on]="metric() === 'orders'" [attr.aria-selected]="metric() === 'orders'" (click)="metric.set('orders')">{{ 'dash.metric.orders' | t }}</button>
+          </div>
+        </header>
+        <div class="dsh-trend__chart">
+          <canvas #trendCanvas role="img" [attr.aria-label]="'dash.trendTitle' | t"></canvas>
+        </div>
+      </article>
+
+      <article class="dsh-card">
+        <header class="dsh-card__head">
+          <div>
+            <h2 class="dsh-card__title">{{ 'dash.breakdownTitle' | t }}</h2>
+            <p class="dsh-card__sub">{{ 'dash.breakdownSub' | t }}</p>
+          </div>
+        </header>
+        <ul class="dsh-bars">
+          <li *ngFor="let row of incomeRows(); trackBy: trackKey" class="dsh-bars__row">
+            <div class="dsh-bars__top">
+              <span class="dsh-bars__label">{{ row.labelKey | t }}<small *ngIf="row.count"> · {{ count(row.count) }}</small></span>
+              <span class="dsh-bars__value">{{ money(row.amount) }}</span>
+            </div>
+            <span class="dsh-bars__track"><span class="dsh-bars__fill" [style.width.%]="row.share"></span></span>
+          </li>
+        </ul>
+        <div class="dsh-sum">
+          <div class="dsh-sum__row"><span>{{ 'dash.grossIncome' | t }}</span><strong>{{ money(grossIncome()) }}</strong></div>
+          <div class="dsh-sum__row" *ngFor="let row of costRows(); trackBy: trackKey">
+            <span>{{ row.labelKey | t }}</span><strong [class.dsh-neg]="row.amount > 0">{{ row.amount > 0 ? '−' : '' }}{{ money(row.amount) }}</strong>
+          </div>
+          <div class="dsh-sum__row dsh-sum__row--total"><span>{{ 'dash.netProfit' | t }}</span><strong>{{ money(profit()?.netProfit) }} {{ 'common.currency' | t }}</strong></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- ───────────── Owed to you / You owe ───────────── -->
+    <section class="dsh-grid dsh-grid--two">
+      <article class="dsh-card">
+        <header class="dsh-card__head">
+          <div>
+            <h2 class="dsh-card__title"><span class="dsh-dot dsh-dot--in" aria-hidden="true"></span>{{ 'dash.owedToYou' | t }}</h2>
+            <p class="dsh-card__sub">{{ 'dash.owedToYouSub' | t }}</p>
+          </div>
+          <strong class="dsh-card__figure">{{ money(position()?.owedToCompany) }}</strong>
+        </header>
+        <ul class="dsh-split">
+          <li *ngFor="let row of owedRows(); trackBy: trackKey">
+            <span class="dsh-split__label">{{ row.labelKey | t }}</span>
+            <span class="dsh-split__count">{{ plural(row.count, 'dash.accountOne', 'dash.accounts') }}</span>
+            <strong class="dsh-split__value">{{ money(row.amount) }}</strong>
+          </li>
+        </ul>
+        <h3 class="dsh-mini-title">{{ 'dash.topDebtors' | t }}</h3>
+        <ol class="dsh-people" *ngIf="position()?.topDebtors?.length; else noDebtors">
+          <li *ngFor="let p of position()!.topDebtors; trackBy: trackId">
+            <span class="dsh-avatar" aria-hidden="true">{{ p.name.charAt(0) }}</span>
+            <span class="dsh-people__name">{{ p.name }}<small>{{ partyKind(p.partyType) | t }}</small></span>
+            <strong>{{ money(p.amount) }}</strong>
+          </li>
+        </ol>
+        <ng-template #noDebtors><p class="dsh-empty">{{ 'dash.nothingOwed' | t }}</p></ng-template>
+        <a class="dsh-link" routerLink="/main/settlements">{{ 'dash.goSettlements' | t }} →</a>
+      </article>
+
+      <article class="dsh-card">
+        <header class="dsh-card__head">
+          <div>
+            <h2 class="dsh-card__title"><span class="dsh-dot dsh-dot--out" aria-hidden="true"></span>{{ 'dash.youOwe' | t }}</h2>
+            <p class="dsh-card__sub">{{ 'dash.youOweSub' | t }}</p>
+          </div>
+          <strong class="dsh-card__figure">{{ money(position()?.companyOwes) }}</strong>
+        </header>
+        <ul class="dsh-split">
+          <li *ngFor="let row of oweRows(); trackBy: trackKey">
+            <span class="dsh-split__label">{{ row.labelKey | t }}</span>
+            <span class="dsh-split__count">{{ plural(row.count, 'dash.accountOne', 'dash.accounts') }}</span>
+            <strong class="dsh-split__value">{{ money(row.amount) }}</strong>
+          </li>
+        </ul>
+        <h3 class="dsh-mini-title">{{ 'dash.topCreditors' | t }}</h3>
+        <ol class="dsh-people" *ngIf="position()?.topCreditors?.length; else noCreditors">
+          <li *ngFor="let p of position()!.topCreditors; trackBy: trackId">
+            <span class="dsh-avatar" aria-hidden="true">{{ p.name.charAt(0) }}</span>
+            <span class="dsh-people__name">{{ p.name }}<small>{{ partyKind(p.partyType) | t }}</small></span>
+            <strong>{{ money(p.amount) }}</strong>
+          </li>
+        </ol>
+        <ng-template #noCreditors><p class="dsh-empty">{{ 'dash.nothingOwedByYou' | t }}</p></ng-template>
+        <a class="dsh-link" routerLink="/main/reports/merchant-balances">{{ 'dash.goBalances' | t }} →</a>
+      </article>
+    </section>
+
+    <!-- ───────────── KPI strip ───────────── -->
+    <section class="dsh-kpis">
+      <div class="dsh-kpi">
+        <span class="dsh-kpi__label">{{ 'dash.metric.orders' | t }}</span>
+        <span class="dsh-kpi__value">{{ count(orders()?.total) }}</span>
+        <span class="dsh-delta dsh-delta--sm" [ngClass]="deltaClass(orders()?.totalChangePercent)">{{ delta(orders()?.totalChangePercent) }}</span>
+      </div>
+      <div class="dsh-kpi">
+        <span class="dsh-kpi__label">{{ 'dash.completionRate' | t }}</span>
+        <span class="dsh-kpi__value">{{ percent(orders()?.completionRatePercent) }}</span>
+        <span class="dsh-kpi__hint">{{ count(orders()?.completed) }} {{ 'dash.completed' | t }}</span>
+      </div>
+      <div class="dsh-kpi">
+        <span class="dsh-kpi__label">{{ 'dash.cancellationRate' | t }}</span>
+        <span class="dsh-kpi__value" [class.dsh-neg]="(orders()?.cancellationRatePercent ?? 0) > 15">{{ percent(orders()?.cancellationRatePercent) }}</span>
+        <span class="dsh-kpi__hint">{{ count(orders()?.cancelled) }} {{ 'dash.cancelled' | t }}</span>
+      </div>
+      <div class="dsh-kpi">
+        <span class="dsh-kpi__label">{{ 'dash.avgOrderValue' | t }}</span>
+        <span class="dsh-kpi__value">{{ money(orders()?.averageOrderValue) }}</span>
+        <span class="dsh-kpi__hint">{{ 'common.currency' | t }}</span>
+      </div>
+      <div class="dsh-kpi">
+        <span class="dsh-kpi__label">{{ 'dash.urgentOrders' | t }}</span>
+        <span class="dsh-kpi__value">{{ count(orders()?.urgent) }}</span>
+        <span class="dsh-kpi__hint">{{ 'dash.inPeriod' | t }}</span>
+      </div>
+      <div class="dsh-kpi">
+        <span class="dsh-kpi__label">{{ 'dash.newCustomers' | t }}</span>
+        <span class="dsh-kpi__value">{{ count(data()?.people?.newCustomers) }}</span>
+        <span class="dsh-delta dsh-delta--sm" [ngClass]="deltaClass(data()?.people?.newCustomersChangePercent)">{{ delta(data()?.people?.newCustomersChangePercent) }}</span>
+      </div>
+    </section>
+
+    <!-- ───────────── Operations ───────────── -->
+    <section class="dsh-grid dsh-grid--four">
+      <article class="dsh-card">
+        <header class="dsh-card__head">
+          <div>
+            <h2 class="dsh-card__title"><span class="dsh-live" aria-hidden="true"></span>{{ 'dash.liveTitle' | t }}</h2>
+            <p class="dsh-card__sub">{{ 'dash.liveSub' | t: { count: count(orders()?.openNow) } }}</p>
+          </div>
+        </header>
+        <ul class="dsh-pipe">
+          <li *ngFor="let s of orders()?.pipeline">
+            <span class="dsh-pipe__label">{{ stateLabel(s.state) }}</span>
+            <span class="dsh-pipe__track"><span class="dsh-pipe__fill" [style.width.%]="s.count ? (s.count / pipelineMax()) * 100 : 0"></span></span>
+            <strong class="dsh-pipe__value">{{ count(s.count) }}</strong>
+          </li>
+        </ul>
+        <a class="dsh-link" routerLink="/main/orders">{{ 'dash.goOrders' | t }} →</a>
+      </article>
+
+      <article class="dsh-card">
+        <header class="dsh-card__head">
+          <div>
+            <h2 class="dsh-card__title">{{ 'dash.paymentsTitle' | t }}</h2>
+            <p class="dsh-card__sub">{{ 'dash.paymentsSub' | t: { count: count(data()?.payments?.paidCount) } }}</p>
+          </div>
+        </header>
+        <p class="dsh-big">{{ money(paymentsTotal()) }} <small>{{ 'common.currency' | t }}</small></p>
+        <div class="dsh-stack" *ngIf="paymentsTotal() > 0; else noPay" role="img" [attr.aria-label]="'dash.paymentsTitle' | t">
+          <span class="dsh-stack__seg dsh-stack__seg--a" [style.width.%]="cashShare()"></span>
+          <span class="dsh-stack__seg dsh-stack__seg--b" [style.width.%]="100 - cashShare()"></span>
+        </div>
+        <ng-template #noPay><div class="dsh-stack dsh-stack--empty"></div></ng-template>
+        <ul class="dsh-legend">
+          <li><span class="dsh-key dsh-key--a"></span>{{ 'dash.cash' | t }}<strong>{{ money(data()?.payments?.cashPaid) }}</strong></li>
+          <li><span class="dsh-key dsh-key--b"></span>PayPal<strong>{{ money(data()?.payments?.payPalPaid) }}</strong></li>
+        </ul>
+        <dl class="dsh-facts">
+          <div><dt>{{ 'dash.pendingPayments' | t }}</dt><dd>{{ money(data()?.payments?.pending) }}</dd></div>
+          <div><dt>{{ 'dash.failedPayments' | t }}</dt><dd>{{ money(data()?.payments?.failed) }}</dd></div>
+          <div><dt>{{ 'dash.refunded' | t }}</dt><dd>{{ money(data()?.payments?.refunded) }}</dd></div>
+        </dl>
+      </article>
+
+      <article class="dsh-card">
+        <header class="dsh-card__head">
+          <div>
+            <h2 class="dsh-card__title">{{ 'dash.fleetTitle' | t }}</h2>
+            <p class="dsh-card__sub">{{ 'dash.fleetSub' | t: { count: count(data()?.fleet?.total) } }}</p>
+          </div>
+        </header>
+        <div class="dsh-ring" [style.--p]="data()?.fleet?.utilizationPercent ?? 0" role="img" [attr.aria-label]="('dash.utilization' | t) + ' ' + percent(data()?.fleet?.utilizationPercent)">
+          <div class="dsh-ring__inner">
+            <strong>{{ percent(data()?.fleet?.utilizationPercent) }}</strong>
+            <span>{{ 'dash.utilization' | t }}</span>
+          </div>
+        </div>
+        <dl class="dsh-facts dsh-facts--3">
+          <div><dt>{{ 'reports.value.Available' | t }}</dt><dd>{{ count(data()?.fleet?.available) }}</dd></div>
+          <div><dt>{{ 'reports.value.Rented' | t }}</dt><dd>{{ count(data()?.fleet?.rented) }}</dd></div>
+          <div><dt>{{ 'reports.value.UnderMaintenance' | t }}</dt><dd>{{ count(data()?.fleet?.underMaintenance) }}</dd></div>
+        </dl>
+      </article>
+
+      <article class="dsh-card">
+        <header class="dsh-card__head">
+          <div>
+            <h2 class="dsh-card__title">{{ 'dash.networkTitle' | t }}</h2>
+            <p class="dsh-card__sub">{{ 'dash.networkSub' | t }}</p>
+          </div>
+        </header>
+        <ul class="dsh-net">
+          <li>
+            <span class="dsh-net__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.4-1.8M17 20H7m10 0v-2c0-.7-.1-1.3-.4-1.8M7 20H2v-2a3 3 0 015.4-1.8M7 20v-2c0-.7.1-1.3.4-1.8m0 0a5 5 0 019.2 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>
+            <span class="dsh-net__label">{{ 'dash.customers' | t }}<small>+{{ count(data()?.people?.newCustomers) }} {{ 'dash.newInPeriod' | t }}</small></span>
+            <strong>{{ count(data()?.people?.customers) }}</strong>
+          </li>
+          <li>
+            <span class="dsh-net__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9l1.5-5h15L21 9M3 9h18M3 9v11h18V9M9 20v-6h6v6"/></svg></span>
+            <span class="dsh-net__label">{{ 'dash.activeMerchants' | t }}</span>
+            <strong>{{ count(data()?.people?.activeMerchants) }}</strong>
+          </li>
+          <li>
+            <span class="dsh-net__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="6" cy="17" r="3" stroke-width="1.8"/><circle cx="18" cy="17" r="3" stroke-width="1.8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 17l4-8h5l3 8M10 9H8"/></svg></span>
+            <span class="dsh-net__label">{{ 'dash.activeRiders' | t }}<small><span class="dsh-online" aria-hidden="true"></span>{{ count(data()?.people?.onlineDeliveries) }} {{ 'dash.onlineNow' | t }}</small></span>
+            <strong>{{ count(data()?.people?.activeDeliveries) }}</strong>
+          </li>
+        </ul>
+      </article>
+    </section>
+
+    <!-- ───────────── Leaders ───────────── -->
+    <section class="dsh-grid dsh-grid--three">
+      <article class="dsh-card" *ngFor="let board of boards(); trackBy: trackKey">
+        <header class="dsh-card__head">
+          <div>
+            <h2 class="dsh-card__title">{{ board.titleKey | t }}</h2>
+            <p class="dsh-card__sub">{{ board.subKey | t }}</p>
+          </div>
+        </header>
+        <ol class="dsh-rank" *ngIf="board.list.length; else emptyBoard">
+          <li *ngFor="let r of board.list; let i = index; trackBy: trackId">
+            <span class="dsh-rank__pos">{{ i + 1 }}</span>
+            <div class="dsh-rank__main">
+              <div class="dsh-rank__top">
+                <span class="dsh-rank__name">{{ r.name }}</span>
+                <strong>{{ money(r.amount) }}</strong>
+              </div>
+              <span class="dsh-rank__track"><span class="dsh-rank__fill" [style.width.%]="rankShare(r.amount, board.list)"></span></span>
+              <small>{{ plural(r.count, 'dash.orderOne', 'dash.ordersUnit') }}</small>
+            </div>
+          </li>
+        </ol>
+        <ng-template #emptyBoard><p class="dsh-empty">{{ 'dash.noActivity' | t }}</p></ng-template>
+      </article>
+    </section>
+
+    <!-- ───────────── Recent orders ───────────── -->
+    <section class="dsh-card dsh-recent">
+      <header class="dsh-card__head">
+        <div>
+          <h2 class="dsh-card__title">{{ 'dash.recentTitle' | t }}</h2>
+          <p class="dsh-card__sub">{{ 'dash.recentSub' | t }}</p>
+        </div>
+        <a class="dsh-btn dsh-btn--ghost dsh-btn--sm" routerLink="/main/orders">{{ 'dash.viewAll' | t }}</a>
+      </header>
+      <div class="dsh-table-wrap" *ngIf="data()?.recentOrders?.length; else noRecent">
+        <table class="dsh-table">
           <thead>
             <tr>
-              <th>{{ 'dashboard.orderCode' | t }}</th>
-              <th>{{ 'dashboard.customer' | t }}</th>
-              <th>{{ 'dashboard.city' | t }}</th>
-              <th>{{ 'dashboard.state' | t }}</th>
-              <th class="home-num">{{ 'dashboard.total' | t }}</th>
+              <th>{{ 'reports.col.orderCode' | t }}</th>
+              <th>{{ 'reports.col.customer' | t }}</th>
+              <th>{{ 'reports.col.city' | t }}</th>
+              <th>{{ 'reports.col.orderState' | t }}</th>
+              <th>{{ 'reports.col.date' | t }}</th>
+              <th class="dsh-num">{{ 'reports.col.orderTotal' | t }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let order of recentActivity?.recentOrders" [routerLink]="['/main/orders', order.orderId]" class="home-table__row">
-              <td>
-                <span class="home-table__code">{{ order.orderCode }}</span>
-                <small class="home-table__date">{{ formatDate(order.createdDate) }}</small>
-              </td>
-              <td>{{ order.customerName }}</td>
-              <td>{{ order.cityName || '—' }}</td>
-              <td><span class="home-badge" [ngClass]="stateClass(order.orderStateName)">{{ order.orderStateName }}</span></td>
-              <td class="home-num home-table__total">{{ formatCurrency(order.total) }}</td>
+            <tr *ngFor="let o of data()!.recentOrders; trackBy: trackId" [routerLink]="['/main/orders', o.orderId]" tabindex="0">
+              <td><span class="dsh-code">{{ o.orderCode }}</span></td>
+              <td>{{ o.customer }}</td>
+              <td>{{ o.city }}</td>
+              <td><span class="dsh-chip" [ngClass]="stateTone(o.state)">{{ stateLabel(o.state) }}</span></td>
+              <td class="dsh-muted">{{ formatDateTime(o.createdDate) }}</td>
+              <td class="dsh-num"><strong>{{ money(o.total) }}</strong></td>
             </tr>
           </tbody>
         </table>
       </div>
-    </article>
-
-    <article class="home-panel" [class.home--loading]="loading.pipeline">
-      <header class="home-panel__head">
-        <div>
-          <h2>{{ 'dashboard.orderPipeline' | t }}</h2>
-          <p>{{ formatNumber(pipeline?.createdInRange) }} {{ 'dashboard.created' | t }} · {{ formatNumber(pipeline?.completedInRange) }} {{ 'dashboard.completed' | t }}</p>
-        </div>
-      </header>
-      <div class="home-panel__chart home-panel__chart--donut">
-        <volt-chart type="doughnut" [labels]="pipelineLabels" [datasets]="pipelineDatasets" [emptyLabel]="'dashboard.noChartData' | t"></volt-chart>
-      </div>
-      <div class="home-stats">
-        <div><strong>{{ formatNumber(pipeline?.activeRentals) }}</strong><span>{{ 'dashboard.activeRentals' | t }}</span></div>
-        <div><strong>{{ formatNumber(pipeline?.pendingOrders) }}</strong><span>{{ 'dashboard.pendingOrders' | t }}</span></div>
-        <div class="home-stats__alert"><strong>{{ formatNumber(pipeline?.urgentInRange) }}</strong><span>{{ 'dashboard.urgent' | t }}</span></div>
-      </div>
-    </article>
-  </section>
-
-  <!-- Money -->
-  <section class="home-grid home-grid--3">
-    <article class="home-panel" [class.home--loading]="loading.treasury">
-      <header class="home-panel__head">
-        <div>
-          <h2>{{ 'dashboard.treasuryFlow' | t }}</h2>
-          <p>{{ formatCurrency(treasury?.balance) }} · {{ 'dashboard.currentBalance' | t }}</p>
-        </div>
-      </header>
-      <div class="home-stats home-stats--top">
-        <div><strong class="home-neg">{{ formatAmount(treasury?.totalDebit) }}</strong><span>{{ 'dashboard.debit' | t }}</span></div>
-        <div><strong class="home-pos">{{ formatAmount(treasury?.totalCredit) }}</strong><span>{{ 'dashboard.credit' | t }}</span></div>
-      </div>
-      <div class="home-panel__chart">
-        <volt-chart type="bar" [labels]="treasuryLabels" [datasets]="treasuryDatasets" [currency]="true" [emptyLabel]="'dashboard.noChartData' | t"></volt-chart>
-      </div>
-    </article>
-
-    <article class="home-panel" [class.home--loading]="loading.payments">
-      <header class="home-panel__head">
-        <div>
-          <h2>{{ 'dashboard.paymentsMix' | t }}</h2>
-          <p>{{ formatCurrency(payments?.totalPaidAmount) }} · {{ formatNumber(payments?.paidCount) }} {{ 'dashboard.paid' | t }}</p>
-        </div>
-      </header>
-      <div class="home-stats home-stats--top">
-        <div><strong>{{ formatNumber(payments?.pendingCount) }}</strong><span>{{ 'dashboard.pending' | t }}</span></div>
-        <div><strong class="home-neg">{{ formatNumber(payments?.failedCount) }}</strong><span>{{ 'dashboard.failed' | t }}</span></div>
-        <div><strong>{{ formatAmount(payments?.refundedAmount) }}</strong><span>{{ 'dashboard.refunded' | t }}</span></div>
-      </div>
-      <div class="home-panel__chart">
-        <volt-chart type="doughnut" [labels]="paymentLabels" [datasets]="paymentDatasets" [currency]="true" [emptyLabel]="'dashboard.noChartData' | t"></volt-chart>
-      </div>
-    </article>
-
-    <article class="home-panel" [class.home--loading]="loading.cancellations">
-      <header class="home-panel__head">
-        <div>
-          <h2>{{ 'dashboard.cancellations' | t }}</h2>
-          <p>{{ formatNumber(cancellations?.cancelledOrders) }} {{ 'dashboard.cancelledOrders' | t }}</p>
-        </div>
-      </header>
-      <div class="home-stats home-stats--top">
-        <div><strong>{{ formatAmount(cancellations?.totalFees) }}</strong><span>{{ 'dashboard.totalFees' | t }}</span></div>
-        <div><strong class="home-pos">{{ formatAmount(cancellations?.paidFees) }}</strong><span>{{ 'dashboard.paidFees' | t }}</span></div>
-        <div><strong class="home-neg">{{ formatAmount(cancellations?.unpaidFees) }}</strong><span>{{ 'dashboard.unpaidFeesAmount' | t }}</span></div>
-      </div>
-      <div class="home-panel__chart">
-        <volt-chart type="line" [labels]="cancelLabels" [datasets]="cancelDatasets" [currency]="true" [legend]="false" [emptyLabel]="'dashboard.noChartData' | t"></volt-chart>
-      </div>
-    </article>
-  </section>
-
-  <!-- Cities + customers -->
-  <section class="home-grid home-grid--2-1">
-    <article class="home-panel" [class.home--loading]="loading.cities">
-      <header class="home-panel__head">
-        <div>
-          <h2>{{ 'dashboard.cityPerformance' | t }}</h2>
-          <p>{{ 'dashboard.cityPerformanceHint' | t }}</p>
-        </div>
-      </header>
-      <div class="home-cities" *ngIf="cityPerformance?.cities?.length; else emptyTop">
-        <div class="home-cities__row home-cities__row--head">
-          <span>{{ 'dashboard.city' | t }}</span>
-          <span>{{ 'dashboard.revenue' | t }}</span>
-          <span class="home-num">{{ 'dashboard.orders' | t }}</span>
-          <span class="home-num">{{ 'dashboard.vehicles' | t }}</span>
-          <span class="home-num">{{ 'dashboard.newCustomers' | t }}</span>
-        </div>
-        <div class="home-cities__row" *ngFor="let city of cityPerformance?.cities">
-          <span class="home-cities__name">{{ city.cityName }}</span>
-          <span class="home-cities__rev">
-            <span class="home-cities__bar"><i [style.width.%]="cityBarWidth(city.revenue)"></i></span>
-            <b>{{ formatAmount(city.revenue) }}</b>
-          </span>
-          <span class="home-num">{{ formatNumber(city.ordersCount) }}</span>
-          <span class="home-num">{{ formatNumber(city.availableVehicles) }}/{{ formatNumber(city.vehiclesCount) }}</span>
-          <span class="home-num">{{ formatNumber(city.newCustomers) }}</span>
-        </div>
-      </div>
-    </article>
-
-    <article class="home-panel" [class.home--loading]="loading.customers">
-      <header class="home-panel__head">
-        <div>
-          <h2>{{ 'dashboard.customerGrowth' | t }}</h2>
-          <p>{{ formatNumber(customers?.newInRange) }} {{ 'dashboard.newInRange' | t }} · {{ formatNumber(customers?.totalCustomers) }} {{ 'dashboard.total' | t }}</p>
-        </div>
-      </header>
-      <div class="home-panel__chart">
-        <volt-chart type="line" [labels]="customerLabels" [datasets]="customerDatasets" [legend]="false" [emptyLabel]="'dashboard.noChartData' | t"></volt-chart>
-      </div>
-      <div class="home-stats home-stats--4">
-        <div><strong>{{ formatNumber(customers?.activeCustomers) }}</strong><span>{{ 'dashboard.active' | t }}</span></div>
-        <div><strong>{{ formatNumber(customers?.inactiveCustomers) }}</strong><span>{{ 'dashboard.inactive' | t }}</span></div>
-        <div><strong>{{ formatNumber(customers?.individualCustomers) }}</strong><span>{{ 'dashboard.individual' | t }}</span></div>
-        <div><strong>{{ formatNumber(customers?.institutionCustomers) }}</strong><span>{{ 'dashboard.institution' | t }}</span></div>
-      </div>
-    </article>
-  </section>
-
-  <!-- Top performers -->
-  <section class="home-panel" [class.home--loading]="loading.top">
-    <header class="home-panel__head">
-      <div>
-        <h2>{{ 'dashboard.topPerformers' | t }}</h2>
-      </div>
-    </header>
-    <div class="home-split">
-      <div>
-        <h3 class="home-split__title">{{ 'dashboard.topCategories' | t }}</h3>
-        <ol class="home-rank" *ngIf="topPerformers?.categories?.length; else emptyTop">
-          <li class="home-rank__item" *ngFor="let item of topPerformers?.categories; let i = index">
-            <span class="home-rank__index">{{ i + 1 }}</span>
-            <div class="home-rank__body">
-              <div class="home-rank__title">
-                <strong>{{ item.name }}</strong>
-                <span>{{ formatCurrency(item.revenue) }}</span>
-              </div>
-              <div class="home-rank__bar"><span [style.width.%]="barWidth(item.revenue)"></span></div>
-              <div class="home-rank__meta">{{ formatNumber(item.ordersCount) }} {{ 'dashboard.orders' | t }}</div>
-            </div>
-          </li>
-        </ol>
-      </div>
-      <div>
-        <h3 class="home-split__title">{{ 'dashboard.topSubcategories' | t }}</h3>
-        <ol class="home-rank" *ngIf="topPerformers?.subCategories?.length; else emptyTop">
-          <li class="home-rank__item" *ngFor="let item of topPerformers?.subCategories; let i = index">
-            <span class="home-rank__index">{{ i + 1 }}</span>
-            <div class="home-rank__body">
-              <div class="home-rank__title">
-                <strong>{{ item.name }}</strong>
-                <span>{{ formatCurrency(item.revenue) }}</span>
-              </div>
-              <div class="home-rank__bar"><span [style.width.%]="barWidth(item.revenue)"></span></div>
-              <div class="home-rank__meta">{{ formatNumber(item.ordersCount) }} {{ 'dashboard.orders' | t }}</div>
-            </div>
-          </li>
-        </ol>
-      </div>
-    </div>
-  </section>
-
+      <ng-template #noRecent><p class="dsh-empty">{{ 'dash.noOrders' | t }}</p></ng-template>
+    </section>
+  </div>
 </div>
-
-<ng-template #emptyTop>
-  <div class="home-empty">{{ 'dashboard.noData' | t }}</div>
-</ng-template>
-
-<ng-template #emptyOrders>
-  <div class="home-empty">{{ 'dashboard.noRecentOrders' | t }}</div>
-</ng-template>

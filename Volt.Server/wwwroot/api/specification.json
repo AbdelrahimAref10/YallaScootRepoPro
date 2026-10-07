@@ -4959,15 +4959,15 @@
         }
       }
     },
-    "/api/admin/AdminHome/Summary": {
+    "/api/admin/AdminHome/Dashboard": {
       "get": {
         "tags": [
           "Admin / AdminHome"
         ],
-        "operationId": "AdminHome_GetSummary",
+        "operationId": "AdminHome_GetDashboard",
         "parameters": [
           {
-            "name": "From",
+            "name": "FromDate",
             "in": "query",
             "schema": {
               "type": "string",
@@ -4977,7 +4977,7 @@
             "x-position": 1
           },
           {
-            "name": "To",
+            "name": "ToDate",
             "in": "query",
             "schema": {
               "type": "string",
@@ -4987,12 +4987,17 @@
             "x-position": 2
           },
           {
-            "name": "CityId",
+            "name": "CityIds",
             "in": "query",
+            "style": "form",
+            "explode": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
             },
             "x-position": 3
           }
@@ -5003,565 +5008,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomeSummaryDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminHome/RevenueTrend": {
-      "get": {
-        "tags": [
-          "Admin / AdminHome"
-        ],
-        "operationId": "AdminHome_GetRevenueTrend",
-        "parameters": [
-          {
-            "name": "From",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 1
-          },
-          {
-            "name": "To",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 2
-          },
-          {
-            "name": "CityId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "x-position": 3
-          },
-          {
-            "name": "Granularity",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 4
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomeRevenueTrendDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminHome/OrderPipeline": {
-      "get": {
-        "tags": [
-          "Admin / AdminHome"
-        ],
-        "operationId": "AdminHome_GetOrderPipeline",
-        "parameters": [
-          {
-            "name": "From",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 1
-          },
-          {
-            "name": "To",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 2
-          },
-          {
-            "name": "CityId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "x-position": 3
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomeOrderPipelineDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminHome/CustomerGrowth": {
-      "get": {
-        "tags": [
-          "Admin / AdminHome"
-        ],
-        "operationId": "AdminHome_GetCustomerGrowth",
-        "parameters": [
-          {
-            "name": "From",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 1
-          },
-          {
-            "name": "To",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 2
-          },
-          {
-            "name": "CityId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "x-position": 3
-          },
-          {
-            "name": "Granularity",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 4
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomeCustomerGrowthDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminHome/PaymentsMix": {
-      "get": {
-        "tags": [
-          "Admin / AdminHome"
-        ],
-        "operationId": "AdminHome_GetPaymentsMix",
-        "parameters": [
-          {
-            "name": "From",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 1
-          },
-          {
-            "name": "To",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 2
-          },
-          {
-            "name": "CityId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "x-position": 3
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomePaymentsMixDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminHome/TreasurySnapshot": {
-      "get": {
-        "tags": [
-          "Admin / AdminHome"
-        ],
-        "operationId": "AdminHome_GetTreasurySnapshot",
-        "parameters": [
-          {
-            "name": "From",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 1
-          },
-          {
-            "name": "To",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 2
-          },
-          {
-            "name": "Granularity",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 3
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomeTreasurySnapshotDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminHome/Cancellations": {
-      "get": {
-        "tags": [
-          "Admin / AdminHome"
-        ],
-        "operationId": "AdminHome_GetCancellations",
-        "parameters": [
-          {
-            "name": "From",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 1
-          },
-          {
-            "name": "To",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 2
-          },
-          {
-            "name": "Granularity",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 3
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomeCancellationsDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminHome/TopPerformers": {
-      "get": {
-        "tags": [
-          "Admin / AdminHome"
-        ],
-        "operationId": "AdminHome_GetTopPerformers",
-        "parameters": [
-          {
-            "name": "From",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 1
-          },
-          {
-            "name": "To",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 2
-          },
-          {
-            "name": "CityId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "x-position": 3
-          },
-          {
-            "name": "Top",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 4
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomeTopPerformersDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminHome/CityPerformance": {
-      "get": {
-        "tags": [
-          "Admin / AdminHome"
-        ],
-        "operationId": "AdminHome_GetCityPerformance",
-        "parameters": [
-          {
-            "name": "From",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 1
-          },
-          {
-            "name": "To",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 2
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomeCityPerformanceDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminHome/RecentActivity": {
-      "get": {
-        "tags": [
-          "Admin / AdminHome"
-        ],
-        "operationId": "AdminHome_GetRecentActivity",
-        "parameters": [
-          {
-            "name": "Count",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          },
-          {
-            "name": "CityId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "x-position": 2
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomeRecentActivityDto"
+                  "$ref": "#/components/schemas/DashboardDto"
                 }
               }
             }
@@ -15326,49 +14773,392 @@
           }
         }
       },
-      "HomeSummaryDto": {
+      "DashboardDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "revenue": {
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "previousFrom": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "previousTo": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "bucket": {
+            "$ref": "#/components/schemas/DashboardBucket"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "profit": {
+            "$ref": "#/components/schemas/DashboardProfitDto"
+          },
+          "position": {
+            "$ref": "#/components/schemas/DashboardPositionDto"
+          },
+          "trend": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardTrendPointDto"
+            }
+          },
+          "orders": {
+            "$ref": "#/components/schemas/DashboardOrdersDto"
+          },
+          "payments": {
+            "$ref": "#/components/schemas/DashboardPaymentsDto"
+          },
+          "fleet": {
+            "$ref": "#/components/schemas/DashboardFleetDto"
+          },
+          "people": {
+            "$ref": "#/components/schemas/DashboardPeopleDto"
+          },
+          "topMerchants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardRankDto"
+            }
+          },
+          "topDeliveries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardRankDto"
+            }
+          },
+          "topCities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardRankDto"
+            }
+          },
+          "recentOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardRecentOrderDto"
+            }
+          }
+        }
+      },
+      "DashboardBucket": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Day",
+          "Week",
+          "Month"
+        ],
+        "enum": [
+          1,
+          2,
+          3
+        ]
+      },
+      "DashboardProfitDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "netProfit": {
             "type": "number",
             "format": "decimal"
           },
-          "revenueChangePercent": {
+          "previousNetProfit": {
             "type": "number",
             "format": "decimal"
           },
-          "ordersCount": {
+          "netProfitChangePercent": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "grossBookings": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "previousGrossBookings": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "grossBookingsChangePercent": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "marginPercent": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "income": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardAmountDto"
+            }
+          },
+          "costs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardAmountDto"
+            }
+          }
+        }
+      },
+      "DashboardAmountDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "DashboardPositionDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "owedToCompany": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "companyOwes": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "netPosition": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "treasuryBalance": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "owedToCompanyItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardAmountDto"
+            }
+          },
+          "companyOwesItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardAmountDto"
+            }
+          },
+          "topDebtors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardPartyDto"
+            }
+          },
+          "topCreditors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardPartyDto"
+            }
+          }
+        }
+      },
+      "DashboardPartyDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "partyType": {
+            "$ref": "#/components/schemas/LedgerPartyType"
+          },
+          "partyId": {
             "type": "integer",
             "format": "int32"
           },
-          "ordersChangePercent": {
+          "name": {
+            "type": "string"
+          },
+          "amount": {
             "type": "number",
             "format": "decimal"
+          }
+        }
+      },
+      "DashboardTrendPointDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "netProfit": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "grossBookings": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "orders": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "completed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cancelled": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "DashboardOrdersDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "previousTotal": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalChangePercent": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "completed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cancelled": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "completionRatePercent": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "cancellationRatePercent": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "urgent": {
+            "type": "integer",
+            "format": "int32"
           },
           "averageOrderValue": {
             "type": "number",
             "format": "decimal"
           },
-          "activeRentals": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "pendingOrders": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "availableVehicles": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalVehicles": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "vehicleUtilizationPercent": {
+          "averageProfitPerOrder": {
             "type": "number",
             "format": "decimal"
+          },
+          "pipeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardStateCountDto"
+            }
+          },
+          "openNow": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "withCustomersNow": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "DashboardStateCountDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/OrderState"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "DashboardPaymentsDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cashPaid": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "payPalPaid": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "pending": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "failed": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "refunded": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "paidCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "DashboardFleetDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "available": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rented": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "underMaintenance": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "utilizationPercent": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "DashboardPeopleDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "customers": {
+            "type": "integer",
+            "format": "int32"
           },
           "newCustomers": {
             "type": "integer",
@@ -15378,386 +15168,21 @@
             "type": "number",
             "format": "decimal"
           },
-          "treasuryBalance": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "unpaidCancellationFeesCount": {
+          "activeMerchants": {
             "type": "integer",
             "format": "int32"
           },
-          "from": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "to": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "HomeRevenueTrendDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "granularity": {
-            "type": "string"
-          },
-          "totalRevenue": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalOrders": {
+          "activeDeliveries": {
             "type": "integer",
             "format": "int32"
           },
-          "averageOrderValue": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "series": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HomeChartPointDto"
-            }
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "to": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "HomeChartPointDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "period": {
-            "type": "string"
-          },
-          "periodStart": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "value": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "count": {
+          "onlineDeliveries": {
             "type": "integer",
             "format": "int32"
           }
         }
       },
-      "HomeOrderPipelineDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "byState": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HomeOrderStateBucketDto"
-            }
-          },
-          "createdInRange": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "completedInRange": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "urgentInRange": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "activeRentals": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "pendingOrders": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "to": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "HomeOrderStateBucketDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "state": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "stateName": {
-            "type": "string"
-          },
-          "count": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "HomeCustomerGrowthDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "granularity": {
-            "type": "string"
-          },
-          "totalCustomers": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "activeCustomers": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "inactiveCustomers": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "blockedCustomers": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "individualCustomers": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "institutionCustomers": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "newInRange": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "cashBlockedCustomers": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "series": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HomeChartPointDto"
-            }
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "to": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "HomePaymentsMixDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "totalPaidAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "paidCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "pendingCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "failedCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "refundedCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "refundedAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "methods": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HomePaymentMethodSliceDto"
-            }
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "to": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "HomePaymentMethodSliceDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "methodId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "methodName": {
-            "type": "string"
-          },
-          "orderCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "amount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "percentage": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
-      "HomeTreasurySnapshotDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "balance": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalDebit": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalCredit": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "lastUpdated": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "series": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HomeTreasuryMovementPointDto"
-            }
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "to": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "HomeTreasuryMovementPointDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "period": {
-            "type": "string"
-          },
-          "periodStart": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "debit": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "credit": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "net": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
-      "HomeCancellationsDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "cancelledOrders": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalFees": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "paidFees": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "unpaidFees": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "series": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HomeChartPointDto"
-            }
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "to": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "HomeTopPerformersDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "categories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HomeTopItemDto"
-            }
-          },
-          "subCategories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HomeTopItemDto"
-            }
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "to": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "HomeTopItemDto": {
+      "DashboardRankDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -15768,82 +15193,17 @@
           "name": {
             "type": "string"
           },
-          "ordersCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "revenue": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
-      "HomeCityPerformanceDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "cities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HomeCityPerformanceItemDto"
-            }
-          },
-          "from": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "to": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "HomeCityPerformanceItemDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "cityId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "cityName": {
-            "type": "string"
-          },
-          "ordersCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "revenue": {
+          "amount": {
             "type": "number",
             "format": "decimal"
           },
-          "vehiclesCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "availableVehicles": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "newCustomers": {
+          "count": {
             "type": "integer",
             "format": "int32"
           }
         }
       },
-      "HomeRecentActivityDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "recentOrders": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HomeRecentOrderDto"
-            }
-          }
-        }
-      },
-      "HomeRecentOrderDto": {
+      "DashboardRecentOrderDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -15854,25 +15214,18 @@
           "orderCode": {
             "type": "string"
           },
-          "customerName": {
+          "customer": {
             "type": "string"
           },
-          "subCategoryName": {
+          "city": {
             "type": "string"
           },
-          "cityName": {
-            "type": "string"
+          "state": {
+            "$ref": "#/components/schemas/OrderState"
           },
           "total": {
             "type": "number",
             "format": "decimal"
-          },
-          "orderState": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "orderStateName": {
-            "type": "string"
           },
           "createdDate": {
             "type": "string",
