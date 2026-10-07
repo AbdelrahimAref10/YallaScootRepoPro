@@ -336,7 +336,10 @@
       "deactivateConfirm": "{{name}} will not be able to sign in. Continue?",
       "deleteTitle": "Delete staff member",
       "deleteConfirm": "Delete {{name}}? They will lose access immediately."
-    }
+    },
+    "yourTurn": "Your turn",
+    "nextConfirmVehicles": "Confirm the vehicles you can provide for this order.",
+    "nextHandover": "A rider is on the way: hand over the vehicles when they arrive."
   },
   "dashboard": {
     "welcome": "Welcome back, {{name}}"
