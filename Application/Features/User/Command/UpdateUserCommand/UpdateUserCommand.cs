@@ -54,6 +54,12 @@ namespace Application.Features.User.Command.UpdateUserCommand
                 return Result.Failure("User not found");
             }
 
+            var userNameCheck = UserNamePolicy.Validate(request.UserName);
+            if (userNameCheck.IsFailure)
+            {
+                return Result.Failure(userNameCheck.Error);
+            }
+
             // Validate required fields
             if (string.IsNullOrWhiteSpace(request.Email))
             {

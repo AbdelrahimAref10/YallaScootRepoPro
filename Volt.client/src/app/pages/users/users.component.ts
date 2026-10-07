@@ -14,6 +14,7 @@ import {
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { userNameValidator } from '../../shared/validators/user-name.validator';
 
 @Component({
   selector: 'app-users',
@@ -154,7 +155,7 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   constructor() {
     this.userForm = this.fb.group({
-      userName: ['', [Validators.required, Validators.minLength(3)]],
+      userName: ['', [Validators.required, Validators.minLength(3), userNameValidator]],
       fullName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', [Validators.required]],
@@ -229,6 +230,9 @@ export class UsersComponent implements OnInit, OnDestroy {
         field: this.getFieldLabel(fieldName),
         count: requiredLength
       });
+    }
+    if (field.errors['userNameChars']) {
+      return this.localeService.translate('users.userNameInvalidChars');
     }
     if (field.errors['email']) {
       return this.localeService.translate('users.emailInvalid');

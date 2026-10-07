@@ -12,6 +12,7 @@ import {
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { userNameValidator } from '../../../shared/validators/user-name.validator';
 
 @Component({
   selector: 'app-user-detail',
@@ -76,7 +77,7 @@ export class UserDetailComponent implements OnInit {
 
   constructor() {
     this.userForm = this.fb.group({
-      userName: ['', [Validators.required, Validators.minLength(3)]],
+      userName: ['', [Validators.required, Validators.minLength(3), userNameValidator]],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', [Validators.required]],
       password: [''],

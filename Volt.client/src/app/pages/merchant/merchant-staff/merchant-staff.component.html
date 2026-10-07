@@ -124,7 +124,9 @@
         <div class="entity-form__field">
           <label class="entity-form__label" for="staffUserName">{{ 'users.userName' | t }}<span class="entity-form__req">*</span></label>
           <input id="staffUserName" type="text" formControlName="userName" class="entity-form__input" autocomplete="off" />
-          <p *ngIf="hasFieldError('userName')" class="entity-form__error">{{ 'merchant.staff.fieldRequired' | t }}</p>
+          <p *ngIf="hasFieldError('userName')" class="entity-form__error">
+            {{ (staffForm.get('userName')?.errors?.['userNameChars'] ? 'users.userNameInvalidChars' : 'merchant.staff.fieldRequired') | t }}
+          </p>
         </div>
       </div>
 

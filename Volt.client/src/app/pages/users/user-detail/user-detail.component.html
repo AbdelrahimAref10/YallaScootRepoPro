@@ -104,8 +104,8 @@
               {{ 'users.userName' | t }}<span class="entity-form__req">*</span>
             </label>
             <input type="text" formControlName="userName" class="entity-form__input" />
-            <p *ngIf="userForm.get('userName')?.invalid && userForm.get('userName')?.touched" class="entity-form__error">
-              {{ 'users.userNameRequired' | t }}
+            <p *ngIf="userForm.get('userName')?.invalid && (userForm.get('userName')?.dirty || userForm.get('userName')?.touched)" class="entity-form__error">
+              {{ (userForm.get('userName')?.errors?.['userNameChars'] ? 'users.userNameInvalidChars' : 'users.userNameRequired') | t }}
             </p>
           </div>
           <div class="entity-form__field">

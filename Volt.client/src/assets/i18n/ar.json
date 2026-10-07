@@ -830,7 +830,8 @@
     "deactivateTitle": "إيقاف المستخدم",
     "subRole": "الدور الفرعي",
     "selectSubRole": "اختر الدور الفرعي",
-    "subRoleRequired": "الدور الفرعي مطلوب"
+    "subRoleRequired": "الدور الفرعي مطلوب",
+    "userNameInvalidChars": "اسم المستخدم يقبل حروف إنجليزية وأرقام و - . _ @ + فقط (بدون مسافات أو حروف عربية)."
   },
   "roles": {
     "title": "الأدوار والصلاحيات",

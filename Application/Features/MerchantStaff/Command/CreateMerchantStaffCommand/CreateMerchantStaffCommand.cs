@@ -43,8 +43,9 @@ namespace Application.Features.MerchantStaff.Command.CreateMerchantStaffCommand
         {
             if (string.IsNullOrWhiteSpace(request.FullName))
                 return Result.Failure<int>("Full name is required");
-            if (string.IsNullOrWhiteSpace(request.UserName))
-                return Result.Failure<int>("User name is required");
+            var userNameCheck = UserNamePolicy.Validate(request.UserName?.Trim());
+            if (userNameCheck.IsFailure)
+                return Result.Failure<int>(userNameCheck.Error);
             if (string.IsNullOrWhiteSpace(request.PhoneNumber))
                 return Result.Failure<int>("Phone number is required");
             if (string.IsNullOrWhiteSpace(request.Email))

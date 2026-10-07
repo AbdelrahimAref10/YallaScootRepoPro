@@ -52,8 +52,9 @@ namespace Application.Features.User.Command.CreateUserCommand
 
         public async Task<Result<int>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(request.UserName))
-                return Result.Failure<int>("User name is required");
+            var userNameCheck = UserNamePolicy.Validate(request.UserName);
+            if (userNameCheck.IsFailure)
+                return Result.Failure<int>(userNameCheck.Error);
 
             if (string.IsNullOrWhiteSpace(request.FullName))
                 return Result.Failure<int>("Full name is required");
