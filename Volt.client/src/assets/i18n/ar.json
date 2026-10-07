@@ -1393,7 +1393,10 @@
     "backToEdit": "رجوع للتعديل",
     "createdTitle": "تم إنشاء الطلب بنجاح!",
     "createdMessage": "تم تأكيد حجز {{customer}}. جاري فتح تفاصيل الطلب…",
-    "openOrderNow": "افتح الطلب الآن"
+    "openOrderNow": "افتح الطلب الآن",
+    "vehiclesLabel": "المركبات",
+    "merchantsUnit": "تاجر",
+    "call": "اتصال"
   },
   "settlements": {
     "typePayDeliveryHint": "عهدة نقدية أو مستحقات طلب للرايدر",

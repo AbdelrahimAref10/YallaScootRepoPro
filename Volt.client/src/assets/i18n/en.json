@@ -1393,7 +1393,10 @@
     "backToEdit": "Back to edit",
     "createdTitle": "Order created!",
     "createdMessage": "The booking for {{customer}} is confirmed. Opening the order details…",
-    "openOrderNow": "Open the order now"
+    "openOrderNow": "Open the order now",
+    "vehiclesLabel": "Vehicles",
+    "merchantsUnit": "merchants",
+    "call": "Call"
   },
   "settlements": {
     "typePayDeliveryHint": "Cash float or order payout to a rider",
