@@ -299,6 +299,10 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent)
+      },
+      {
         path: 'staff',
         data: { permission: Permissions.Merchant.Staff.View },
         loadComponent: () =>

@@ -1,8 +1,18 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AdminUserClient, UserDto, UpdateUserCommand, RoleClient, RoleDto } from '../../core/services/clientAPI';
+import {
+  AdminUserClient,
+  MerchantProfileClient,
+  RoleClient,
+  RoleDto,
+  UpdateMyAccountRequest,
+  UpdateUserCommand,
+  UserDto
+} from '../../core/services/clientAPI';
+import { Observable } from 'rxjs';
+import { userNameValidator } from '../../shared/validators/user-name.validator';
 import { LocaleService } from '../../core/services/locale.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
@@ -15,7 +25,12 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 })
 export class ProfileComponent implements OnInit {
   private adminUserClient = inject(AdminUserClient);
+  private merchantProfileClient = inject(MerchantProfileClient);
   private roleClient = inject(RoleClient);
+  private router = inject(Router);
+
+  /** The same page serves /main/profile and /merchant/profile (merchant owner or staff). */
+  readonly isMerchant = this.router.url.startsWith('/merchant');
   private fb = inject(FormBuilder);
   private localeService = inject(LocaleService);
 
@@ -41,7 +56,7 @@ export class ProfileComponent implements OnInit {
 
   constructor() {
     this.userForm = this.fb.group({
-      userName: ['', [Validators.required, Validators.minLength(3)]],
+      userName: ['', [Validators.required, Validators.minLength(3), userNameValidator]],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', [Validators.required]],
       password: ['']
@@ -50,13 +65,16 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUser();
-    this.loadRoles();
+    if (!this.isMerchant) {
+      this.loadRoles();
+    }
   }
 
   loadUser(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    this.adminUserClient.getCurrent().subscribe({
+    const user$ = this.isMerchant ? this.merchantProfileClient.getMyAccount() : this.adminUserClient.getCurrent();
+    user$.subscribe({
       next: (user: UserDto) => {
         this.user = user;
         this.userForm.patchValue({
@@ -186,6 +204,17 @@ export class ProfileComponent implements OnInit {
     this.successMessage = '';
 
     const formValue = this.userForm.value;
+    if (this.isMerchant) {
+      // Merchants edit their own account only; the server keeps their role and sub-role.
+      this.submitUpdate(this.merchantProfileClient.updateMyAccount(UpdateMyAccountRequest.fromJS({
+        userName: formValue.userName,
+        email: formValue.email || null,
+        phoneNumber: formValue.phoneNumber || null,
+        password: formValue.password || null
+      })));
+      return;
+    }
+
     const command = new UpdateUserCommand();
     command.userId = this.user.id;
     command.userName = formValue.userName;
@@ -216,7 +245,11 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    this.adminUserClient.update(this.user.id, command).subscribe({
+    this.submitUpdate(this.adminUserClient.update(this.user.id, command));
+  }
+
+  private submitUpdate(request$: Observable<unknown>): void {
+    request$.subscribe({
       next: () => {
         this.actionLoading = '';
         this.isEditing = false;
@@ -225,7 +258,7 @@ export class ProfileComponent implements OnInit {
       },
       error: (error: any) => {
         this.actionLoading = '';
-        const errorMessage = error.error?.detail || error.error?.title || 'Failed to update profile. Please try again.';
+        const errorMessage = error?.errorMessage || error.error?.detail || error.error?.title || 'Failed to update profile. Please try again.';
         this.showErrorMessage(errorMessage);
         console.error('Error updating profile:', error);
       }
@@ -238,6 +271,10 @@ export class ProfileComponent implements OnInit {
   }
 
   getRolesDisplay(): string {
+    if (this.user?.subRoleName) {
+      const subRole = this.localeService.locale() === 'ar' && this.user.subRoleNameAr ? this.user.subRoleNameAr : this.user.subRoleName;
+      return `${(this.user.roles ?? []).join(', ')} · ${subRole}`;
+    }
     if (!this.user || !this.user.roles) return this.localeService.translate('users.roles');
     return this.user.roles.length > 0 ? this.user.roles.join(', ') : this.localeService.translate('users.roles');
   }
