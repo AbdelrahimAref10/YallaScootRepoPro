@@ -6710,14 +6710,14 @@ export class AdminHomeClient {
         this.baseUrl = baseUrl ?? "";
     }
 
-    getSummary(from?: Date | null | undefined, to?: Date | null | undefined, cityId?: number | null | undefined): Observable<HomeSummaryDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminHome/Summary?";
-        if (from !== undefined && from !== null)
-            url_ += "From=" + encodeURIComponent(from ? "" + from.toISOString() : "") + "&";
-        if (to !== undefined && to !== null)
-            url_ += "To=" + encodeURIComponent(to ? "" + to.toISOString() : "") + "&";
-        if (cityId !== undefined && cityId !== null)
-            url_ += "CityId=" + encodeURIComponent("" + cityId) + "&";
+    getDashboard(fromDate?: Date | null | undefined, toDate?: Date | null | undefined, cityIds?: number[] | null | undefined): Observable<DashboardDto> {
+        let url_ = this.baseUrl + "/api/admin/AdminHome/Dashboard?";
+        if (fromDate !== undefined && fromDate !== null)
+            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
+        if (toDate !== undefined && toDate !== null)
+            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
+        if (cityIds !== undefined && cityIds !== null)
+            cityIds && cityIds.forEach(item => { url_ += "CityIds=" + encodeURIComponent("" + item) + "&"; });
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -6729,20 +6729,20 @@ export class AdminHomeClient {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetSummary(response_);
+            return this.processGetDashboard(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetSummary(response_ as any);
+                    return this.processGetDashboard(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<HomeSummaryDto>;
+                    return _observableThrow(e) as any as Observable<DashboardDto>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<HomeSummaryDto>;
+                return _observableThrow(response_) as any as Observable<DashboardDto>;
         }));
     }
 
-    protected processGetSummary(response: HttpResponseBase): Observable<HomeSummaryDto> {
+    protected processGetDashboard(response: HttpResponseBase): Observable<DashboardDto> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -6753,570 +6753,7 @@ export class AdminHomeClient {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HomeSummaryDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getRevenueTrend(from?: Date | null | undefined, to?: Date | null | undefined, cityId?: number | null | undefined, granularity?: string | undefined): Observable<HomeRevenueTrendDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminHome/RevenueTrend?";
-        if (from !== undefined && from !== null)
-            url_ += "From=" + encodeURIComponent(from ? "" + from.toISOString() : "") + "&";
-        if (to !== undefined && to !== null)
-            url_ += "To=" + encodeURIComponent(to ? "" + to.toISOString() : "") + "&";
-        if (cityId !== undefined && cityId !== null)
-            url_ += "CityId=" + encodeURIComponent("" + cityId) + "&";
-        if (granularity === null)
-            throw new Error("The parameter 'granularity' cannot be null.");
-        else if (granularity !== undefined)
-            url_ += "Granularity=" + encodeURIComponent("" + granularity) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetRevenueTrend(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetRevenueTrend(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<HomeRevenueTrendDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<HomeRevenueTrendDto>;
-        }));
-    }
-
-    protected processGetRevenueTrend(response: HttpResponseBase): Observable<HomeRevenueTrendDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HomeRevenueTrendDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getOrderPipeline(from?: Date | null | undefined, to?: Date | null | undefined, cityId?: number | null | undefined): Observable<HomeOrderPipelineDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminHome/OrderPipeline?";
-        if (from !== undefined && from !== null)
-            url_ += "From=" + encodeURIComponent(from ? "" + from.toISOString() : "") + "&";
-        if (to !== undefined && to !== null)
-            url_ += "To=" + encodeURIComponent(to ? "" + to.toISOString() : "") + "&";
-        if (cityId !== undefined && cityId !== null)
-            url_ += "CityId=" + encodeURIComponent("" + cityId) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetOrderPipeline(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetOrderPipeline(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<HomeOrderPipelineDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<HomeOrderPipelineDto>;
-        }));
-    }
-
-    protected processGetOrderPipeline(response: HttpResponseBase): Observable<HomeOrderPipelineDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HomeOrderPipelineDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getCustomerGrowth(from?: Date | null | undefined, to?: Date | null | undefined, cityId?: number | null | undefined, granularity?: string | undefined): Observable<HomeCustomerGrowthDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminHome/CustomerGrowth?";
-        if (from !== undefined && from !== null)
-            url_ += "From=" + encodeURIComponent(from ? "" + from.toISOString() : "") + "&";
-        if (to !== undefined && to !== null)
-            url_ += "To=" + encodeURIComponent(to ? "" + to.toISOString() : "") + "&";
-        if (cityId !== undefined && cityId !== null)
-            url_ += "CityId=" + encodeURIComponent("" + cityId) + "&";
-        if (granularity === null)
-            throw new Error("The parameter 'granularity' cannot be null.");
-        else if (granularity !== undefined)
-            url_ += "Granularity=" + encodeURIComponent("" + granularity) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetCustomerGrowth(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetCustomerGrowth(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<HomeCustomerGrowthDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<HomeCustomerGrowthDto>;
-        }));
-    }
-
-    protected processGetCustomerGrowth(response: HttpResponseBase): Observable<HomeCustomerGrowthDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HomeCustomerGrowthDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getPaymentsMix(from?: Date | null | undefined, to?: Date | null | undefined, cityId?: number | null | undefined): Observable<HomePaymentsMixDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminHome/PaymentsMix?";
-        if (from !== undefined && from !== null)
-            url_ += "From=" + encodeURIComponent(from ? "" + from.toISOString() : "") + "&";
-        if (to !== undefined && to !== null)
-            url_ += "To=" + encodeURIComponent(to ? "" + to.toISOString() : "") + "&";
-        if (cityId !== undefined && cityId !== null)
-            url_ += "CityId=" + encodeURIComponent("" + cityId) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetPaymentsMix(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetPaymentsMix(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<HomePaymentsMixDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<HomePaymentsMixDto>;
-        }));
-    }
-
-    protected processGetPaymentsMix(response: HttpResponseBase): Observable<HomePaymentsMixDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HomePaymentsMixDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getTreasurySnapshot(from?: Date | null | undefined, to?: Date | null | undefined, granularity?: string | undefined): Observable<HomeTreasurySnapshotDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminHome/TreasurySnapshot?";
-        if (from !== undefined && from !== null)
-            url_ += "From=" + encodeURIComponent(from ? "" + from.toISOString() : "") + "&";
-        if (to !== undefined && to !== null)
-            url_ += "To=" + encodeURIComponent(to ? "" + to.toISOString() : "") + "&";
-        if (granularity === null)
-            throw new Error("The parameter 'granularity' cannot be null.");
-        else if (granularity !== undefined)
-            url_ += "Granularity=" + encodeURIComponent("" + granularity) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetTreasurySnapshot(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetTreasurySnapshot(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<HomeTreasurySnapshotDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<HomeTreasurySnapshotDto>;
-        }));
-    }
-
-    protected processGetTreasurySnapshot(response: HttpResponseBase): Observable<HomeTreasurySnapshotDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HomeTreasurySnapshotDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getCancellations(from?: Date | null | undefined, to?: Date | null | undefined, granularity?: string | undefined): Observable<HomeCancellationsDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminHome/Cancellations?";
-        if (from !== undefined && from !== null)
-            url_ += "From=" + encodeURIComponent(from ? "" + from.toISOString() : "") + "&";
-        if (to !== undefined && to !== null)
-            url_ += "To=" + encodeURIComponent(to ? "" + to.toISOString() : "") + "&";
-        if (granularity === null)
-            throw new Error("The parameter 'granularity' cannot be null.");
-        else if (granularity !== undefined)
-            url_ += "Granularity=" + encodeURIComponent("" + granularity) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetCancellations(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetCancellations(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<HomeCancellationsDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<HomeCancellationsDto>;
-        }));
-    }
-
-    protected processGetCancellations(response: HttpResponseBase): Observable<HomeCancellationsDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HomeCancellationsDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getTopPerformers(from?: Date | null | undefined, to?: Date | null | undefined, cityId?: number | null | undefined, top?: number | undefined): Observable<HomeTopPerformersDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminHome/TopPerformers?";
-        if (from !== undefined && from !== null)
-            url_ += "From=" + encodeURIComponent(from ? "" + from.toISOString() : "") + "&";
-        if (to !== undefined && to !== null)
-            url_ += "To=" + encodeURIComponent(to ? "" + to.toISOString() : "") + "&";
-        if (cityId !== undefined && cityId !== null)
-            url_ += "CityId=" + encodeURIComponent("" + cityId) + "&";
-        if (top === null)
-            throw new Error("The parameter 'top' cannot be null.");
-        else if (top !== undefined)
-            url_ += "Top=" + encodeURIComponent("" + top) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetTopPerformers(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetTopPerformers(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<HomeTopPerformersDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<HomeTopPerformersDto>;
-        }));
-    }
-
-    protected processGetTopPerformers(response: HttpResponseBase): Observable<HomeTopPerformersDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HomeTopPerformersDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getCityPerformance(from?: Date | null | undefined, to?: Date | null | undefined): Observable<HomeCityPerformanceDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminHome/CityPerformance?";
-        if (from !== undefined && from !== null)
-            url_ += "From=" + encodeURIComponent(from ? "" + from.toISOString() : "") + "&";
-        if (to !== undefined && to !== null)
-            url_ += "To=" + encodeURIComponent(to ? "" + to.toISOString() : "") + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetCityPerformance(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetCityPerformance(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<HomeCityPerformanceDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<HomeCityPerformanceDto>;
-        }));
-    }
-
-    protected processGetCityPerformance(response: HttpResponseBase): Observable<HomeCityPerformanceDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HomeCityPerformanceDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getRecentActivity(count?: number | undefined, cityId?: number | null | undefined): Observable<HomeRecentActivityDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminHome/RecentActivity?";
-        if (count === null)
-            throw new Error("The parameter 'count' cannot be null.");
-        else if (count !== undefined)
-            url_ += "Count=" + encodeURIComponent("" + count) + "&";
-        if (cityId !== undefined && cityId !== null)
-            url_ += "CityId=" + encodeURIComponent("" + cityId) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetRecentActivity(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetRecentActivity(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<HomeRecentActivityDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<HomeRecentActivityDto>;
-        }));
-    }
-
-    protected processGetRecentActivity(response: HttpResponseBase): Observable<HomeRecentActivityDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HomeRecentActivityDto.fromJS(resultData200);
+            result200 = DashboardDto.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status === 400) {
@@ -19405,717 +18842,75 @@ export class SetDeliveryCashDebtLimitCommand {
     }
 }
 
-export class HomeSummaryDto {
-    revenue!: number;
-    revenueChangePercent!: number;
-    ordersCount!: number;
-    ordersChangePercent!: number;
-    averageOrderValue!: number;
-    activeRentals!: number;
-    pendingOrders!: number;
-    availableVehicles!: number;
-    totalVehicles!: number;
-    vehicleUtilizationPercent!: number;
-    newCustomers!: number;
-    newCustomersChangePercent!: number;
-    treasuryBalance!: number;
-    unpaidCancellationFeesCount!: number;
+export class DashboardDto {
     from!: Date;
     to!: Date;
+    previousFrom!: Date;
+    previousTo!: Date;
+    bucket!: DashboardBucket;
+    generatedAt!: Date;
+    profit!: DashboardProfitDto;
+    position!: DashboardPositionDto;
+    trend!: DashboardTrendPointDto[];
+    orders!: DashboardOrdersDto;
+    payments!: DashboardPaymentsDto;
+    fleet!: DashboardFleetDto;
+    people!: DashboardPeopleDto;
+    topMerchants!: DashboardRankDto[];
+    topDeliveries!: DashboardRankDto[];
+    topCities!: DashboardRankDto[];
+    recentOrders!: DashboardRecentOrderDto[];
 
     init(_data?: any) {
         if (_data) {
-            this.revenue = _data["revenue"] !== undefined ? _data["revenue"] : <any>null;
-            this.revenueChangePercent = _data["revenueChangePercent"] !== undefined ? _data["revenueChangePercent"] : <any>null;
-            this.ordersCount = _data["ordersCount"] !== undefined ? _data["ordersCount"] : <any>null;
-            this.ordersChangePercent = _data["ordersChangePercent"] !== undefined ? _data["ordersChangePercent"] : <any>null;
-            this.averageOrderValue = _data["averageOrderValue"] !== undefined ? _data["averageOrderValue"] : <any>null;
-            this.activeRentals = _data["activeRentals"] !== undefined ? _data["activeRentals"] : <any>null;
-            this.pendingOrders = _data["pendingOrders"] !== undefined ? _data["pendingOrders"] : <any>null;
-            this.availableVehicles = _data["availableVehicles"] !== undefined ? _data["availableVehicles"] : <any>null;
-            this.totalVehicles = _data["totalVehicles"] !== undefined ? _data["totalVehicles"] : <any>null;
-            this.vehicleUtilizationPercent = _data["vehicleUtilizationPercent"] !== undefined ? _data["vehicleUtilizationPercent"] : <any>null;
-            this.newCustomers = _data["newCustomers"] !== undefined ? _data["newCustomers"] : <any>null;
-            this.newCustomersChangePercent = _data["newCustomersChangePercent"] !== undefined ? _data["newCustomersChangePercent"] : <any>null;
-            this.treasuryBalance = _data["treasuryBalance"] !== undefined ? _data["treasuryBalance"] : <any>null;
-            this.unpaidCancellationFeesCount = _data["unpaidCancellationFeesCount"] !== undefined ? _data["unpaidCancellationFeesCount"] : <any>null;
             this.from = _data["from"] ? new Date(_data["from"].toString()) : <any>null;
             this.to = _data["to"] ? new Date(_data["to"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeSummaryDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeSummaryDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["revenue"] = this.revenue !== undefined ? this.revenue : <any>null;
-        data["revenueChangePercent"] = this.revenueChangePercent !== undefined ? this.revenueChangePercent : <any>null;
-        data["ordersCount"] = this.ordersCount !== undefined ? this.ordersCount : <any>null;
-        data["ordersChangePercent"] = this.ordersChangePercent !== undefined ? this.ordersChangePercent : <any>null;
-        data["averageOrderValue"] = this.averageOrderValue !== undefined ? this.averageOrderValue : <any>null;
-        data["activeRentals"] = this.activeRentals !== undefined ? this.activeRentals : <any>null;
-        data["pendingOrders"] = this.pendingOrders !== undefined ? this.pendingOrders : <any>null;
-        data["availableVehicles"] = this.availableVehicles !== undefined ? this.availableVehicles : <any>null;
-        data["totalVehicles"] = this.totalVehicles !== undefined ? this.totalVehicles : <any>null;
-        data["vehicleUtilizationPercent"] = this.vehicleUtilizationPercent !== undefined ? this.vehicleUtilizationPercent : <any>null;
-        data["newCustomers"] = this.newCustomers !== undefined ? this.newCustomers : <any>null;
-        data["newCustomersChangePercent"] = this.newCustomersChangePercent !== undefined ? this.newCustomersChangePercent : <any>null;
-        data["treasuryBalance"] = this.treasuryBalance !== undefined ? this.treasuryBalance : <any>null;
-        data["unpaidCancellationFeesCount"] = this.unpaidCancellationFeesCount !== undefined ? this.unpaidCancellationFeesCount : <any>null;
-        data["from"] = this.from ? this.from.toISOString() : <any>null;
-        data["to"] = this.to ? this.to.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class HomeRevenueTrendDto {
-    granularity!: string;
-    totalRevenue!: number;
-    totalOrders!: number;
-    averageOrderValue!: number;
-    series!: HomeChartPointDto[];
-    from!: Date;
-    to!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            this.granularity = _data["granularity"] !== undefined ? _data["granularity"] : <any>null;
-            this.totalRevenue = _data["totalRevenue"] !== undefined ? _data["totalRevenue"] : <any>null;
-            this.totalOrders = _data["totalOrders"] !== undefined ? _data["totalOrders"] : <any>null;
-            this.averageOrderValue = _data["averageOrderValue"] !== undefined ? _data["averageOrderValue"] : <any>null;
-            if (Array.isArray(_data["series"])) {
-                this.series = [] as any;
-                for (let item of _data["series"])
-                    this.series!.push(HomeChartPointDto.fromJS(item));
+            this.previousFrom = _data["previousFrom"] ? new Date(_data["previousFrom"].toString()) : <any>null;
+            this.previousTo = _data["previousTo"] ? new Date(_data["previousTo"].toString()) : <any>null;
+            this.bucket = _data["bucket"] !== undefined ? _data["bucket"] : <any>null;
+            this.generatedAt = _data["generatedAt"] ? new Date(_data["generatedAt"].toString()) : <any>null;
+            this.profit = _data["profit"] ? DashboardProfitDto.fromJS(_data["profit"]) : <any>null;
+            this.position = _data["position"] ? DashboardPositionDto.fromJS(_data["position"]) : <any>null;
+            if (Array.isArray(_data["trend"])) {
+                this.trend = [] as any;
+                for (let item of _data["trend"])
+                    this.trend!.push(DashboardTrendPointDto.fromJS(item));
             }
             else {
-                this.series = <any>null;
+                this.trend = <any>null;
             }
-            this.from = _data["from"] ? new Date(_data["from"].toString()) : <any>null;
-            this.to = _data["to"] ? new Date(_data["to"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeRevenueTrendDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeRevenueTrendDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["granularity"] = this.granularity !== undefined ? this.granularity : <any>null;
-        data["totalRevenue"] = this.totalRevenue !== undefined ? this.totalRevenue : <any>null;
-        data["totalOrders"] = this.totalOrders !== undefined ? this.totalOrders : <any>null;
-        data["averageOrderValue"] = this.averageOrderValue !== undefined ? this.averageOrderValue : <any>null;
-        if (Array.isArray(this.series)) {
-            data["series"] = [];
-            for (let item of this.series)
-                data["series"].push(item.toJSON());
-        }
-        data["from"] = this.from ? this.from.toISOString() : <any>null;
-        data["to"] = this.to ? this.to.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class HomeChartPointDto {
-    period!: string;
-    periodStart!: Date;
-    value!: number;
-    count!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.period = _data["period"] !== undefined ? _data["period"] : <any>null;
-            this.periodStart = _data["periodStart"] ? new Date(_data["periodStart"].toString()) : <any>null;
-            this.value = _data["value"] !== undefined ? _data["value"] : <any>null;
-            this.count = _data["count"] !== undefined ? _data["count"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeChartPointDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeChartPointDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["period"] = this.period !== undefined ? this.period : <any>null;
-        data["periodStart"] = this.periodStart ? this.periodStart.toISOString() : <any>null;
-        data["value"] = this.value !== undefined ? this.value : <any>null;
-        data["count"] = this.count !== undefined ? this.count : <any>null;
-        return data;
-    }
-}
-
-export class HomeOrderPipelineDto {
-    byState!: HomeOrderStateBucketDto[];
-    createdInRange!: number;
-    completedInRange!: number;
-    urgentInRange!: number;
-    activeRentals!: number;
-    pendingOrders!: number;
-    from!: Date;
-    to!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["byState"])) {
-                this.byState = [] as any;
-                for (let item of _data["byState"])
-                    this.byState!.push(HomeOrderStateBucketDto.fromJS(item));
+            this.orders = _data["orders"] ? DashboardOrdersDto.fromJS(_data["orders"]) : <any>null;
+            this.payments = _data["payments"] ? DashboardPaymentsDto.fromJS(_data["payments"]) : <any>null;
+            this.fleet = _data["fleet"] ? DashboardFleetDto.fromJS(_data["fleet"]) : <any>null;
+            this.people = _data["people"] ? DashboardPeopleDto.fromJS(_data["people"]) : <any>null;
+            if (Array.isArray(_data["topMerchants"])) {
+                this.topMerchants = [] as any;
+                for (let item of _data["topMerchants"])
+                    this.topMerchants!.push(DashboardRankDto.fromJS(item));
             }
             else {
-                this.byState = <any>null;
+                this.topMerchants = <any>null;
             }
-            this.createdInRange = _data["createdInRange"] !== undefined ? _data["createdInRange"] : <any>null;
-            this.completedInRange = _data["completedInRange"] !== undefined ? _data["completedInRange"] : <any>null;
-            this.urgentInRange = _data["urgentInRange"] !== undefined ? _data["urgentInRange"] : <any>null;
-            this.activeRentals = _data["activeRentals"] !== undefined ? _data["activeRentals"] : <any>null;
-            this.pendingOrders = _data["pendingOrders"] !== undefined ? _data["pendingOrders"] : <any>null;
-            this.from = _data["from"] ? new Date(_data["from"].toString()) : <any>null;
-            this.to = _data["to"] ? new Date(_data["to"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeOrderPipelineDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeOrderPipelineDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.byState)) {
-            data["byState"] = [];
-            for (let item of this.byState)
-                data["byState"].push(item.toJSON());
-        }
-        data["createdInRange"] = this.createdInRange !== undefined ? this.createdInRange : <any>null;
-        data["completedInRange"] = this.completedInRange !== undefined ? this.completedInRange : <any>null;
-        data["urgentInRange"] = this.urgentInRange !== undefined ? this.urgentInRange : <any>null;
-        data["activeRentals"] = this.activeRentals !== undefined ? this.activeRentals : <any>null;
-        data["pendingOrders"] = this.pendingOrders !== undefined ? this.pendingOrders : <any>null;
-        data["from"] = this.from ? this.from.toISOString() : <any>null;
-        data["to"] = this.to ? this.to.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class HomeOrderStateBucketDto {
-    state!: number;
-    stateName!: string;
-    count!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.state = _data["state"] !== undefined ? _data["state"] : <any>null;
-            this.stateName = _data["stateName"] !== undefined ? _data["stateName"] : <any>null;
-            this.count = _data["count"] !== undefined ? _data["count"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeOrderStateBucketDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeOrderStateBucketDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["state"] = this.state !== undefined ? this.state : <any>null;
-        data["stateName"] = this.stateName !== undefined ? this.stateName : <any>null;
-        data["count"] = this.count !== undefined ? this.count : <any>null;
-        return data;
-    }
-}
-
-export class HomeCustomerGrowthDto {
-    granularity!: string;
-    totalCustomers!: number;
-    activeCustomers!: number;
-    inactiveCustomers!: number;
-    blockedCustomers!: number;
-    individualCustomers!: number;
-    institutionCustomers!: number;
-    newInRange!: number;
-    cashBlockedCustomers!: number;
-    series!: HomeChartPointDto[];
-    from!: Date;
-    to!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            this.granularity = _data["granularity"] !== undefined ? _data["granularity"] : <any>null;
-            this.totalCustomers = _data["totalCustomers"] !== undefined ? _data["totalCustomers"] : <any>null;
-            this.activeCustomers = _data["activeCustomers"] !== undefined ? _data["activeCustomers"] : <any>null;
-            this.inactiveCustomers = _data["inactiveCustomers"] !== undefined ? _data["inactiveCustomers"] : <any>null;
-            this.blockedCustomers = _data["blockedCustomers"] !== undefined ? _data["blockedCustomers"] : <any>null;
-            this.individualCustomers = _data["individualCustomers"] !== undefined ? _data["individualCustomers"] : <any>null;
-            this.institutionCustomers = _data["institutionCustomers"] !== undefined ? _data["institutionCustomers"] : <any>null;
-            this.newInRange = _data["newInRange"] !== undefined ? _data["newInRange"] : <any>null;
-            this.cashBlockedCustomers = _data["cashBlockedCustomers"] !== undefined ? _data["cashBlockedCustomers"] : <any>null;
-            if (Array.isArray(_data["series"])) {
-                this.series = [] as any;
-                for (let item of _data["series"])
-                    this.series!.push(HomeChartPointDto.fromJS(item));
+            if (Array.isArray(_data["topDeliveries"])) {
+                this.topDeliveries = [] as any;
+                for (let item of _data["topDeliveries"])
+                    this.topDeliveries!.push(DashboardRankDto.fromJS(item));
             }
             else {
-                this.series = <any>null;
+                this.topDeliveries = <any>null;
             }
-            this.from = _data["from"] ? new Date(_data["from"].toString()) : <any>null;
-            this.to = _data["to"] ? new Date(_data["to"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeCustomerGrowthDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeCustomerGrowthDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["granularity"] = this.granularity !== undefined ? this.granularity : <any>null;
-        data["totalCustomers"] = this.totalCustomers !== undefined ? this.totalCustomers : <any>null;
-        data["activeCustomers"] = this.activeCustomers !== undefined ? this.activeCustomers : <any>null;
-        data["inactiveCustomers"] = this.inactiveCustomers !== undefined ? this.inactiveCustomers : <any>null;
-        data["blockedCustomers"] = this.blockedCustomers !== undefined ? this.blockedCustomers : <any>null;
-        data["individualCustomers"] = this.individualCustomers !== undefined ? this.individualCustomers : <any>null;
-        data["institutionCustomers"] = this.institutionCustomers !== undefined ? this.institutionCustomers : <any>null;
-        data["newInRange"] = this.newInRange !== undefined ? this.newInRange : <any>null;
-        data["cashBlockedCustomers"] = this.cashBlockedCustomers !== undefined ? this.cashBlockedCustomers : <any>null;
-        if (Array.isArray(this.series)) {
-            data["series"] = [];
-            for (let item of this.series)
-                data["series"].push(item.toJSON());
-        }
-        data["from"] = this.from ? this.from.toISOString() : <any>null;
-        data["to"] = this.to ? this.to.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class HomePaymentsMixDto {
-    totalPaidAmount!: number;
-    paidCount!: number;
-    pendingCount!: number;
-    failedCount!: number;
-    refundedCount!: number;
-    refundedAmount!: number;
-    methods!: HomePaymentMethodSliceDto[];
-    from!: Date;
-    to!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            this.totalPaidAmount = _data["totalPaidAmount"] !== undefined ? _data["totalPaidAmount"] : <any>null;
-            this.paidCount = _data["paidCount"] !== undefined ? _data["paidCount"] : <any>null;
-            this.pendingCount = _data["pendingCount"] !== undefined ? _data["pendingCount"] : <any>null;
-            this.failedCount = _data["failedCount"] !== undefined ? _data["failedCount"] : <any>null;
-            this.refundedCount = _data["refundedCount"] !== undefined ? _data["refundedCount"] : <any>null;
-            this.refundedAmount = _data["refundedAmount"] !== undefined ? _data["refundedAmount"] : <any>null;
-            if (Array.isArray(_data["methods"])) {
-                this.methods = [] as any;
-                for (let item of _data["methods"])
-                    this.methods!.push(HomePaymentMethodSliceDto.fromJS(item));
+            if (Array.isArray(_data["topCities"])) {
+                this.topCities = [] as any;
+                for (let item of _data["topCities"])
+                    this.topCities!.push(DashboardRankDto.fromJS(item));
             }
             else {
-                this.methods = <any>null;
+                this.topCities = <any>null;
             }
-            this.from = _data["from"] ? new Date(_data["from"].toString()) : <any>null;
-            this.to = _data["to"] ? new Date(_data["to"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomePaymentsMixDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomePaymentsMixDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["totalPaidAmount"] = this.totalPaidAmount !== undefined ? this.totalPaidAmount : <any>null;
-        data["paidCount"] = this.paidCount !== undefined ? this.paidCount : <any>null;
-        data["pendingCount"] = this.pendingCount !== undefined ? this.pendingCount : <any>null;
-        data["failedCount"] = this.failedCount !== undefined ? this.failedCount : <any>null;
-        data["refundedCount"] = this.refundedCount !== undefined ? this.refundedCount : <any>null;
-        data["refundedAmount"] = this.refundedAmount !== undefined ? this.refundedAmount : <any>null;
-        if (Array.isArray(this.methods)) {
-            data["methods"] = [];
-            for (let item of this.methods)
-                data["methods"].push(item.toJSON());
-        }
-        data["from"] = this.from ? this.from.toISOString() : <any>null;
-        data["to"] = this.to ? this.to.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class HomePaymentMethodSliceDto {
-    methodId!: number;
-    methodName!: string;
-    orderCount!: number;
-    amount!: number;
-    percentage!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.methodId = _data["methodId"] !== undefined ? _data["methodId"] : <any>null;
-            this.methodName = _data["methodName"] !== undefined ? _data["methodName"] : <any>null;
-            this.orderCount = _data["orderCount"] !== undefined ? _data["orderCount"] : <any>null;
-            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
-            this.percentage = _data["percentage"] !== undefined ? _data["percentage"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomePaymentMethodSliceDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomePaymentMethodSliceDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["methodId"] = this.methodId !== undefined ? this.methodId : <any>null;
-        data["methodName"] = this.methodName !== undefined ? this.methodName : <any>null;
-        data["orderCount"] = this.orderCount !== undefined ? this.orderCount : <any>null;
-        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
-        data["percentage"] = this.percentage !== undefined ? this.percentage : <any>null;
-        return data;
-    }
-}
-
-export class HomeTreasurySnapshotDto {
-    balance!: number;
-    totalDebit!: number;
-    totalCredit!: number;
-    lastUpdated!: Date | null;
-    series!: HomeTreasuryMovementPointDto[];
-    from!: Date;
-    to!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            this.balance = _data["balance"] !== undefined ? _data["balance"] : <any>null;
-            this.totalDebit = _data["totalDebit"] !== undefined ? _data["totalDebit"] : <any>null;
-            this.totalCredit = _data["totalCredit"] !== undefined ? _data["totalCredit"] : <any>null;
-            this.lastUpdated = _data["lastUpdated"] ? new Date(_data["lastUpdated"].toString()) : <any>null;
-            if (Array.isArray(_data["series"])) {
-                this.series = [] as any;
-                for (let item of _data["series"])
-                    this.series!.push(HomeTreasuryMovementPointDto.fromJS(item));
-            }
-            else {
-                this.series = <any>null;
-            }
-            this.from = _data["from"] ? new Date(_data["from"].toString()) : <any>null;
-            this.to = _data["to"] ? new Date(_data["to"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeTreasurySnapshotDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeTreasurySnapshotDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["balance"] = this.balance !== undefined ? this.balance : <any>null;
-        data["totalDebit"] = this.totalDebit !== undefined ? this.totalDebit : <any>null;
-        data["totalCredit"] = this.totalCredit !== undefined ? this.totalCredit : <any>null;
-        data["lastUpdated"] = this.lastUpdated ? this.lastUpdated.toISOString() : <any>null;
-        if (Array.isArray(this.series)) {
-            data["series"] = [];
-            for (let item of this.series)
-                data["series"].push(item.toJSON());
-        }
-        data["from"] = this.from ? this.from.toISOString() : <any>null;
-        data["to"] = this.to ? this.to.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class HomeTreasuryMovementPointDto {
-    period!: string;
-    periodStart!: Date;
-    debit!: number;
-    credit!: number;
-    net!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.period = _data["period"] !== undefined ? _data["period"] : <any>null;
-            this.periodStart = _data["periodStart"] ? new Date(_data["periodStart"].toString()) : <any>null;
-            this.debit = _data["debit"] !== undefined ? _data["debit"] : <any>null;
-            this.credit = _data["credit"] !== undefined ? _data["credit"] : <any>null;
-            this.net = _data["net"] !== undefined ? _data["net"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeTreasuryMovementPointDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeTreasuryMovementPointDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["period"] = this.period !== undefined ? this.period : <any>null;
-        data["periodStart"] = this.periodStart ? this.periodStart.toISOString() : <any>null;
-        data["debit"] = this.debit !== undefined ? this.debit : <any>null;
-        data["credit"] = this.credit !== undefined ? this.credit : <any>null;
-        data["net"] = this.net !== undefined ? this.net : <any>null;
-        return data;
-    }
-}
-
-export class HomeCancellationsDto {
-    cancelledOrders!: number;
-    totalFees!: number;
-    paidFees!: number;
-    unpaidFees!: number;
-    series!: HomeChartPointDto[];
-    from!: Date;
-    to!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            this.cancelledOrders = _data["cancelledOrders"] !== undefined ? _data["cancelledOrders"] : <any>null;
-            this.totalFees = _data["totalFees"] !== undefined ? _data["totalFees"] : <any>null;
-            this.paidFees = _data["paidFees"] !== undefined ? _data["paidFees"] : <any>null;
-            this.unpaidFees = _data["unpaidFees"] !== undefined ? _data["unpaidFees"] : <any>null;
-            if (Array.isArray(_data["series"])) {
-                this.series = [] as any;
-                for (let item of _data["series"])
-                    this.series!.push(HomeChartPointDto.fromJS(item));
-            }
-            else {
-                this.series = <any>null;
-            }
-            this.from = _data["from"] ? new Date(_data["from"].toString()) : <any>null;
-            this.to = _data["to"] ? new Date(_data["to"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeCancellationsDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeCancellationsDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["cancelledOrders"] = this.cancelledOrders !== undefined ? this.cancelledOrders : <any>null;
-        data["totalFees"] = this.totalFees !== undefined ? this.totalFees : <any>null;
-        data["paidFees"] = this.paidFees !== undefined ? this.paidFees : <any>null;
-        data["unpaidFees"] = this.unpaidFees !== undefined ? this.unpaidFees : <any>null;
-        if (Array.isArray(this.series)) {
-            data["series"] = [];
-            for (let item of this.series)
-                data["series"].push(item.toJSON());
-        }
-        data["from"] = this.from ? this.from.toISOString() : <any>null;
-        data["to"] = this.to ? this.to.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class HomeTopPerformersDto {
-    categories!: HomeTopItemDto[];
-    subCategories!: HomeTopItemDto[];
-    from!: Date;
-    to!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["categories"])) {
-                this.categories = [] as any;
-                for (let item of _data["categories"])
-                    this.categories!.push(HomeTopItemDto.fromJS(item));
-            }
-            else {
-                this.categories = <any>null;
-            }
-            if (Array.isArray(_data["subCategories"])) {
-                this.subCategories = [] as any;
-                for (let item of _data["subCategories"])
-                    this.subCategories!.push(HomeTopItemDto.fromJS(item));
-            }
-            else {
-                this.subCategories = <any>null;
-            }
-            this.from = _data["from"] ? new Date(_data["from"].toString()) : <any>null;
-            this.to = _data["to"] ? new Date(_data["to"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeTopPerformersDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeTopPerformersDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.categories)) {
-            data["categories"] = [];
-            for (let item of this.categories)
-                data["categories"].push(item.toJSON());
-        }
-        if (Array.isArray(this.subCategories)) {
-            data["subCategories"] = [];
-            for (let item of this.subCategories)
-                data["subCategories"].push(item.toJSON());
-        }
-        data["from"] = this.from ? this.from.toISOString() : <any>null;
-        data["to"] = this.to ? this.to.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class HomeTopItemDto {
-    id!: number;
-    name!: string;
-    ordersCount!: number;
-    revenue!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
-            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
-            this.ordersCount = _data["ordersCount"] !== undefined ? _data["ordersCount"] : <any>null;
-            this.revenue = _data["revenue"] !== undefined ? _data["revenue"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeTopItemDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeTopItemDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id !== undefined ? this.id : <any>null;
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["ordersCount"] = this.ordersCount !== undefined ? this.ordersCount : <any>null;
-        data["revenue"] = this.revenue !== undefined ? this.revenue : <any>null;
-        return data;
-    }
-}
-
-export class HomeCityPerformanceDto {
-    cities!: HomeCityPerformanceItemDto[];
-    from!: Date;
-    to!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["cities"])) {
-                this.cities = [] as any;
-                for (let item of _data["cities"])
-                    this.cities!.push(HomeCityPerformanceItemDto.fromJS(item));
-            }
-            else {
-                this.cities = <any>null;
-            }
-            this.from = _data["from"] ? new Date(_data["from"].toString()) : <any>null;
-            this.to = _data["to"] ? new Date(_data["to"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeCityPerformanceDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeCityPerformanceDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.cities)) {
-            data["cities"] = [];
-            for (let item of this.cities)
-                data["cities"].push(item.toJSON());
-        }
-        data["from"] = this.from ? this.from.toISOString() : <any>null;
-        data["to"] = this.to ? this.to.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class HomeCityPerformanceItemDto {
-    cityId!: number;
-    cityName!: string;
-    ordersCount!: number;
-    revenue!: number;
-    vehiclesCount!: number;
-    availableVehicles!: number;
-    newCustomers!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.cityId = _data["cityId"] !== undefined ? _data["cityId"] : <any>null;
-            this.cityName = _data["cityName"] !== undefined ? _data["cityName"] : <any>null;
-            this.ordersCount = _data["ordersCount"] !== undefined ? _data["ordersCount"] : <any>null;
-            this.revenue = _data["revenue"] !== undefined ? _data["revenue"] : <any>null;
-            this.vehiclesCount = _data["vehiclesCount"] !== undefined ? _data["vehiclesCount"] : <any>null;
-            this.availableVehicles = _data["availableVehicles"] !== undefined ? _data["availableVehicles"] : <any>null;
-            this.newCustomers = _data["newCustomers"] !== undefined ? _data["newCustomers"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): HomeCityPerformanceItemDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new HomeCityPerformanceItemDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["cityId"] = this.cityId !== undefined ? this.cityId : <any>null;
-        data["cityName"] = this.cityName !== undefined ? this.cityName : <any>null;
-        data["ordersCount"] = this.ordersCount !== undefined ? this.ordersCount : <any>null;
-        data["revenue"] = this.revenue !== undefined ? this.revenue : <any>null;
-        data["vehiclesCount"] = this.vehiclesCount !== undefined ? this.vehiclesCount : <any>null;
-        data["availableVehicles"] = this.availableVehicles !== undefined ? this.availableVehicles : <any>null;
-        data["newCustomers"] = this.newCustomers !== undefined ? this.newCustomers : <any>null;
-        return data;
-    }
-}
-
-export class HomeRecentActivityDto {
-    recentOrders!: HomeRecentOrderDto[];
-
-    init(_data?: any) {
-        if (_data) {
             if (Array.isArray(_data["recentOrders"])) {
                 this.recentOrders = [] as any;
                 for (let item of _data["recentOrders"])
-                    this.recentOrders!.push(HomeRecentOrderDto.fromJS(item));
+                    this.recentOrders!.push(DashboardRecentOrderDto.fromJS(item));
             }
             else {
                 this.recentOrders = <any>null;
@@ -20123,15 +18918,47 @@ export class HomeRecentActivityDto {
         }
     }
 
-    static fromJS(data: any): HomeRecentActivityDto {
+    static fromJS(data: any): DashboardDto {
         data = typeof data === 'object' ? data : {};
-        let result = new HomeRecentActivityDto();
+        let result = new DashboardDto();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["from"] = this.from ? this.from.toISOString() : <any>null;
+        data["to"] = this.to ? this.to.toISOString() : <any>null;
+        data["previousFrom"] = this.previousFrom ? this.previousFrom.toISOString() : <any>null;
+        data["previousTo"] = this.previousTo ? this.previousTo.toISOString() : <any>null;
+        data["bucket"] = this.bucket !== undefined ? this.bucket : <any>null;
+        data["generatedAt"] = this.generatedAt ? this.generatedAt.toISOString() : <any>null;
+        data["profit"] = this.profit ? this.profit.toJSON() : <any>null;
+        data["position"] = this.position ? this.position.toJSON() : <any>null;
+        if (Array.isArray(this.trend)) {
+            data["trend"] = [];
+            for (let item of this.trend)
+                data["trend"].push(item.toJSON());
+        }
+        data["orders"] = this.orders ? this.orders.toJSON() : <any>null;
+        data["payments"] = this.payments ? this.payments.toJSON() : <any>null;
+        data["fleet"] = this.fleet ? this.fleet.toJSON() : <any>null;
+        data["people"] = this.people ? this.people.toJSON() : <any>null;
+        if (Array.isArray(this.topMerchants)) {
+            data["topMerchants"] = [];
+            for (let item of this.topMerchants)
+                data["topMerchants"].push(item.toJSON());
+        }
+        if (Array.isArray(this.topDeliveries)) {
+            data["topDeliveries"] = [];
+            for (let item of this.topDeliveries)
+                data["topDeliveries"].push(item.toJSON());
+        }
+        if (Array.isArray(this.topCities)) {
+            data["topCities"] = [];
+            for (let item of this.topCities)
+                data["topCities"].push(item.toJSON());
+        }
         if (Array.isArray(this.recentOrders)) {
             data["recentOrders"] = [];
             for (let item of this.recentOrders)
@@ -20141,34 +18968,531 @@ export class HomeRecentActivityDto {
     }
 }
 
-export class HomeRecentOrderDto {
+export enum DashboardBucket {
+    Day = 1,
+    Week = 2,
+    Month = 3,
+}
+
+export class DashboardProfitDto {
+    netProfit!: number;
+    previousNetProfit!: number;
+    netProfitChangePercent!: number;
+    grossBookings!: number;
+    previousGrossBookings!: number;
+    grossBookingsChangePercent!: number;
+    marginPercent!: number;
+    income!: DashboardAmountDto[];
+    costs!: DashboardAmountDto[];
+
+    init(_data?: any) {
+        if (_data) {
+            this.netProfit = _data["netProfit"] !== undefined ? _data["netProfit"] : <any>null;
+            this.previousNetProfit = _data["previousNetProfit"] !== undefined ? _data["previousNetProfit"] : <any>null;
+            this.netProfitChangePercent = _data["netProfitChangePercent"] !== undefined ? _data["netProfitChangePercent"] : <any>null;
+            this.grossBookings = _data["grossBookings"] !== undefined ? _data["grossBookings"] : <any>null;
+            this.previousGrossBookings = _data["previousGrossBookings"] !== undefined ? _data["previousGrossBookings"] : <any>null;
+            this.grossBookingsChangePercent = _data["grossBookingsChangePercent"] !== undefined ? _data["grossBookingsChangePercent"] : <any>null;
+            this.marginPercent = _data["marginPercent"] !== undefined ? _data["marginPercent"] : <any>null;
+            if (Array.isArray(_data["income"])) {
+                this.income = [] as any;
+                for (let item of _data["income"])
+                    this.income!.push(DashboardAmountDto.fromJS(item));
+            }
+            else {
+                this.income = <any>null;
+            }
+            if (Array.isArray(_data["costs"])) {
+                this.costs = [] as any;
+                for (let item of _data["costs"])
+                    this.costs!.push(DashboardAmountDto.fromJS(item));
+            }
+            else {
+                this.costs = <any>null;
+            }
+        }
+    }
+
+    static fromJS(data: any): DashboardProfitDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardProfitDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["netProfit"] = this.netProfit !== undefined ? this.netProfit : <any>null;
+        data["previousNetProfit"] = this.previousNetProfit !== undefined ? this.previousNetProfit : <any>null;
+        data["netProfitChangePercent"] = this.netProfitChangePercent !== undefined ? this.netProfitChangePercent : <any>null;
+        data["grossBookings"] = this.grossBookings !== undefined ? this.grossBookings : <any>null;
+        data["previousGrossBookings"] = this.previousGrossBookings !== undefined ? this.previousGrossBookings : <any>null;
+        data["grossBookingsChangePercent"] = this.grossBookingsChangePercent !== undefined ? this.grossBookingsChangePercent : <any>null;
+        data["marginPercent"] = this.marginPercent !== undefined ? this.marginPercent : <any>null;
+        if (Array.isArray(this.income)) {
+            data["income"] = [];
+            for (let item of this.income)
+                data["income"].push(item.toJSON());
+        }
+        if (Array.isArray(this.costs)) {
+            data["costs"] = [];
+            for (let item of this.costs)
+                data["costs"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export class DashboardAmountDto {
+    key!: string;
+    amount!: number;
+    count!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.key = _data["key"] !== undefined ? _data["key"] : <any>null;
+            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
+            this.count = _data["count"] !== undefined ? _data["count"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DashboardAmountDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardAmountDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["key"] = this.key !== undefined ? this.key : <any>null;
+        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
+        data["count"] = this.count !== undefined ? this.count : <any>null;
+        return data;
+    }
+}
+
+export class DashboardPositionDto {
+    owedToCompany!: number;
+    companyOwes!: number;
+    netPosition!: number;
+    treasuryBalance!: number;
+    owedToCompanyItems!: DashboardAmountDto[];
+    companyOwesItems!: DashboardAmountDto[];
+    topDebtors!: DashboardPartyDto[];
+    topCreditors!: DashboardPartyDto[];
+
+    init(_data?: any) {
+        if (_data) {
+            this.owedToCompany = _data["owedToCompany"] !== undefined ? _data["owedToCompany"] : <any>null;
+            this.companyOwes = _data["companyOwes"] !== undefined ? _data["companyOwes"] : <any>null;
+            this.netPosition = _data["netPosition"] !== undefined ? _data["netPosition"] : <any>null;
+            this.treasuryBalance = _data["treasuryBalance"] !== undefined ? _data["treasuryBalance"] : <any>null;
+            if (Array.isArray(_data["owedToCompanyItems"])) {
+                this.owedToCompanyItems = [] as any;
+                for (let item of _data["owedToCompanyItems"])
+                    this.owedToCompanyItems!.push(DashboardAmountDto.fromJS(item));
+            }
+            else {
+                this.owedToCompanyItems = <any>null;
+            }
+            if (Array.isArray(_data["companyOwesItems"])) {
+                this.companyOwesItems = [] as any;
+                for (let item of _data["companyOwesItems"])
+                    this.companyOwesItems!.push(DashboardAmountDto.fromJS(item));
+            }
+            else {
+                this.companyOwesItems = <any>null;
+            }
+            if (Array.isArray(_data["topDebtors"])) {
+                this.topDebtors = [] as any;
+                for (let item of _data["topDebtors"])
+                    this.topDebtors!.push(DashboardPartyDto.fromJS(item));
+            }
+            else {
+                this.topDebtors = <any>null;
+            }
+            if (Array.isArray(_data["topCreditors"])) {
+                this.topCreditors = [] as any;
+                for (let item of _data["topCreditors"])
+                    this.topCreditors!.push(DashboardPartyDto.fromJS(item));
+            }
+            else {
+                this.topCreditors = <any>null;
+            }
+        }
+    }
+
+    static fromJS(data: any): DashboardPositionDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardPositionDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["owedToCompany"] = this.owedToCompany !== undefined ? this.owedToCompany : <any>null;
+        data["companyOwes"] = this.companyOwes !== undefined ? this.companyOwes : <any>null;
+        data["netPosition"] = this.netPosition !== undefined ? this.netPosition : <any>null;
+        data["treasuryBalance"] = this.treasuryBalance !== undefined ? this.treasuryBalance : <any>null;
+        if (Array.isArray(this.owedToCompanyItems)) {
+            data["owedToCompanyItems"] = [];
+            for (let item of this.owedToCompanyItems)
+                data["owedToCompanyItems"].push(item.toJSON());
+        }
+        if (Array.isArray(this.companyOwesItems)) {
+            data["companyOwesItems"] = [];
+            for (let item of this.companyOwesItems)
+                data["companyOwesItems"].push(item.toJSON());
+        }
+        if (Array.isArray(this.topDebtors)) {
+            data["topDebtors"] = [];
+            for (let item of this.topDebtors)
+                data["topDebtors"].push(item.toJSON());
+        }
+        if (Array.isArray(this.topCreditors)) {
+            data["topCreditors"] = [];
+            for (let item of this.topCreditors)
+                data["topCreditors"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export class DashboardPartyDto {
+    partyType!: LedgerPartyType;
+    partyId!: number;
+    name!: string;
+    amount!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.partyType = _data["partyType"] !== undefined ? _data["partyType"] : <any>null;
+            this.partyId = _data["partyId"] !== undefined ? _data["partyId"] : <any>null;
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DashboardPartyDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardPartyDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["partyType"] = this.partyType !== undefined ? this.partyType : <any>null;
+        data["partyId"] = this.partyId !== undefined ? this.partyId : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
+        return data;
+    }
+}
+
+export class DashboardTrendPointDto {
+    date!: Date;
+    netProfit!: number;
+    grossBookings!: number;
+    orders!: number;
+    completed!: number;
+    cancelled!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>null;
+            this.netProfit = _data["netProfit"] !== undefined ? _data["netProfit"] : <any>null;
+            this.grossBookings = _data["grossBookings"] !== undefined ? _data["grossBookings"] : <any>null;
+            this.orders = _data["orders"] !== undefined ? _data["orders"] : <any>null;
+            this.completed = _data["completed"] !== undefined ? _data["completed"] : <any>null;
+            this.cancelled = _data["cancelled"] !== undefined ? _data["cancelled"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DashboardTrendPointDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardTrendPointDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["date"] = this.date ? this.date.toISOString() : <any>null;
+        data["netProfit"] = this.netProfit !== undefined ? this.netProfit : <any>null;
+        data["grossBookings"] = this.grossBookings !== undefined ? this.grossBookings : <any>null;
+        data["orders"] = this.orders !== undefined ? this.orders : <any>null;
+        data["completed"] = this.completed !== undefined ? this.completed : <any>null;
+        data["cancelled"] = this.cancelled !== undefined ? this.cancelled : <any>null;
+        return data;
+    }
+}
+
+export class DashboardOrdersDto {
+    total!: number;
+    previousTotal!: number;
+    totalChangePercent!: number;
+    completed!: number;
+    cancelled!: number;
+    completionRatePercent!: number;
+    cancellationRatePercent!: number;
+    urgent!: number;
+    averageOrderValue!: number;
+    averageProfitPerOrder!: number;
+    pipeline!: DashboardStateCountDto[];
+    openNow!: number;
+    withCustomersNow!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.total = _data["total"] !== undefined ? _data["total"] : <any>null;
+            this.previousTotal = _data["previousTotal"] !== undefined ? _data["previousTotal"] : <any>null;
+            this.totalChangePercent = _data["totalChangePercent"] !== undefined ? _data["totalChangePercent"] : <any>null;
+            this.completed = _data["completed"] !== undefined ? _data["completed"] : <any>null;
+            this.cancelled = _data["cancelled"] !== undefined ? _data["cancelled"] : <any>null;
+            this.completionRatePercent = _data["completionRatePercent"] !== undefined ? _data["completionRatePercent"] : <any>null;
+            this.cancellationRatePercent = _data["cancellationRatePercent"] !== undefined ? _data["cancellationRatePercent"] : <any>null;
+            this.urgent = _data["urgent"] !== undefined ? _data["urgent"] : <any>null;
+            this.averageOrderValue = _data["averageOrderValue"] !== undefined ? _data["averageOrderValue"] : <any>null;
+            this.averageProfitPerOrder = _data["averageProfitPerOrder"] !== undefined ? _data["averageProfitPerOrder"] : <any>null;
+            if (Array.isArray(_data["pipeline"])) {
+                this.pipeline = [] as any;
+                for (let item of _data["pipeline"])
+                    this.pipeline!.push(DashboardStateCountDto.fromJS(item));
+            }
+            else {
+                this.pipeline = <any>null;
+            }
+            this.openNow = _data["openNow"] !== undefined ? _data["openNow"] : <any>null;
+            this.withCustomersNow = _data["withCustomersNow"] !== undefined ? _data["withCustomersNow"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DashboardOrdersDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardOrdersDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["total"] = this.total !== undefined ? this.total : <any>null;
+        data["previousTotal"] = this.previousTotal !== undefined ? this.previousTotal : <any>null;
+        data["totalChangePercent"] = this.totalChangePercent !== undefined ? this.totalChangePercent : <any>null;
+        data["completed"] = this.completed !== undefined ? this.completed : <any>null;
+        data["cancelled"] = this.cancelled !== undefined ? this.cancelled : <any>null;
+        data["completionRatePercent"] = this.completionRatePercent !== undefined ? this.completionRatePercent : <any>null;
+        data["cancellationRatePercent"] = this.cancellationRatePercent !== undefined ? this.cancellationRatePercent : <any>null;
+        data["urgent"] = this.urgent !== undefined ? this.urgent : <any>null;
+        data["averageOrderValue"] = this.averageOrderValue !== undefined ? this.averageOrderValue : <any>null;
+        data["averageProfitPerOrder"] = this.averageProfitPerOrder !== undefined ? this.averageProfitPerOrder : <any>null;
+        if (Array.isArray(this.pipeline)) {
+            data["pipeline"] = [];
+            for (let item of this.pipeline)
+                data["pipeline"].push(item.toJSON());
+        }
+        data["openNow"] = this.openNow !== undefined ? this.openNow : <any>null;
+        data["withCustomersNow"] = this.withCustomersNow !== undefined ? this.withCustomersNow : <any>null;
+        return data;
+    }
+}
+
+export class DashboardStateCountDto {
+    state!: OrderState;
+    count!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.state = _data["state"] !== undefined ? _data["state"] : <any>null;
+            this.count = _data["count"] !== undefined ? _data["count"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DashboardStateCountDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardStateCountDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["state"] = this.state !== undefined ? this.state : <any>null;
+        data["count"] = this.count !== undefined ? this.count : <any>null;
+        return data;
+    }
+}
+
+export class DashboardPaymentsDto {
+    cashPaid!: number;
+    payPalPaid!: number;
+    pending!: number;
+    failed!: number;
+    refunded!: number;
+    paidCount!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.cashPaid = _data["cashPaid"] !== undefined ? _data["cashPaid"] : <any>null;
+            this.payPalPaid = _data["payPalPaid"] !== undefined ? _data["payPalPaid"] : <any>null;
+            this.pending = _data["pending"] !== undefined ? _data["pending"] : <any>null;
+            this.failed = _data["failed"] !== undefined ? _data["failed"] : <any>null;
+            this.refunded = _data["refunded"] !== undefined ? _data["refunded"] : <any>null;
+            this.paidCount = _data["paidCount"] !== undefined ? _data["paidCount"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DashboardPaymentsDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardPaymentsDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["cashPaid"] = this.cashPaid !== undefined ? this.cashPaid : <any>null;
+        data["payPalPaid"] = this.payPalPaid !== undefined ? this.payPalPaid : <any>null;
+        data["pending"] = this.pending !== undefined ? this.pending : <any>null;
+        data["failed"] = this.failed !== undefined ? this.failed : <any>null;
+        data["refunded"] = this.refunded !== undefined ? this.refunded : <any>null;
+        data["paidCount"] = this.paidCount !== undefined ? this.paidCount : <any>null;
+        return data;
+    }
+}
+
+export class DashboardFleetDto {
+    total!: number;
+    available!: number;
+    rented!: number;
+    underMaintenance!: number;
+    utilizationPercent!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.total = _data["total"] !== undefined ? _data["total"] : <any>null;
+            this.available = _data["available"] !== undefined ? _data["available"] : <any>null;
+            this.rented = _data["rented"] !== undefined ? _data["rented"] : <any>null;
+            this.underMaintenance = _data["underMaintenance"] !== undefined ? _data["underMaintenance"] : <any>null;
+            this.utilizationPercent = _data["utilizationPercent"] !== undefined ? _data["utilizationPercent"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DashboardFleetDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardFleetDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["total"] = this.total !== undefined ? this.total : <any>null;
+        data["available"] = this.available !== undefined ? this.available : <any>null;
+        data["rented"] = this.rented !== undefined ? this.rented : <any>null;
+        data["underMaintenance"] = this.underMaintenance !== undefined ? this.underMaintenance : <any>null;
+        data["utilizationPercent"] = this.utilizationPercent !== undefined ? this.utilizationPercent : <any>null;
+        return data;
+    }
+}
+
+export class DashboardPeopleDto {
+    customers!: number;
+    newCustomers!: number;
+    newCustomersChangePercent!: number;
+    activeMerchants!: number;
+    activeDeliveries!: number;
+    onlineDeliveries!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.customers = _data["customers"] !== undefined ? _data["customers"] : <any>null;
+            this.newCustomers = _data["newCustomers"] !== undefined ? _data["newCustomers"] : <any>null;
+            this.newCustomersChangePercent = _data["newCustomersChangePercent"] !== undefined ? _data["newCustomersChangePercent"] : <any>null;
+            this.activeMerchants = _data["activeMerchants"] !== undefined ? _data["activeMerchants"] : <any>null;
+            this.activeDeliveries = _data["activeDeliveries"] !== undefined ? _data["activeDeliveries"] : <any>null;
+            this.onlineDeliveries = _data["onlineDeliveries"] !== undefined ? _data["onlineDeliveries"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DashboardPeopleDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardPeopleDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["customers"] = this.customers !== undefined ? this.customers : <any>null;
+        data["newCustomers"] = this.newCustomers !== undefined ? this.newCustomers : <any>null;
+        data["newCustomersChangePercent"] = this.newCustomersChangePercent !== undefined ? this.newCustomersChangePercent : <any>null;
+        data["activeMerchants"] = this.activeMerchants !== undefined ? this.activeMerchants : <any>null;
+        data["activeDeliveries"] = this.activeDeliveries !== undefined ? this.activeDeliveries : <any>null;
+        data["onlineDeliveries"] = this.onlineDeliveries !== undefined ? this.onlineDeliveries : <any>null;
+        return data;
+    }
+}
+
+export class DashboardRankDto {
+    id!: number;
+    name!: string;
+    amount!: number;
+    count!: number;
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
+            this.count = _data["count"] !== undefined ? _data["count"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): DashboardRankDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DashboardRankDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id !== undefined ? this.id : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
+        data["count"] = this.count !== undefined ? this.count : <any>null;
+        return data;
+    }
+}
+
+export class DashboardRecentOrderDto {
     orderId!: number;
     orderCode!: string;
-    customerName!: string;
-    subCategoryName!: string;
-    cityName!: string;
+    customer!: string;
+    city!: string;
+    state!: OrderState;
     total!: number;
-    orderState!: number;
-    orderStateName!: string;
     createdDate!: Date;
 
     init(_data?: any) {
         if (_data) {
             this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
             this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
-            this.customerName = _data["customerName"] !== undefined ? _data["customerName"] : <any>null;
-            this.subCategoryName = _data["subCategoryName"] !== undefined ? _data["subCategoryName"] : <any>null;
-            this.cityName = _data["cityName"] !== undefined ? _data["cityName"] : <any>null;
+            this.customer = _data["customer"] !== undefined ? _data["customer"] : <any>null;
+            this.city = _data["city"] !== undefined ? _data["city"] : <any>null;
+            this.state = _data["state"] !== undefined ? _data["state"] : <any>null;
             this.total = _data["total"] !== undefined ? _data["total"] : <any>null;
-            this.orderState = _data["orderState"] !== undefined ? _data["orderState"] : <any>null;
-            this.orderStateName = _data["orderStateName"] !== undefined ? _data["orderStateName"] : <any>null;
             this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
         }
     }
 
-    static fromJS(data: any): HomeRecentOrderDto {
+    static fromJS(data: any): DashboardRecentOrderDto {
         data = typeof data === 'object' ? data : {};
-        let result = new HomeRecentOrderDto();
+        let result = new DashboardRecentOrderDto();
         result.init(data);
         return result;
     }
@@ -20177,12 +19501,10 @@ export class HomeRecentOrderDto {
         data = typeof data === 'object' ? data : {};
         data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
         data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
-        data["customerName"] = this.customerName !== undefined ? this.customerName : <any>null;
-        data["subCategoryName"] = this.subCategoryName !== undefined ? this.subCategoryName : <any>null;
-        data["cityName"] = this.cityName !== undefined ? this.cityName : <any>null;
+        data["customer"] = this.customer !== undefined ? this.customer : <any>null;
+        data["city"] = this.city !== undefined ? this.city : <any>null;
+        data["state"] = this.state !== undefined ? this.state : <any>null;
         data["total"] = this.total !== undefined ? this.total : <any>null;
-        data["orderState"] = this.orderState !== undefined ? this.orderState : <any>null;
-        data["orderStateName"] = this.orderStateName !== undefined ? this.orderStateName : <any>null;
         data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
         return data;
     }

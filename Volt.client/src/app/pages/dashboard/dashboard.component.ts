@@ -1,494 +1,474 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  computed,
+  effect,
+  inject,
+  signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
+import { Subscription } from 'rxjs';
+import { Chart, registerables, TooltipItem } from 'chart.js';
 import {
   AdminHomeClient,
-  HomeCancellationsDto,
-  HomeCityPerformanceDto,
-  HomeCustomerGrowthDto,
-  HomeOrderPipelineDto,
-  HomePaymentsMixDto,
-  HomeRecentActivityDto,
-  HomeRevenueTrendDto,
-  HomeSummaryDto,
-  HomeTopPerformersDto,
-  HomeTreasurySnapshotDto
+  CityClient,
+  DashboardAmountDto,
+  DashboardBucket,
+  DashboardDto,
+  DashboardTrendPointDto,
+  LedgerPartyType,
+  OrderState
 } from '../../core/services/clientAPI';
 import { LocaleService } from '../../core/services/locale.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
-import { VoltChartComponent, VoltChartDataset } from '../../shared/components/volt-chart/volt-chart.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { MultiSelectComponent, MultiSelectOption } from '../../shared/components/multi-select/multi-select.component';
 
-type SectionKey =
-  | 'summary'
-  | 'revenue'
-  | 'pipeline'
-  | 'customers'
-  | 'payments'
-  | 'treasury'
-  | 'cancellations'
-  | 'top'
-  | 'cities'
-  | 'recent';
+Chart.register(...registerables);
 
-interface DateRange {
-  from: string;
-  to: string;
+type PresetKey = 'today' | '7d' | '30d' | 'month' | 'lastMonth' | 'ytd' | 'custom';
+type TrendMetric = 'profit' | 'bookings' | 'orders';
+
+interface Preset {
+  key: Exclude<PresetKey, 'custom'>;
+  labelKey: string;
 }
 
-type PresetKey = '7d' | '30d' | '90d' | 'ytd';
-
-interface Sparkline {
-  line: string;
-  area: string;
+interface BarRow {
+  key: string;
+  labelKey: string;
+  amount: number;
+  count?: number;
+  share: number;
 }
+
+const ISO = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, VoltChartComponent, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, HasPermissionDirective, MultiSelectComponent],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit, OnDestroy {
-  private readonly localeService = inject(LocaleService);
-  private readonly authService = inject(AuthService);
+export class DashboardComponent implements OnInit, AfterViewInit {
+  @ViewChild('trendCanvas') trendCanvas?: ElementRef<HTMLCanvasElement>;
 
-  readonly today = new Date();
-  readonly userName: string = this.authService.getUserData()?.userName || '';
-  readonly presets: { key: PresetKey; labelKey: string }[] = [
-    { key: '7d', labelKey: 'dashboard.preset7d' },
-    { key: '30d', labelKey: 'dashboard.preset30d' },
-    { key: '90d', labelKey: 'dashboard.preset90d' },
-    { key: 'ytd', labelKey: 'dashboard.presetYtd' }
+  private readonly client = inject(AdminHomeClient);
+  private readonly cityClient = inject(CityClient);
+  private readonly locale = inject(LocaleService);
+  private readonly theme = inject(ThemeService);
+  private readonly auth = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly OrderState = OrderState;
+  readonly PartyType = LedgerPartyType;
+
+  readonly presets: Preset[] = [
+    { key: 'today', labelKey: 'dash.preset.today' },
+    { key: '7d', labelKey: 'dash.preset.7d' },
+    { key: '30d', labelKey: 'dash.preset.30d' },
+    { key: 'month', labelKey: 'dash.preset.month' },
+    { key: 'lastMonth', labelKey: 'dash.preset.lastMonth' },
+    { key: 'ytd', labelKey: 'dash.preset.ytd' }
   ];
-  /** One period drives every section on the page. */
-  globalRange: DateRange = this.defaultRange();
-  activePreset: PresetKey | null = '30d';
-  revenueSpark: Sparkline | null = null;
-  /** Which headline metric the main chart shows. */
-  activeMetric: 'revenue' | 'orders' | 'customers' = 'revenue';
-  ordersDatasets: VoltChartDataset[] = [];
-  private readonly subs = new Map<SectionKey, Subscription>();
 
-  ranges: Record<Exclude<SectionKey, 'recent'>, DateRange> = {
-    summary: this.defaultRange(),
-    revenue: this.defaultRange(),
-    pipeline: this.defaultRange(),
-    customers: this.defaultRange(),
-    payments: this.defaultRange(),
-    treasury: this.defaultRange(),
-    cancellations: this.defaultRange(),
-    top: this.defaultRange(),
-    cities: this.defaultRange()
-  };
+  readonly userName = this.auth.getUserData()?.userName || '';
+  readonly greetingKey = this.resolveGreeting();
 
-  loading: Partial<Record<SectionKey, boolean>> = {};
+  preset = signal<PresetKey>('30d');
+  fromDate = '';
+  toDate = '';
+  cityIds = signal<number[]>([]);
+  cityOptions = signal<MultiSelectOption[]>([]);
 
-  summary: HomeSummaryDto | null = null;
-  revenue: HomeRevenueTrendDto | null = null;
-  pipeline: HomeOrderPipelineDto | null = null;
-  customers: HomeCustomerGrowthDto | null = null;
-  payments: HomePaymentsMixDto | null = null;
-  treasury: HomeTreasurySnapshotDto | null = null;
-  cancellations: HomeCancellationsDto | null = null;
-  topPerformers: HomeTopPerformersDto | null = null;
-  cityPerformance: HomeCityPerformanceDto | null = null;
-  recentActivity: HomeRecentActivityDto | null = null;
+  data = signal<DashboardDto | null>(null);
+  loading = signal(false);
+  error = signal('');
+  metric = signal<TrendMetric>('profit');
 
-  revenueLabels: string[] = [];
-  revenueDatasets: VoltChartDataset[] = [];
-  pipelineLabels: string[] = [];
-  pipelineDatasets: VoltChartDataset[] = [];
-  customerLabels: string[] = [];
-  customerDatasets: VoltChartDataset[] = [];
-  paymentLabels: string[] = [];
-  paymentDatasets: VoltChartDataset[] = [];
-  treasuryLabels: string[] = [];
-  treasuryDatasets: VoltChartDataset[] = [];
-  cancelLabels: string[] = [];
-  cancelDatasets: VoltChartDataset[] = [];
-  cityLabels: string[] = [];
-  cityDatasets: VoltChartDataset[] = [];
+  private chart: Chart | null = null;
+  private viewReady = false;
+  private request?: Subscription;
 
-  constructor(
-    private homeClient: AdminHomeClient,
-    private toastr: ToastrService
-  ) {}
+  // ---------- Derived view models ----------
+  readonly profit = computed(() => this.data()?.profit);
+  readonly position = computed(() => this.data()?.position);
+  readonly orders = computed(() => this.data()?.orders);
+
+  readonly incomeRows = computed<BarRow[]>(() => this.toRows(this.profit()?.income ?? [], 'dash.income.'));
+  readonly costRows = computed<BarRow[]>(() => this.toRows(this.profit()?.costs ?? [], 'dash.cost.'));
+  readonly grossIncome = computed(() => (this.profit()?.income ?? []).reduce((s, i) => s + i.amount, 0));
+  readonly totalCosts = computed(() => (this.profit()?.costs ?? []).reduce((s, i) => s + i.amount, 0));
+
+  readonly owedRows = computed<BarRow[]>(() => this.toRows(this.position()?.owedToCompanyItems ?? [], 'dash.owed.'));
+  readonly oweRows = computed<BarRow[]>(() => this.toRows(this.position()?.companyOwesItems ?? [], 'dash.owe.'));
+
+  readonly boards = computed(() => {
+    const d = this.data();
+    return [
+      { key: 'merchants', titleKey: 'dash.topMerchants', subKey: 'dash.topMerchantsSub', list: d?.topMerchants ?? [] },
+      { key: 'riders', titleKey: 'dash.topRiders', subKey: 'dash.topRidersSub', list: d?.topDeliveries ?? [] },
+      { key: 'cities', titleKey: 'dash.topCities', subKey: 'dash.topCitiesSub', list: d?.topCities ?? [] }
+    ];
+  });
+
+  readonly pipelineMax = computed(() => Math.max(1, ...(this.orders()?.pipeline ?? []).map(p => p.count)));
+
+  readonly paymentsTotal = computed(() => {
+    const p = this.data()?.payments;
+    return p ? p.cashPaid + p.payPalPaid : 0;
+  });
+
+  readonly cashShare = computed(() => {
+    const p = this.data()?.payments;
+    const total = this.paymentsTotal();
+    return p && total > 0 ? (p.cashPaid / total) * 100 : 0;
+  });
+
+  readonly periodLabel = computed(() => {
+    const d = this.data();
+    if (!d) return '';
+    return `${this.formatDate(d.from)} – ${this.formatDate(d.to)}`;
+  });
+
+  readonly previousLabel = computed(() => {
+    const d = this.data();
+    if (!d) return '';
+    return `${this.formatDate(d.previousFrom)} – ${this.formatDate(d.previousTo)}`;
+  });
+
+  constructor() {
+    // Re-draw the chart when the language or theme changes (labels and colors live in the canvas).
+    effect(() => {
+      this.locale.locale();
+      this.theme.theme();
+      this.metric();
+      const d = this.data();
+      if (d) queueMicrotask(() => this.renderChart());
+    });
+    this.destroyRef.onDestroy(() => {
+      this.request?.unsubscribe();
+      this.chart?.destroy();
+    });
+  }
 
   ngOnInit(): void {
-    this.loadSummary();
-    this.loadRevenue();
-    this.loadPipeline();
-    this.loadCustomers();
-    this.loadPayments();
-    this.loadTreasury();
-    this.loadCancellations();
-    this.loadTop();
-    this.loadCities();
-    this.loadRecent();
-  }
-
-  ngOnDestroy(): void {
-    this.subs.forEach(sub => sub.unsubscribe());
-    this.subs.clear();
-  }
-
-  applyPreset(key: PresetKey): void {
-    const to = new Date();
-    const from = new Date();
-    if (key === 'ytd') {
-      from.setMonth(0, 1);
-    } else {
-      from.setDate(from.getDate() - ({ '7d': 6, '30d': 29, '90d': 89 }[key]));
-    }
-    this.globalRange = { from: this.toInputDate(from), to: this.toInputDate(to) };
-    this.activePreset = key;
-    this.reloadAll();
-  }
-
-  onGlobalRangeChange(): void {
-    this.activePreset = null;
-    this.reloadAll();
-  }
-
-  private reloadAll(): void {
-    if (!this.resolveRange(this.globalRange)) return;
-    (Object.keys(this.ranges) as Exclude<SectionKey, 'recent'>[]).forEach(key => {
-      this.ranges[key] = { ...this.globalRange };
-      this.onRangeChange(key);
+    this.cityClient.getAll(1, 500).subscribe({
+      next: res => this.cityOptions.set((res.items || []).map(c => ({ value: c.cityId, label: c.name })))
     });
+    this.applyPreset('30d');
   }
 
-  onRangeChange(section: Exclude<SectionKey, 'recent'>): void {
-    switch (section) {
-      case 'summary': this.loadSummary(); break;
-      case 'revenue': this.loadRevenue(); break;
-      case 'pipeline': this.loadPipeline(); break;
-      case 'customers': this.loadCustomers(); break;
-      case 'payments': this.loadPayments(); break;
-      case 'treasury': this.loadTreasury(); break;
-      case 'cancellations': this.loadCancellations(); break;
-      case 'top': this.loadTop(); break;
-      case 'cities': this.loadCities(); break;
-    }
+  ngAfterViewInit(): void {
+    this.viewReady = true;
+    this.renderChart();
   }
 
-  loadSummary(): void {
-    const range = this.resolveRange(this.ranges.summary);
-    if (!range) return;
-    this.run('summary', this.homeClient.getSummary(range.from, range.to), data => {
-      this.summary = data;
-    });
-  }
-
-  loadRevenue(): void {
-    const range = this.resolveRange(this.ranges.revenue);
-    if (!range) return;
-    this.run('revenue', this.homeClient.getRevenueTrend(range.from, range.to, null, this.granularityFor(range.from, range.to)), data => {
-      this.revenue = data;
-      const series = data.series || [];
-      this.revenueLabels = series.map(p => p.period);
-      this.revenueDatasets = [{
-        label: this.localeService.translate('dashboard.revenue'),
-        data: series.map(p => p.value || 0),
-        color: '#e10600',
-        fill: true
-      }];
-      this.revenueSpark = this.buildSpark(series.map(p => p.value || 0));
-      this.ordersDatasets = [{
-        label: this.localeService.translate('dashboard.orders'),
-        data: series.map(p => p.count || 0),
-        color: '#2459c7'
-      }];
-    });
-  }
-
-  loadPipeline(): void {
-    const range = this.resolveRange(this.ranges.pipeline);
-    if (!range) return;
-    this.run('pipeline', this.homeClient.getOrderPipeline(range.from, range.to), data => {
-      this.pipeline = data;
-      const states = data.byState || [];
-      this.pipelineLabels = states.map(s => s.stateName || String(s.state));
-      this.pipelineDatasets = [{
-        label: this.localeService.translate('dashboard.orders'),
-        data: states.map(s => s.count || 0)
-      }];
-    });
-  }
-
-  loadCustomers(): void {
-    const range = this.resolveRange(this.ranges.customers);
-    if (!range) return;
-    this.run('customers', this.homeClient.getCustomerGrowth(range.from, range.to, null, this.granularityFor(range.from, range.to)), data => {
-      this.customers = data;
-      const series = data.series || [];
-      this.customerLabels = series.map(p => p.period);
-      this.customerDatasets = [{
-        label: this.localeService.translate('dashboard.newCustomers'),
-        data: series.map(p => p.count || p.value || 0),
-        color: '#2459c7',
-        fill: true
-      }];
-    });
-  }
-
-  loadPayments(): void {
-    const range = this.resolveRange(this.ranges.payments);
-    if (!range) return;
-    this.run('payments', this.homeClient.getPaymentsMix(range.from, range.to), data => {
-      this.payments = data;
-      const methods = data.methods || [];
-      this.paymentLabels = methods.map(m => m.methodName || String(m.methodId ?? ''));
-      this.paymentDatasets = [{
-        label: this.localeService.translate('dashboard.payments'),
-        data: methods.map(m => m.amount || 0)
-      }];
-    });
-  }
-
-  loadTreasury(): void {
-    const range = this.resolveRange(this.ranges.treasury);
-    if (!range) return;
-    this.run('treasury', this.homeClient.getTreasurySnapshot(range.from, range.to, this.granularityFor(range.from, range.to)), data => {
-      this.treasury = data;
-      const series = data.series || [];
-      this.treasuryLabels = series.map(p => p.period);
-      this.treasuryDatasets = [
-        {
-          label: this.localeService.translate('dashboard.debit'),
-          data: series.map(p => p.debit || 0),
-          color: '#e10600'
-        },
-        {
-          label: this.localeService.translate('dashboard.credit'),
-          data: series.map(p => p.credit || 0),
-          color: '#138a4a'
-        }
-      ];
-    });
-  }
-
-  loadCancellations(): void {
-    const range = this.resolveRange(this.ranges.cancellations);
-    if (!range) return;
-    this.run('cancellations', this.homeClient.getCancellations(range.from, range.to, this.granularityFor(range.from, range.to)), data => {
-      this.cancellations = data;
-      const series = data.series || [];
-      this.cancelLabels = series.map(p => p.period);
-      this.cancelDatasets = [{
-        label: this.localeService.translate('dashboard.cancellationFees'),
-        data: series.map(p => p.value || 0),
-        color: '#b26b00',
-        fill: true
-      }];
-    });
-  }
-
-  loadTop(): void {
-    const range = this.resolveRange(this.ranges.top);
-    if (!range) return;
-    this.run('top', this.homeClient.getTopPerformers(range.from, range.to, null, 5), data => {
-      this.topPerformers = data;
-    });
-  }
-
-  loadCities(): void {
-    const range = this.resolveRange(this.ranges.cities);
-    if (!range) return;
-    this.run('cities', this.homeClient.getCityPerformance(range.from, range.to), data => {
-      this.cityPerformance = data;
-      const cities = (data.cities || []).slice(0, 8);
-      this.cityLabels = cities.map(c => c.cityName);
-      this.cityDatasets = [{
-        label: this.localeService.translate('dashboard.revenue'),
-        data: cities.map(c => c.revenue || 0),
-        color: '#e10600'
-      }];
-    });
-  }
-
-  loadRecent(): void {
-    this.run('recent', this.homeClient.getRecentActivity(10), data => {
-      this.recentActivity = data;
-    });
-  }
-
-  formatCurrency(amount: number | null | undefined): string {
-    const currency = this.localeService.translate('common.currency');
-    if (amount == null) return `0 ${currency}`;
-    return `${new Intl.NumberFormat(this.localeService.locale() === 'ar' ? 'ar-EG' : 'en-EG', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount)} ${currency}`;
-  }
-
-  /** Amount without the currency label (the template renders it smaller). */
-  formatAmount(amount: number | null | undefined): string {
-    return new Intl.NumberFormat(this.localeService.locale() === 'ar' ? 'ar-EG' : 'en-EG', {
-      maximumFractionDigits: 0
-    }).format(amount ?? 0);
-  }
-
-  formatPlainPercent(value: number | null | undefined): string {
-    return (value ?? 0).toFixed(value != null && value % 1 !== 0 ? 1 : 0);
-  }
-
-  clampPercent(value: number | null | undefined): number {
-    return Math.max(0, Math.min(100, value ?? 0));
-  }
-
-  cityBarWidth(revenue: number | null | undefined): number {
-    const max = Math.max(1, ...(this.cityPerformance?.cities || []).map(c => c.revenue || 0));
-    return Math.max(3, Math.round(((revenue || 0) / max) * 100));
-  }
-
-  formatNumber(value: number | null | undefined): string {
-    if (value == null) return '0';
-    return new Intl.NumberFormat(this.localeService.locale() === 'ar' ? 'ar-EG' : 'en-EG').format(value);
-  }
-
-  formatPercent(value: number | null | undefined): string {
-    if (value == null) return '0%';
-    const sign = value > 0 ? '+' : '';
-    return `${sign}${value.toFixed(1)}%`;
-  }
-
-  formatDate(date: Date | string | null | undefined): string {
-    if (!date) return '—';
-    const d = typeof date === 'string' ? new Date(date) : date;
-    if (isNaN(d.getTime())) return '—';
-    return new Intl.DateTimeFormat(this.localeService.locale() === 'ar' ? 'ar-EG' : 'en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(d);
-  }
-
-  deltaClass(value: number | null | undefined): string {
-    if (value == null || value === 0) return 'home-kpi__delta--flat';
-    return value > 0 ? 'home-kpi__delta--up' : 'home-kpi__delta--down';
-  }
-
-  maxTopRevenue(): number {
-    const items = [
-      ...(this.topPerformers?.categories || []),
-      ...(this.topPerformers?.subCategories || [])
-    ];
-    return Math.max(1, ...items.map(i => i.revenue || 0));
-  }
-
-  barWidth(revenue: number | null | undefined): number {
-    return Math.max(4, Math.round(((revenue || 0) / this.maxTopRevenue()) * 100));
-  }
-
-  stateClass(stateName: string | null | undefined): string {
-    const s = (stateName || '').toLowerCase();
-    if (s.includes('pending')) return 'home-badge--pending';
-    if (s.includes('confirm')) return 'home-badge--confirmed';
-    if (s.includes('assign')) return 'home-badge--assigned';
-    if (s.includes('way') || s.includes('deliver')) return 'home-badge--onway';
-    if (s.includes('receiv') || s.includes('rent')) return 'home-badge--active';
-    if (s.includes('complete')) return 'home-badge--completed';
-    if (s.includes('cancel')) return 'home-badge--cancelled';
-    return 'home-badge--default';
-  }
-
-  private run<T>(key: SectionKey, source: Observable<T>, apply: (data: T) => void): void {
-    this.subs.get(key)?.unsubscribe();
-    this.loading[key] = true;
-    this.subs.set(key, source.subscribe({
-      next: data => {
-        apply(data);
-        this.loading[key] = false;
-      },
-      error: (err) => {
-        this.loading[key] = false;
-        console.error(`AdminHome/${key} failed`, err);
-        this.notifyLoadError();
+  // ---------- Filters ----------
+  applyPreset(key: Exclude<PresetKey, 'custom'>): void {
+    const today = new Date();
+    const start = new Date(today);
+    switch (key) {
+      case 'today': break;
+      case '7d': start.setDate(today.getDate() - 6); break;
+      case '30d': start.setDate(today.getDate() - 29); break;
+      case 'month': start.setDate(1); break;
+      case 'lastMonth': {
+        const first = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const last = new Date(today.getFullYear(), today.getMonth(), 0);
+        this.setRange(first, last, key);
+        return;
       }
+      case 'ytd': start.setMonth(0, 1); break;
+    }
+    this.setRange(start, today, key);
+  }
+
+  onDateChange(): void {
+    if (!this.fromDate || !this.toDate) return;
+    if (this.fromDate > this.toDate) [this.fromDate, this.toDate] = [this.toDate, this.fromDate];
+    this.preset.set('custom');
+    this.load();
+  }
+
+  onCitiesChange(values: Array<string | number | boolean>): void {
+    const next = values.map(Number).filter(Number.isFinite);
+    const same = next.length === this.cityIds().length && next.every(id => this.cityIds().includes(id));
+    if (same) return;
+    this.cityIds.set(next);
+    this.load();
+  }
+
+  refresh(): void {
+    this.load();
+  }
+
+  private setRange(from: Date, to: Date, key: PresetKey): void {
+    this.fromDate = ISO(from);
+    this.toDate = ISO(to);
+    this.preset.set(key);
+    this.load();
+  }
+
+  private load(): void {
+    this.request?.unsubscribe();
+    this.loading.set(true);
+    this.error.set('');
+    const cities = this.cityIds();
+    this.request = this.client
+      .getDashboard(new Date(this.fromDate), new Date(this.toDate), cities.length ? cities : null)
+      .subscribe({
+        next: d => {
+          this.data.set(d);
+          this.loading.set(false);
+        },
+        error: err => {
+          this.error.set(err?.result?.errorMessage || err?.errorMessage || this.locale.translate('dash.loadFailed'));
+          this.loading.set(false);
+        }
+      });
+  }
+
+  // ---------- Formatting ----------
+  money(value: number | null | undefined, compact = false): string {
+    const n = value ?? 0;
+    if (compact && Math.abs(n) >= 10000) {
+      return new Intl.NumberFormat(this.numberLocale(), { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+    }
+    return n.toLocaleString(this.numberLocale(), { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  count(value: number | null | undefined): string {
+    return (value ?? 0).toLocaleString(this.numberLocale());
+  }
+
+  plural(value: number | null | undefined, oneKey: string, manyKey: string): string {
+    const n = value ?? 0;
+    return `${this.count(n)} ${this.locale.translate(n === 1 ? oneKey : manyKey)}`;
+  }
+
+  percent(value: number | null | undefined): string {
+    return `${(value ?? 0).toLocaleString(this.numberLocale(), { maximumFractionDigits: 1 })}%`;
+  }
+
+  delta(value: number | null | undefined): string {
+    const n = value ?? 0;
+    const sign = n > 0 ? '+' : n < 0 ? '−' : '';
+    return `${sign}${Math.abs(n).toLocaleString(this.numberLocale(), { maximumFractionDigits: 1 })}%`;
+  }
+
+  deltaClass(value: number | null | undefined, inverse = false): string {
+    const n = value ?? 0;
+    if (n === 0) return 'dsh-delta--flat';
+    return (n > 0) !== inverse ? 'dsh-delta--up' : 'dsh-delta--down';
+  }
+
+  stateLabel(state: OrderState): string {
+    const key = `reports.value.${OrderState[state]}`;
+    const t = this.locale.translate(key);
+    return t === key ? OrderState[state] : t;
+  }
+
+  partyKind(type: LedgerPartyType): string {
+    return type === LedgerPartyType.Merchant ? 'dash.party.merchant' : 'dash.party.delivery';
+  }
+
+  rankShare(amount: number, list: { amount: number }[]): number {
+    const max = Math.max(...list.map(i => i.amount), 0);
+    return max > 0 ? Math.max(4, (amount / max) * 100) : 0;
+  }
+
+  stateTone(state: OrderState): string {
+    switch (state) {
+      case OrderState.Completed: return 'dsh-chip--ok';
+      case OrderState.Cancelled:
+      case OrderState.CustomerRejectedReceipt: return 'dsh-chip--bad';
+      case OrderState.Pending:
+      case OrderState.MerchantPending: return 'dsh-chip--warn';
+      default: return 'dsh-chip--info';
+    }
+  }
+
+  formatDate(value: Date | string | undefined): string {
+    if (!value) return '';
+    return new Date(value).toLocaleDateString(this.numberLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  formatTime(value: Date | string | undefined): string {
+    return value ? new Date(value).toLocaleTimeString(this.numberLocale(), { hour: 'numeric', minute: '2-digit' }) : '';
+  }
+
+  formatDateTime(value: Date | string | undefined): string {
+    return value
+      ? new Date(value).toLocaleString(this.numberLocale(), { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
+      : '';
+  }
+
+  trackKey(_: number, row: { key: string }): string {
+    return row.key;
+  }
+
+  trackId(_: number, row: { id?: number; partyId?: number; orderId?: number }): number {
+    return row.id ?? row.partyId ?? row.orderId ?? 0;
+  }
+
+  private numberLocale(): string {
+    return this.locale.locale() === 'ar' ? 'ar-EG' : 'en-US';
+  }
+
+  private toRows(items: DashboardAmountDto[], prefix: string): BarRow[] {
+    const max = Math.max(...items.map(i => Math.abs(i.amount)), 0);
+    return items.map(i => ({
+      key: i.key,
+      labelKey: prefix + i.key,
+      amount: i.amount,
+      count: i.count,
+      share: max > 0 ? (Math.abs(i.amount) / max) * 100 : 0
     }));
   }
 
-  private loadErrorNotified = false;
-
-  private notifyLoadError(): void {
-    if (this.loadErrorNotified) {
-      return;
-    }
-    this.loadErrorNotified = true;
-    this.toastr.error(
-      this.localeService.translate('common.failedToLoad'),
-      this.localeService.translate('common.error')
-    );
-    // Allow another toast on the next full refresh cycle.
-    setTimeout(() => {
-      this.loadErrorNotified = false;
-    }, 4000);
+  private resolveGreeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'dash.greeting.morning';
+    if (hour < 18) return 'dash.greeting.afternoon';
+    return 'dash.greeting.evening';
   }
 
-  /** Points for a 200×40 sparkline; null when there is nothing to draw. */
-  private buildSpark(values: number[]): Sparkline | null {
-    if (values.length < 2) return null;
-    const max = Math.max(...values);
-    const min = Math.min(...values);
-    const span = max - min || 1;
-    const pts = values.map((v, i) => `${((i / (values.length - 1)) * 200).toFixed(1)},${(36 - ((v - min) / span) * 30).toFixed(1)}`);
-    const line = pts.join(' ');
-    return { line, area: `0,40 ${line} 200,40` };
+  // ---------- Trend chart ----------
+  private cssVar(name: string, fallback: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
   }
 
-  private resolveRange(range: DateRange): { from: Date; to: Date } | null {
-    const from = this.parseInputDate(range.from, false);
-    const to = this.parseInputDate(range.to, true);
-    if (!from || !to || from > to) {
-      this.toastr.warning(
-        this.localeService.translate('dashboard.invalidRange'),
-        this.localeService.translate('common.error')
-      );
-      return null;
-    }
-    return { from, to };
+  private bucketLabel(point: DashboardTrendPointDto, bucket: DashboardBucket): string {
+    const date = new Date(point.date);
+    const loc = this.numberLocale();
+    if (bucket === DashboardBucket.Month) return date.toLocaleDateString(loc, { month: 'short', year: '2-digit' });
+    return date.toLocaleDateString(loc, { day: 'numeric', month: 'short' });
   }
 
-  private granularityFor(from: Date, to: Date): string {
-    const days = Math.max(1, Math.round((to.getTime() - from.getTime()) / 86400000) + 1);
-    if (days <= 45) return 'day';
-    if (days <= 180) return 'week';
-    return 'month';
-  }
+  private renderChart(): void {
+    const canvas = this.trendCanvas?.nativeElement;
+    const d = this.data();
+    if (!this.viewReady || !canvas || !d) return;
 
-  private defaultRange(): DateRange {
-    const to = new Date();
-    const from = new Date();
-    from.setDate(from.getDate() - 29);
-    return {
-      from: this.toInputDate(from),
-      to: this.toInputDate(to)
+    const metric = this.metric();
+    const points = d.trend;
+    const values = points.map(p =>
+      metric === 'profit' ? p.netProfit : metric === 'bookings' ? p.grossBookings : p.orders);
+    const labels = points.map(p => this.bucketLabel(p, d.bucket));
+
+    const accent = this.cssVar('--volt-accent', '#e10600');
+    const muted = this.cssVar('--volt-text-muted', '#8d868f');
+    const grid = this.cssVar('--volt-border', '#e6e6e6');
+    const surface = this.cssVar('--volt-surface', '#ffffff');
+    const text = this.cssVar('--volt-text-primary', '#161316');
+    const font = getComputedStyle(document.body).fontFamily || 'sans-serif';
+    const isMoney = metric !== 'orders';
+    const rtl = this.locale.isRtl();
+
+    // Positive bars in the brand color, losses in a muted tone so they read as "below zero", not as another series.
+    const colors = values.map(v => (v < 0 ? muted : accent));
+
+    const tooltipTitle = (items: TooltipItem<'bar'>[]) => {
+      const p = points[items[0].dataIndex];
+      if (d.bucket === DashboardBucket.Day) return this.formatDate(p.date);
+      const start = new Date(p.date);
+      const end = new Date(start);
+      if (d.bucket === DashboardBucket.Week) end.setDate(start.getDate() + 6);
+      else end.setMonth(start.getMonth() + 1, 0);
+      return `${this.formatDate(start)} – ${this.formatDate(end)}`;
     };
-  }
 
-  private toInputDate(date: Date): string {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
+    const config = {
+      type: 'bar' as const,
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: colors,
+          hoverBackgroundColor: colors.map(c => c + 'cc'),
+          borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 },
+          borderSkipped: 'start' as const,
+          maxBarThickness: 28,
+          categoryPercentage: 0.8,
+          barPercentage: 0.85
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 250 },
+        interaction: { mode: 'index' as const, intersect: false },
+        layout: { padding: { top: 8 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            rtl,
+            backgroundColor: surface,
+            titleColor: text,
+            bodyColor: text,
+            borderColor: grid,
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 10,
+            displayColors: false,
+            titleFont: { family: font, weight: 600 as const, size: 12 },
+            bodyFont: { family: font, weight: 700 as const, size: 14 },
+            footerFont: { family: font, weight: 500 as const, size: 11 },
+            footerColor: muted,
+            callbacks: {
+              title: tooltipTitle,
+              label: (item: TooltipItem<'bar'>) => {
+                const v = Number(item.raw) || 0;
+                return isMoney
+                  ? `${this.money(v)} ${this.locale.translate('common.currency')}`
+                  : `${this.count(v)} ${this.locale.translate('dash.metric.ordersUnit')}`;
+              },
+              footer: (items: TooltipItem<'bar'>[]) => {
+                const p = points[items[0].dataIndex];
+                return [
+                  `${this.locale.translate('dash.metric.orders')}: ${this.count(p.orders)} · ${this.locale.translate('dash.completed')}: ${this.count(p.completed)} · ${this.locale.translate('dash.cancelled')}: ${this.count(p.cancelled)}`
+                ];
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            reverse: rtl,
+            grid: { display: false },
+            border: { color: grid },
+            ticks: { color: muted, font: { family: font, size: 11 }, maxRotation: 0, autoSkip: true, autoSkipPadding: 12 }
+          },
+          y: {
+            position: (rtl ? 'right' : 'left') as 'left' | 'right',
+            beginAtZero: true,
+            grid: { color: grid, drawTicks: false },
+            border: { display: false },
+            ticks: {
+              color: muted,
+              font: { family: font, size: 11 },
+              padding: 8,
+              maxTicksLimit: 5,
+              precision: isMoney ? undefined : 0,
+              callback: (v: string | number) => this.money(Number(v), true)
+            }
+          }
+        }
+      }
+    };
 
-  private parseInputDate(value: string, endOfDay: boolean): Date | null {
-    if (!value) return null;
-    const parts = value.split('-').map(Number);
-    if (parts.length !== 3 || parts.some(n => Number.isNaN(n))) return null;
-    const date = endOfDay
-      ? new Date(parts[0], parts[1] - 1, parts[2], 23, 59, 59, 999)
-      : new Date(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0);
-    return isNaN(date.getTime()) ? null : date;
+    if (this.chart) this.chart.destroy();
+    this.chart = new Chart(canvas, config);
   }
 }
