@@ -13,6 +13,21 @@ import { MerchantNotificationService } from '../../../core/services/merchant-not
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 
+const MONEY = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const STATE_CLASS: Record<number, string> = {
+  [OrderState.Pending]: 'orders__state--pending',
+  [OrderState.MerchantPending]: 'orders__state--merchant-pending',
+  [OrderState.MerchantConfirmed]: 'orders__state--merchant-confirmed',
+  [OrderState.Confirmed]: 'orders__state--confirmed',
+  [OrderState.DeliveryAssigned]: 'orders__state--delivery-assigned',
+  [OrderState.OnWay]: 'orders__state--onway',
+  [OrderState.CustomerReceived]: 'orders__state--received',
+  [OrderState.CustomerRejectedReceipt]: 'orders__state--rejected-receipt',
+  [OrderState.Completed]: 'orders__state--completed',
+  [OrderState.Cancelled]: 'orders__state--cancelled'
+};
+
 @Component({
   selector: 'app-merchant-orders',
   standalone: true,
@@ -46,16 +61,16 @@ export class MerchantOrdersComponent implements OnInit, OnDestroy {
   awaitingHandoverOnly = false;
 
   readonly OrderState = OrderState;
-  readonly pipelineStates: Array<{ state: OrderState | null; key: string }> = [
-    { state: null, key: 'common.all' },
-    { state: OrderState.MerchantPending, key: 'common.merchantPending' },
-    { state: OrderState.MerchantConfirmed, key: 'common.merchantConfirmed' },
-    { state: OrderState.Confirmed, key: 'common.confirmed' },
-    { state: OrderState.DeliveryAssigned, key: 'common.deliveryAssigned' },
-    { state: OrderState.OnWay, key: 'common.onWay' },
-    { state: OrderState.CustomerReceived, key: 'common.received' },
-    { state: OrderState.Completed, key: 'common.completed' },
-    { state: OrderState.Cancelled, key: 'orders.cancelled' }
+  readonly pipelineStates: Array<{ state: OrderState | null; key: string; dot: string }> = [
+    { state: null, key: 'common.all', dot: 'all' },
+    { state: OrderState.MerchantPending, key: 'common.merchantPending', dot: 'merchant-pending' },
+    { state: OrderState.MerchantConfirmed, key: 'common.merchantConfirmed', dot: 'merchant-confirmed' },
+    { state: OrderState.Confirmed, key: 'common.confirmed', dot: 'confirmed' },
+    { state: OrderState.DeliveryAssigned, key: 'common.deliveryAssigned', dot: 'delivery-assigned' },
+    { state: OrderState.OnWay, key: 'common.onWay', dot: 'onway' },
+    { state: OrderState.CustomerReceived, key: 'common.received', dot: 'received' },
+    { state: OrderState.Completed, key: 'common.completed', dot: 'completed' },
+    { state: OrderState.Cancelled, key: 'orders.cancelled', dot: 'cancelled' }
   ];
 
   ngOnInit(): void {
@@ -154,6 +169,18 @@ export class MerchantOrdersComponent implements OnInit, OnDestroy {
     return this.localeService.translate(map[state] || 'common.pending');
   }
 
+  /** Same state colours as the admin orders list (orders__state--*). */
+  getStateClass(state: OrderState): string {
+    return STATE_CLASS[state] ?? '';
+  }
+
+  getResponseTone(status: MerchantOrderResponseStatus): string {
+    if (status === MerchantOrderResponseStatus.Accepted) return 'ok';
+    if (status === MerchantOrderResponseStatus.Rejected) return 'red';
+    if (status === MerchantOrderResponseStatus.PartiallyAccepted) return 'info';
+    return 'warn';
+  }
+
   getResponseLabel(status: MerchantOrderResponseStatus): string {
     if (status === MerchantOrderResponseStatus.Accepted) {
       return this.localeService.translate('merchant.responseAccepted');
@@ -168,6 +195,6 @@ export class MerchantOrdersComponent implements OnInit, OnDestroy {
   }
 
   formatMoney(value: number): string {
-    return `${Number(value || 0).toFixed(2)} ${this.localeService.translate('common.currency')}`;
+    return `${MONEY.format(Number(value || 0))} ${this.localeService.translate('common.currency')}`;
   }
 }

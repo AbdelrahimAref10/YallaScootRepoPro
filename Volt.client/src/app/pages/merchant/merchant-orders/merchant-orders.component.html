@@ -1,18 +1,36 @@
 <div class="orders">
-  <header class="orders__header">
-    <div class="orders__header-text">
-      <h1 class="orders__title">{{ 'merchant.ordersTitle' | t }}</h1>
-      <p class="orders__subtitle">{{ 'merchant.ordersSubtitle' | t }}</p>
-    </div>
-    <div class="orders__header-actions">
-      <div class="orders__header-stat">
-        <span class="orders__header-stat-value">{{ totalCount }}</span>
-        <span class="orders__header-stat-label">{{ 'orders.totalOrders' | t }}</span>
+  <section class="orders__hero">
+    <header class="orders__header">
+      <div class="orders__header-text">
+        <span class="orders__eyebrow">{{ 'orders.eyebrow' | t }}</span>
+        <h1 class="orders__title">{{ 'merchant.ordersTitle' | t }}</h1>
+        <p class="orders__subtitle">{{ 'merchant.ordersSubtitle' | t }}</p>
       </div>
-    </div>
-  </header>
+      <div class="orders__header-actions">
+        <div class="orders__header-stat orders__header-stat--last">
+          <span class="orders__header-stat-value">{{ totalCount }}</span>
+          <span class="orders__header-stat-label">{{ 'orders.totalOrders' | t }}</span>
+        </div>
+      </div>
+    </header>
 
-  <section class="list-filters" aria-label="filters">
+    <nav class="orders__pipeline" [attr.aria-label]="'orders.pipelineAria' | t">
+      @for (item of pipelineStates; track item.key) {
+        <button
+          type="button"
+          [class]="'orders__pipe orders__pipe--' + item.dot"
+          [class.orders__pipe--active]="selectedState === item.state"
+          [attr.aria-pressed]="selectedState === item.state"
+          (click)="selectState(item.state)"
+          >
+          <span class="orders__pipe-dot" aria-hidden="true"></span>
+          <span class="orders__pipe-label">{{ item.key | t }}</span>
+        </button>
+      }
+    </nav>
+  </section>
+
+  <section class="list-filters" [attr.aria-label]="'common.filtersTitle' | t">
     <div class="list-filters__search">
       <span class="list-filters__search-icon-wrap" aria-hidden="true">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -25,6 +43,7 @@
         [(ngModel)]="searchOrderCode"
         (keyup.enter)="onSearch()"
         [placeholder]="'orders.searchPlaceholder' | t"
+        [attr.aria-label]="'common.search' | t"
         />
     </div>
     <button type="button" class="list-filters__search-btn" (click)="onSearch()">
@@ -34,29 +53,14 @@
       <span>{{ 'common.search' | t }}</span>
     </button>
     @if (pendingOnly || awaitingHandoverOnly) {
-      <button
-        type="button"
-        class="list-filters__clear"
-        (click)="clearQuickFilters()"
-        >
+      <button type="button" class="list-filters__clear" (click)="clearQuickFilters()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
         <span>{{ 'common.clearFilters' | t }}</span>
       </button>
     }
   </section>
-
-  <div class="orders__pipeline" role="group">
-    @for (item of pipelineStates; track item) {
-      <button
-        type="button"
-        class="orders__pipe"
-        [class.orders__pipe--active]="selectedState === item.state"
-        (click)="selectState(item.state)"
-        >
-        <span class="orders__pipe-dot" aria-hidden="true"></span>
-        {{ item.key | t }}
-      </button>
-    }
-  </div>
 
   @if (pendingOnly) {
     <div class="orders__alert orders__alert--success">{{ 'merchant.filterPendingHint' | t }}</div>
@@ -78,7 +82,12 @@
 
     @if (!isLoading && orders.length === 0) {
       <div class="orders__empty">
-        <p class="orders__empty-title">{{ 'merchant.ordersEmpty' | t }}</p>
+        <div class="orders__empty-icon" aria-hidden="true">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h2 class="orders__empty-title">{{ 'merchant.ordersEmpty' | t }}</h2>
       </div>
     }
 
@@ -114,7 +123,7 @@
               }
             </div>
             <div class="orders__col orders__col--customer">
-              <span class="orders__customer-name">{{ getResponseLabel(order.myResponseStatus) }}</span>
+              <span [class]="'orders__response orders__response--' + getResponseTone(order.myResponseStatus)">{{ getResponseLabel(order.myResponseStatus) }}</span>
               <span class="orders__customer-city">{{ order.subCategoryName }}</span>
             </div>
             <div class="orders__col orders__col--sub">
@@ -126,13 +135,13 @@
               </span>
             </div>
             <div class="orders__col orders__col--status">
-              <span class="orders__state">
+              <span [class]="'orders__state ' + getStateClass(order.orderState)">
                 <span class="orders__state-dot" aria-hidden="true"></span>
                 {{ getStateLabel(order.orderState) }}
               </span>
             </div>
             <div class="orders__col orders__col--date">
-              <span class="orders__date">{{ order.myVehiclesCount }}</span>
+              <span class="orders__vehicles-chip">{{ 'orders.vehiclesCount' | t }}: {{ order.myVehiclesCount }}</span>
             </div>
             <div class="orders__col orders__col--action">
               <button
@@ -140,6 +149,7 @@
                 class="orders__view-btn va-act va-act--view"
                 (click)="openOrder(order.orderId); $event.stopPropagation()"
                 [attr.title]="'common.view' | t"
+                [attr.aria-label]="'common.view' | t"
                 >
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -150,16 +160,18 @@
           </article>
         }
       </div>
+      @if (totalPages > 1) {
+        <div class="orders__pager">
+          <app-pagination
+            [currentPage]="currentPage"
+            [totalPages]="totalPages"
+            [totalCount]="totalCount"
+            [pageSize]="pageSize"
+            (pageChange)="onPageChange($event)"
+          ></app-pagination>
+        </div>
+      }
     }
   </section>
 
-  @if (!isLoading && totalPages > 1) {
-    <app-pagination
-      [currentPage]="currentPage"
-      [totalPages]="totalPages"
-      [totalCount]="totalCount"
-      [pageSize]="pageSize"
-      (pageChange)="onPageChange($event)"
-    ></app-pagination>
-  }
 </div>
