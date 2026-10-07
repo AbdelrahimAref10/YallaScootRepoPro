@@ -829,7 +829,8 @@
     "deactivateTitle": "Deactivate user",
     "subRole": "Sub-role",
     "selectSubRole": "Select a sub-role",
-    "subRoleRequired": "Sub-role is required"
+    "subRoleRequired": "Sub-role is required",
+    "userNameInvalidChars": "Username can only contain English letters, numbers and - . _ @ + (no spaces or Arabic characters)."
   },
   "roles": {
     "title": "Roles & permissions",
