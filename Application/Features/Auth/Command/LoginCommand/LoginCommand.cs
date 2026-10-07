@@ -173,6 +173,10 @@ namespace Application.Features.Auth.Command.LoginCommand
 
         private async Task<ApplicationUser?> FindUserAsync(string userNameOrMobile, CancellationToken cancellationToken)
         {
+            // "+20 100 123 4567" signs in as "+201001234567".
+            if (userNameOrMobile.TrimStart().StartsWith('+'))
+                userNameOrMobile = Application.Common.MobileNumberPolicy.Normalize(userNameOrMobile);
+
             var user = await _userManager.FindByNameAsync(userNameOrMobile);
             if (user != null)
                 return user;

@@ -37,6 +37,15 @@ namespace Application.Features.Auth.Command.RegisterCommand
 
             if (appRole == AppRole.Customer)
             {
+                // Same rules as a customer created by the admin: number with country code, email required.
+                request.MobileNumber = Application.Common.MobileNumberPolicy.Normalize(request.MobileNumber);
+                var mobileResult = Application.Common.MobileNumberPolicy.Validate(request.MobileNumber);
+                if (mobileResult.IsFailure)
+                    return mobileResult;
+
+                if (string.IsNullOrWhiteSpace(request.Email))
+                    return Result.Failure("Email is required");
+
                 if (string.IsNullOrWhiteSpace(request.Gender))
                     return Result.Failure("Gender is required");
 
@@ -54,9 +63,6 @@ namespace Application.Features.Auth.Command.RegisterCommand
 
                 if (!request.VerificationBy.HasValue || !Enum.IsDefined(typeof(VerificationBy), request.VerificationBy.Value))
                     return Result.Failure("Invalid VerificationBy value");
-
-                if (request.VerificationBy == (int)VerificationBy.Email && string.IsNullOrWhiteSpace(request.Email))
-                    return Result.Failure("Email is required when verification is by email");
 
                 var cityExists = await _context.Cities.AnyAsync(c => c.CityId == request.CityId && c.IsActive, cancellationToken);
                 if (!cityExists)

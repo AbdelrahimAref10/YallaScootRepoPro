@@ -1,0 +1,53 @@
+<div class="pi" [class.pi--open]="open()" [class.pi--disabled]="disabled">
+  <div class="pi__field">
+    <button
+      type="button"
+      class="pi__code"
+      (click)="toggle()"
+      [disabled]="disabled"
+      [attr.aria-expanded]="open()"
+      aria-haspopup="listbox"
+      [attr.aria-label]="'phone.countryCode' | t">
+      <span class="pi__iso">{{ selected().iso }}</span>
+      <span class="pi__dial">+{{ selected().dial }}</span>
+      <svg class="pi__chev" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </button>
+    <input
+      class="pi__number"
+      type="tel"
+      inputmode="numeric"
+      autocomplete="tel-national"
+      [id]="inputId"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [ngModel]="localNumber"
+      (ngModelChange)="onNumberInput($event)"
+      (blur)="onBlur()" />
+  </div>
+
+  <div class="pi__menu" *ngIf="open()">
+    <input
+      #searchInput
+      class="pi__search"
+      type="search"
+      [placeholder]="'phone.searchCountry' | t"
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)" />
+    <ul class="pi__list" role="listbox">
+      <li
+        *ngFor="let c of filtered()"
+        role="option"
+        class="pi__option"
+        [class.pi__option--active]="c.iso === selected().iso"
+        [attr.aria-selected]="c.iso === selected().iso"
+        (click)="choose(c)">
+        <span class="pi__iso">{{ c.iso }}</span>
+        <span class="pi__name">{{ c.name }}</span>
+        <span class="pi__dial">+{{ c.dial }}</span>
+      </li>
+      <li class="pi__empty" *ngIf="!filtered().length">{{ 'phone.noCountry' | t }}</li>
+    </ul>
+  </div>
+</div>

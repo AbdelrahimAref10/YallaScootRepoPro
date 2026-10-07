@@ -13,6 +13,7 @@ import {
 } from '../../../core/services/clientAPI';
 import { LocaleService } from '../../../core/services/locale.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { PhoneInputComponent } from '../../../shared/components/phone-input/phone-input.component';
 import {
   MultiSelectComponent,
   MultiSelectOption
@@ -21,7 +22,7 @@ import {
 @Component({
   selector: 'app-customer-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent, PhoneInputComponent],
   templateUrl: './customer-form.component.html',
   styleUrls: ['./customer-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
@@ -55,12 +56,12 @@ export class CustomerFormComponent implements OnInit {
     private fb: FormBuilder
   ) {
     this.customerForm = this.fb.group({
-      mobileNumber: ['', [Validators.required, Validators.pattern(/^[0-9]+$/)]],
+      mobileNumber: ['', [Validators.required, Validators.pattern(/^\+[1-9]\d{6,14}$/)]],
       fullName: ['', [Validators.required, Validators.minLength(2)]],
       gender: ['', [Validators.required]],
       cityId: [null, [Validators.required]],
       zoneId: [null, [Validators.required]],
-      email: [''],
+      email: ['', [Validators.required, Validators.email]],
       personalImage: [''],
       commercialRegisterImage: [''],
       registerAs: [0, [Validators.required]],
@@ -116,8 +117,7 @@ export class CustomerFormComponent implements OnInit {
 
   /** Share of the required fields already valid, for the summary meter. */
   get completion(): number {
-    const required = ['fullName', 'mobileNumber', 'gender', 'cityId', 'zoneId', 'password'];
-    if (this.customerForm.get('verificationBy')?.value === 1) required.push('email');
+    const required = ['fullName', 'mobileNumber', 'email', 'gender', 'cityId', 'zoneId', 'password'];
     const done = required.filter(name => {
       const control = this.customerForm.get(name);
       return !!control && control.valid && control.value !== null && control.value !== '';
@@ -142,16 +142,6 @@ export class CustomerFormComponent implements OnInit {
         this.isEditMode = false;
         this.customerId = null;
       }
-    });
-
-    this.customerForm.get('verificationBy')?.valueChanges.subscribe(verificationBy => {
-      const emailControl = this.customerForm.get('email');
-      if (verificationBy === 1) {
-        emailControl?.setValidators([Validators.required, Validators.email]);
-      } else {
-        emailControl?.setValidators([Validators.email]);
-      }
-      emailControl?.updateValueAndValidity();
     });
 
     this.customerForm.get('registerAs')?.valueChanges.subscribe(registerAs => {
@@ -322,12 +312,6 @@ export class CustomerFormComponent implements OnInit {
       return;
     }
 
-    if (verificationBy === 1 && !formValue.email) {
-      this.errorMessage = this.localeService.translate('customers.emailRequired');
-      this.isSaving = false;
-      return;
-    }
-
     if (registerAs === 1 && !this.selectedCommercialImage && !this.commercialImagePreview) {
       this.showCommercialImageError = true;
       this.errorMessage = this.localeService.translate('customers.commercialImageRequired');
@@ -353,7 +337,7 @@ export class CustomerFormComponent implements OnInit {
     command.gender = String(formValue.gender);
     command.cityId = cityId;
     command.zoneId = Number(formValue.zoneId);
-    command.email = formValue.email ? String(formValue.email).trim() : null;
+    command.email = String(formValue.email).trim();
     command.personalImage = personalImageBase64;
     command.commercialRegisterImage = commercialRegisterImageBase64;
     command.registerAs = registerAs;

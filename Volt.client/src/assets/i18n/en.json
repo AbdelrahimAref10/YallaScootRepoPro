@@ -644,7 +644,7 @@
     "fullNameRequired": "Full name is required and must be at least 2 characters",
     "mobile": "Mobile Number",
     "mobilePlaceholder": "Enter mobile number",
-    "mobileRequired": "Mobile number is required and must contain only numbers",
+    "mobileRequired": "Mobile number is required",
     "empty": "No customers found",
     "emptyHint": "Try adjusting filters or add a new customer.",
     "tableCaption": "Customers list",
@@ -669,7 +669,7 @@
     "selectType": "Select type",
     "selectVerification": "Select preferred contact",
     "emailPlaceholder": "Enter email address",
-    "emailRequired": "Valid email is required when preferred contact is email",
+    "emailRequired": "Email is required",
     "password": "Password",
     "passwordPlaceholder": "Enter password (min 6 characters)",
     "passwordOptionalHint": "Leave blank to keep current password",
@@ -724,7 +724,9 @@
     "cashBlockedSuccessfully": "Cash payment blocked successfully",
     "cashUnblockedSuccessfully": "Cash payment unblocked successfully",
     "wallet": "Wallet",
-    "orderHistory": "Order History"
+    "orderHistory": "Order History",
+    "mobileInvalid": "Enter a valid mobile number for the selected country",
+    "emailInvalid": "Enter a valid email address"
   },
   "users": {
     "title": "System Users",
@@ -1991,5 +1993,10 @@
     "Home": "Home",
     "Payments": "Payments",
     "Staff": "Staff"
+  },
+  "phone": {
+    "countryCode": "Country code",
+    "searchCountry": "Search country or code",
+    "noCountry": "No matching country"
   }
 }
