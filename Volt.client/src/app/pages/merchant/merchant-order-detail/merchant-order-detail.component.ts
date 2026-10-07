@@ -22,11 +22,12 @@ import { MerchantNotificationService } from '../../../core/services/merchant-not
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { VehicleSpecsComponent } from '../../../shared/components/vehicle-specs/vehicle-specs.component';
 import { VEHICLE_LIFECYCLE_STEPS, isStepDone } from '../../../shared/order-cycle/order-vehicle-cycle';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-merchant-order-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, VehicleSpecsComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, VehicleSpecsComponent, HasPermissionDirective],
   templateUrl: './merchant-order-detail.component.html',
   styleUrl: './merchant-order-detail.component.css'
 })

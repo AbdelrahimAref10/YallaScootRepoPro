@@ -23,6 +23,7 @@ import {
 } from '../../shared/components/multi-select/multi-select.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { VehicleSpecsComponent } from '../../shared/components/vehicle-specs/vehicle-specs.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-vehicles',
@@ -35,7 +36,8 @@ import { VehicleSpecsComponent } from '../../shared/components/vehicle-specs/veh
     PaginationComponent,
     MultiSelectComponent,
     TranslatePipe,
-    VehicleSpecsComponent
+    VehicleSpecsComponent,
+    HasPermissionDirective
   ],
   templateUrl: './vehicles.component.html',
   styleUrls: ['./vehicles.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-tiles.css']

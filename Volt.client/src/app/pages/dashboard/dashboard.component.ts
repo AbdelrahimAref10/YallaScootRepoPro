@@ -21,6 +21,7 @@ import { LocaleService } from '../../core/services/locale.service';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { VoltChartComponent, VoltChartDataset } from '../../shared/components/volt-chart/volt-chart.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 type SectionKey =
   | 'summary'
@@ -49,7 +50,7 @@ interface Sparkline {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, VoltChartComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, VoltChartComponent, HasPermissionDirective],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })

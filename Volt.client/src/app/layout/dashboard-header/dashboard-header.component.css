@@ -176,6 +176,23 @@
   font-weight: 700;
 }
 
+.dashboard-header__user-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+}
+
+.dashboard-header__user-role {
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.65;
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .dashboard-header__user-name {
   font-size: 0.85rem;
   font-weight: 700;
@@ -268,7 +285,7 @@
     padding-inline: 1rem;
   }
 
-  .dashboard-header__user-name,
+  .dashboard-header__user-text,
   .dashboard-header__chevron {
     display: none;
   }

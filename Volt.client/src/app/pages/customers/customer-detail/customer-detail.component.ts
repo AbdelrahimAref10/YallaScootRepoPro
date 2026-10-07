@@ -5,11 +5,12 @@ import { AdminCustomerClient, CustomerDto, CustomerState } from '../../../core/s
 import { LocaleService } from '../../../core/services/locale.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-customer-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe, ConfirmDialogComponent],
+  imports: [CommonModule, RouterModule, TranslatePipe, ConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './customer-detail.component.html',
   styleUrls: ['./customer-detail.component.css', '../../../shared/styles/entity-form.css']
 })

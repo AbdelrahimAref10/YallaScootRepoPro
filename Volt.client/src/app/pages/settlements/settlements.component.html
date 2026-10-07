@@ -113,9 +113,11 @@
           <label>{{ 'common.notes' | t }}</label>
           <textarea class="st-input" rows="3" [(ngModel)]="payDeliveryNote"></textarea>
         </div>
-        <button type="button" class="st-submit" (click)="onSubmitPayDelivery()" [disabled]="isSubmitting">
-          {{ isSubmitting ? ('common.saving' | t) : ('settlements.submit' | t) }}
-        </button>
+        <ng-container *appHasPermission="'Admin.Settlements.Create'">
+          <button type="button" class="st-submit" (click)="onSubmitPayDelivery()" [disabled]="isSubmitting">
+            {{ isSubmitting ? ('common.saving' | t) : ('settlements.submit' | t) }}
+          </button>
+        </ng-container>
       </div>
 
       <!-- Collect from rider -->
@@ -163,9 +165,11 @@
           <label>{{ 'common.notes' | t }}</label>
           <textarea class="st-input" rows="3" [(ngModel)]="collectNote"></textarea>
         </div>
-        <button type="button" class="st-submit" (click)="onSubmitCollect()" [disabled]="isSubmitting">
-          {{ isSubmitting ? ('common.saving' | t) : ('settlements.submit' | t) }}
-        </button>
+        <ng-container *appHasPermission="'Admin.Settlements.Create'">
+          <button type="button" class="st-submit" (click)="onSubmitCollect()" [disabled]="isSubmitting">
+            {{ isSubmitting ? ('common.saving' | t) : ('settlements.submit' | t) }}
+          </button>
+        </ng-container>
       </div>
 
       <!-- Pay merchant -->
@@ -201,9 +205,11 @@
           <label>{{ 'common.notes' | t }}</label>
           <textarea class="st-input" rows="3" [(ngModel)]="payMerchantNote"></textarea>
         </div>
-        <button type="button" class="st-submit" (click)="onSubmitPayMerchant()" [disabled]="isSubmitting">
-          {{ isSubmitting ? ('common.saving' | t) : ('settlements.payMerchant' | t) }}
-        </button>
+        <ng-container *appHasPermission="'Admin.Settlements.Create'">
+          <button type="button" class="st-submit" (click)="onSubmitPayMerchant()" [disabled]="isSubmitting">
+            {{ isSubmitting ? ('common.saving' | t) : ('settlements.payMerchant' | t) }}
+          </button>
+        </ng-container>
       </div>
     </section>
 

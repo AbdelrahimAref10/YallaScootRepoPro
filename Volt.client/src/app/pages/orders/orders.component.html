@@ -38,12 +38,14 @@
         <span class="orders__header-stat-value">{{ totalCount }}</span>
         <span class="orders__header-stat-label">{{ 'orders.totalOrders' | t }}</span>
       </div>
-      <button type="button" class="orders__add-btn" (click)="onAddNew()">
-        <svg class="orders__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
-        </svg>
-        <span>{{ 'orders.add' | t }}</span>
-      </button>
+      <ng-container *appHasPermission="'Admin.Orders.Create'">
+        <button type="button" class="orders__add-btn" (click)="onAddNew()">
+          <svg class="orders__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          <span>{{ 'orders.add' | t }}</span>
+        </button>
+      </ng-container>
     </div>
   </header>
 

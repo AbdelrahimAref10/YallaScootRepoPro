@@ -427,3 +427,151 @@
 .roles-modal__btn--primary:hover:not(:disabled) {
   background: var(--volt-accent-strong);
 }
+
+/* ── Scope tabs ─────────────────────────────────────────────── */
+.roles__tabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--volt-border);
+  border-radius: var(--volt-radius);
+  background: var(--volt-surface);
+}
+
+.roles__tab {
+  padding: 0.45rem 1rem;
+  border: 0;
+  border-radius: calc(var(--volt-radius) - 4px);
+  background: transparent;
+  color: var(--volt-text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.roles__tab--active {
+  background: var(--volt-accent-soft);
+  color: var(--volt-accent-strong);
+}
+
+/* ── Card badges ────────────────────────────────────────────── */
+.roles__card--inactive {
+  opacity: 0.6;
+}
+
+.roles__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.35rem 0;
+}
+
+.roles__badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--volt-bg);
+  color: var(--volt-text-secondary);
+  border: 1px solid var(--volt-border);
+}
+
+.roles__badge--system {
+  background: var(--volt-accent-soft);
+  color: var(--volt-accent-strong);
+  border-color: transparent;
+}
+
+.roles__badge--full {
+  color: var(--volt-ok);
+}
+
+.roles__badge--inactive {
+  background: var(--volt-warn-soft);
+  color: var(--volt-warn);
+  border-color: transparent;
+}
+
+/* ── Wide modal with permission matrix ──────────────────────── */
+.roles-modal__dialog--wide {
+  width: min(52rem, 100%);
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.roles-modal__dialog--wide .roles-modal__body {
+  overflow-y: auto;
+}
+
+.roles-modal__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+}
+
+.roles-modal__switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-weight: 600;
+  color: var(--volt-text-secondary);
+}
+
+.roles-matrix {
+  margin-top: 1rem;
+  border: 1px solid var(--volt-border);
+  border-radius: var(--volt-radius);
+  overflow-x: auto;
+}
+
+.roles-matrix__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.roles-matrix__table th,
+.roles-matrix__table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--volt-border);
+  text-align: center;
+}
+
+.roles-matrix__table thead th {
+  background: var(--volt-bg);
+  color: var(--volt-text-secondary);
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+}
+
+.roles-matrix__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.roles-matrix__table .roles-matrix__module {
+  text-align: start;
+  white-space: nowrap;
+}
+
+.roles-matrix__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.roles-matrix__cell input,
+.roles-matrix__check input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--volt-accent);
+  cursor: pointer;
+}
+
+.roles-matrix__na {
+  color: var(--volt-text-muted);
+}

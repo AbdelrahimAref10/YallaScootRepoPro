@@ -19,6 +19,7 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-customers',
@@ -29,7 +30,8 @@ import {
     RouterModule,
     TranslatePipe,
     MultiSelectComponent,
-    PaginationComponent
+    PaginationComponent,
+    HasPermissionDirective
   ],
   templateUrl: './customers.component.html',
   styleUrls: ['./customers.component.css', '../../shared/styles/list-filters.css']

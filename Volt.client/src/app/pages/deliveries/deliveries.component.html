@@ -5,10 +5,12 @@
       <p class="deliveries__subtitle">{{ 'deliveries.subtitle' | t }}</p>
     </div>
     <div class="deliveries__header-actions">
-      <button type="button" class="deliveries__add-btn" (click)="onAddNew()">
-        <svg class="deliveries__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-        <span>{{ 'deliveries.add' | t }}</span>
-      </button>
+      <ng-container *appHasPermission="'Admin.Deliveries.Create'">
+        <button type="button" class="deliveries__add-btn" (click)="onAddNew()">
+          <svg class="deliveries__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          <span>{{ 'deliveries.add' | t }}</span>
+        </button>
+      </ng-container>
     </div>
   </header>
 
@@ -69,10 +71,12 @@
     </div>
     <h2 class="deliveries__empty-title">{{ 'deliveries.empty' | t }}</h2>
     <p class="deliveries__empty-text">{{ 'deliveries.emptyHint' | t }}</p>
-    <button type="button" class="deliveries__add-btn" (click)="onAddNew()">
-      <svg class="deliveries__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-      <span>{{ 'deliveries.add' | t }}</span>
-    </button>
+    <ng-container *appHasPermission="'Admin.Deliveries.Create'">
+      <button type="button" class="deliveries__add-btn" (click)="onAddNew()">
+        <svg class="deliveries__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        <span>{{ 'deliveries.add' | t }}</span>
+      </button>
+    </ng-container>
   </div>
 
   <section *ngIf="!isLoading && deliveries.length > 0" class="pc-grid">
@@ -118,9 +122,15 @@
       <footer class="pc-card__foot">
         <span class="pc-card__since">&#64;{{ d.userName || '—' }}</span>
         <div class="pc-card__actions" *ngIf="!d.isDeleted">
-          <button type="button" class="va-act va-act--edit" (click)="onEdit(d)" [attr.title]="'common.edit' | t" [attr.aria-label]="'common.edit' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-          <button type="button" class="va-act va-act--money" (click)="onEditDebtLimit(d)" [attr.title]="'deliveries.debtLimitAction' | t" [attr.aria-label]="'deliveries.debtLimitAction' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M3 10h18M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2zm2 9h3"/></svg></button>
-          <button type="button" class="va-act va-act--delete" (click)="onDelete(d)" [disabled]="isDeleting" [attr.title]="'common.delete' | t" [attr.aria-label]="'common.delete' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+          <ng-container *appHasPermission="'Admin.Deliveries.Edit'">
+            <button type="button" class="va-act va-act--edit" (click)="onEdit(d)" [attr.title]="'common.edit' | t" [attr.aria-label]="'common.edit' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+          </ng-container>
+          <ng-container *appHasPermission="'Admin.Deliveries.Edit'">
+            <button type="button" class="va-act va-act--money" (click)="onEditDebtLimit(d)" [attr.title]="'deliveries.debtLimitAction' | t" [attr.aria-label]="'deliveries.debtLimitAction' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M3 10h18M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2zm2 9h3"/></svg></button>
+          </ng-container>
+          <ng-container *appHasPermission="'Admin.Deliveries.Delete'">
+            <button type="button" class="va-act va-act--delete" (click)="onDelete(d)" [disabled]="isDeleting" [attr.title]="'common.delete' | t" [attr.aria-label]="'common.delete' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+          </ng-container>
         </div>
       </footer>
     </article>

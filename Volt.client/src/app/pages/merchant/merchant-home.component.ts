@@ -4,11 +4,12 @@ import { RouterModule } from '@angular/router';
 import { MerchantDashboardSummaryDto, MerchantProfileClient } from '../../core/services/clientAPI';
 import { LocaleService } from '../../core/services/locale.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-merchant-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, RouterModule, TranslatePipe, HasPermissionDirective],
   templateUrl: './merchant-home.component.html',
   styleUrls: [
     '../dashboard/dashboard.component.css',

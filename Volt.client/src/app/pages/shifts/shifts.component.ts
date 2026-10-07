@@ -11,6 +11,7 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 interface DayChip {
   bit: number;
@@ -31,7 +32,7 @@ const DAYS: DayChip[] = [
 @Component({
   selector: 'app-shifts',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, TranslatePipe, MultiSelectComponent, ConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './shifts.component.html',
   styleUrls: ['./shifts.component.css']
 })

@@ -19,6 +19,7 @@ import {
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-subcategories',
@@ -30,7 +31,8 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
     ConfirmDialogComponent,
     PaginationComponent,
     MultiSelectComponent,
-    TranslatePipe
+    TranslatePipe,
+    HasPermissionDirective
   ],
   templateUrl: './subcategories.component.html',
   styleUrls: ['./subcategories.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-tiles.css']

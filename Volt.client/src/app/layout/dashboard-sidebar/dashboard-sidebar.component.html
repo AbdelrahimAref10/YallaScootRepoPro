@@ -32,7 +32,7 @@
   </div>
 
   <nav class="dashboard-sidebar__nav" [attr.aria-label]="'app.name' | t">
-    <ng-container *ngFor="let item of menuItems; let i = index">
+    <ng-container *ngFor="let item of visibleItems; let i = index">
     <span class="dashboard-sidebar__group" *ngIf="startsGroup(i)" [class.dashboard-sidebar__group--compact]="!isOpen">
       <ng-container *ngIf="isOpen">{{ item.groupKey! | t }}</ng-container>
     </span>

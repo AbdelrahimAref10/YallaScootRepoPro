@@ -13,11 +13,12 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, MultiSelectComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, MultiSelectComponent, PaginationComponent, HasPermissionDirective],
   templateUrl: './orders.component.html',
   styleUrls: ['./orders.component.css', '../../shared/styles/list-filters.css']
 })

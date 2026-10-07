@@ -45,6 +45,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     void this.localeService.ensureAdminLocale();
 
     if (this.authService.isAuthenticated()) {
+      this.authService.refreshAccess(true);
       const token = this.authService.getToken();
       if (token) {
         this.signalRService.StartNotificationConnection(token);

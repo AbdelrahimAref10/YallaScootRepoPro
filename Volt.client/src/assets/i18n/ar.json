@@ -145,7 +145,8 @@
     "darkMode": "الوضع الداكن",
     "language": "اللغة",
     "english": "English",
-    "arabic": "العربية"
+    "arabic": "العربية",
+    "noPermission": "ليس لديك صلاحية للقيام بهذا الإجراء."
   },
   "nav": {
     "groupOverview": "نظرة عامة",
@@ -251,7 +252,8 @@
       "home": "الرئيسية",
       "orders": "الطلبات",
       "vehicles": "المركبات",
-      "payments": "المدفوعات"
+      "payments": "المدفوعات",
+      "staff": "الموظفون"
     },
     "ordersTitle": "طلباتي",
     "ordersSubtitle": "أكد المركبات، سلّم للتوصيل، وتابع كل طلب من الاستلام حتى الإرجاع",
@@ -313,7 +315,27 @@
     "selectCategory": "اختر الفئة أولاً",
     "selectSubCategory": "اختر الفئة الفرعية",
     "vehicleFormSubtitle": "المركبة تُحفظ في نفس جدول الأسطول تحت حسابك",
-    "vehicleCascadeHint": "اختر الفئة أولاً ثم الفئة الفرعية. لا يمكنك إنشاء فئات."
+    "vehicleCascadeHint": "اختر الفئة أولاً ثم الفئة الفرعية. لا يمكنك إنشاء فئات.",
+    "staff": {
+      "title": "الموظفون",
+      "subtitle": "الأشخاص الذين يمكنهم الدخول إلى حساب التاجر وما يمكنهم فعله",
+      "add": "إضافة موظف",
+      "empty": "لا يوجد موظفون بعد",
+      "createTitle": "إضافة موظف",
+      "editTitle": "تعديل موظف",
+      "formHint": "يسجّل الدخول باسم المستخدم أو رقم الهاتف.",
+      "fieldRequired": "هذا الحقل مطلوب",
+      "emailInvalid": "أدخل بريداً إلكترونياً صحيحاً",
+      "passwordKeep": "اتركه فارغاً للإبقاء على كلمة المرور الحالية",
+      "passwordInvalid": "8 أحرف على الأقل تشمل حرفاً كبيراً وصغيراً ورقماً",
+      "noRolesHint": "لا توجد أدوار للموظفين بعد. اطلب من المسؤول إنشاء دور.",
+      "activateTitle": "تفعيل",
+      "activateConfirm": "السماح لـ {{name}} بتسجيل الدخول مرة أخرى؟",
+      "deactivateTitle": "إيقاف",
+      "deactivateConfirm": "لن يتمكن {{name}} من تسجيل الدخول. متابعة؟",
+      "deleteTitle": "حذف الموظف",
+      "deleteConfirm": "حذف {{name}}؟ سيفقد الوصول فوراً."
+    }
   },
   "dashboard": {
     "liveOps": "التشغيل الآن",
@@ -804,13 +826,16 @@
     "deactivateConfirm": "هل أنت متأكد من تعطيل هذا المستخدم؟",
     "deleteTitle": "حذف المستخدم",
     "activateTitle": "تفعيل المستخدم",
-    "deactivateTitle": "إيقاف المستخدم"
+    "deactivateTitle": "إيقاف المستخدم",
+    "subRole": "الدور الفرعي",
+    "selectSubRole": "اختر الدور الفرعي",
+    "subRoleRequired": "الدور الفرعي مطلوب"
   },
   "roles": {
-    "title": "الأدوار",
-    "subtitle": "إدارة أدوار وصلاحيات الوصول",
+    "title": "الأدوار والصلاحيات",
+    "subtitle": "الأدوار الفرعية للوحة الإدارة ولوحة التاجر وما يمكن لكل منها الوصول إليه",
     "empty": "لا توجد أدوار",
-    "emptyHint": "أنشئ دوراً للتحكم في صلاحيات المسؤولين.",
+    "emptyHint": "أنشئ دوراً واختر صلاحياته.",
     "permissions": "الصلاحيات",
     "add": "إضافة دور",
     "name": "اسم الدور",
@@ -819,7 +844,7 @@
     "editTitle": "تعديل الدور",
     "createSubtitle": "تعريف دور وصول جديد",
     "editSubtitle": "تحديث اسم هذا الدور",
-    "namePlaceholder": "مثال: Admin أو Manager",
+    "namePlaceholder": "مثال: Operation",
     "nameRequired": "اسم الدور مطلوب",
     "nameMinLength": "يجب ألا يقل اسم الدور عن حرفين",
     "namePattern": "يجب أن يبدأ بحرف ويحتوي على حروف وأرقام فقط",
@@ -828,7 +853,23 @@
     "deleteMessage": "هل أنت متأكد من حذف الدور \"{{name}}\"؟",
     "failedToCreate": "فشل إنشاء الدور. حاول مرة أخرى.",
     "failedToUpdate": "فشل تحديث الدور. حاول مرة أخرى.",
-    "failedToDelete": "فشل حذف الدور. حاول مرة أخرى."
+    "failedToDelete": "فشل حذف الدور. حاول مرة أخرى.",
+    "scopeAdmin": "لوحة الإدارة",
+    "scopeMerchant": "لوحة التاجر",
+    "system": "نظام",
+    "fullAccess": "صلاحيات كاملة",
+    "usersCount": "{{count}} مستخدم",
+    "permissionsCount": "{{count}} صلاحية",
+    "viewTitle": "صلاحيات الدور",
+    "systemHint": "أدوار النظام لها صلاحيات كاملة دائماً ولا يمكن تعديلها.",
+    "matrixHint": "اختر ما يمكن لهذا الدور رؤيته وتنفيذه في كل قسم.",
+    "nameAr": "الاسم بالعربية",
+    "active": "مفعّل",
+    "module": "القسم",
+    "actionView": "عرض",
+    "actionCreate": "إضافة",
+    "actionEdit": "تعديل",
+    "actionDelete": "حذف"
   },
   "cities": {
     "title": "المدن",
@@ -1730,5 +1771,30 @@
     "noCity": "لم يتم اختيار مدينة",
     "saveChanges": "حفظ التعديلات",
     "create": "إنشاء الشيفت"
+  },
+  "access": {
+    "noAccessTitle": "لا توجد صلاحيات",
+    "noAccessBody": "دورك لا يتضمن أي صفحة حتى الآن. اطلب من المسؤول منحك الصلاحيات."
+  },
+  "modules": {
+    "Dashboard": "الصفحة الرئيسية",
+    "Orders": "الطلبات",
+    "Shifts": "الورديات",
+    "Merchants": "التجار",
+    "Deliveries": "المناديب",
+    "Customers": "العملاء",
+    "Vehicles": "المركبات",
+    "Categories": "الفئات",
+    "SubCategories": "الفئات الفرعية",
+    "Cities": "المدن",
+    "Settlements": "التسويات",
+    "Journals": "حركات القيود",
+    "Reports": "التقارير",
+    "SystemUsers": "مستخدمو النظام",
+    "Roles": "الأدوار",
+    "Support": "الدعم",
+    "Home": "الرئيسية",
+    "Payments": "المدفوعات",
+    "Staff": "الموظفون"
   }
 }

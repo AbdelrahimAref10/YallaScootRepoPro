@@ -5,12 +5,14 @@
       <p class="customers__subtitle">{{ 'customers.subtitle' | t }}</p>
     </div>
     <div class="customers__header-actions">
-      <button type="button" class="customers__add-btn" (click)="onAddNew()">
-        <svg class="customers__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
-        </svg>
-        <span>{{ 'customers.add' | t }}</span>
-      </button>
+      <ng-container *appHasPermission="'Admin.Customers.Create'">
+        <button type="button" class="customers__add-btn" (click)="onAddNew()">
+          <svg class="customers__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          <span>{{ 'customers.add' | t }}</span>
+        </button>
+      </ng-container>
     </div>
   </header>
 
@@ -150,12 +152,14 @@
       </div>
       <h2 class="customers__empty-title">{{ 'customers.empty' | t }}</h2>
       <p class="customers__empty-text">{{ 'customers.emptyHint' | t }}</p>
-      <button type="button" class="customers__add-btn" (click)="onAddNew()">
-        <svg class="customers__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
-        </svg>
-        <span>{{ 'customers.add' | t }}</span>
-      </button>
+      <ng-container *appHasPermission="'Admin.Customers.Create'">
+        <button type="button" class="customers__add-btn" (click)="onAddNew()">
+          <svg class="customers__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          <span>{{ 'customers.add' | t }}</span>
+        </button>
+      </ng-container>
     </div>
   </section>
 </div>

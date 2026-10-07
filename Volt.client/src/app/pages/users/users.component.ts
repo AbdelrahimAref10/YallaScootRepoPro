@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { AdminUserClient, UserDto, PagedResultOfUserDto, CreateUserCommand, RoleClient, RoleDto } from '../../core/services/clientAPI';
+import { AdminUserClient, UserDto, PagedResultOfUserDto, CreateUserCommand, RoleClient, RoleDto, SubRoleClient, SubRoleDto } from '../../core/services/clientAPI';
 import { LocaleService } from '../../core/services/locale.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
@@ -13,6 +13,7 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-users',
@@ -25,7 +26,8 @@ import {
     TranslatePipe,
     MultiSelectComponent,
     PaginationComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    HasPermissionDirective
   ],
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-form.css']
@@ -33,6 +35,7 @@ import {
 export class UsersComponent implements OnInit, OnDestroy {
   private adminUserClient = inject(AdminUserClient);
   private roleClient = inject(RoleClient);
+  private subRoleClient = inject(SubRoleClient);
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private localeService = inject(LocaleService);
@@ -62,6 +65,8 @@ export class UsersComponent implements OnInit, OnDestroy {
   userForm: FormGroup;
   roles: RoleDto[] = [];
   availableRoles: string[] = [];
+  /** Active admin sub-roles for the Super Admin role. */
+  subRoles: SubRoleDto[] = [];
   isLoadingRoles = false;
   isSubmitting = false;
   showPassword = false;
@@ -75,7 +80,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   steps = [
     { number: 1, titleKey: 'users.stepBasic', fields: ['userName', 'fullName', 'email', 'phoneNumber'] },
     { number: 2, titleKey: 'users.stepSecurity', fields: ['password'] },
-    { number: 3, titleKey: 'users.stepRoles', fields: ['role'] }
+    { number: 3, titleKey: 'users.stepRoles', fields: ['role', 'subRoleId'] }
   ];
 
   get confirmDialogTitle(): string {
@@ -125,6 +130,20 @@ export class UsersComponent implements OnInit, OnDestroy {
       }));
   }
 
+  get subRoleFormOptions(): MultiSelectOption[] {
+    const ar = this.localeService.locale() === 'ar';
+    return this.subRoles.map(r => ({ value: r.subRoleId, label: ar && r.nameAr ? r.nameAr : r.name }));
+  }
+
+  /** Sub-roles only apply to Super Admin users. */
+  get needsSubRole(): boolean {
+    return this.userForm.get('role')?.value === AppRoleNames.SuperAdmin;
+  }
+
+  subRoleLabel(user: UserDto): string | null {
+    return (this.localeService.locale() === 'ar' ? user.subRoleNameAr || user.subRoleName : user.subRoleName) || null;
+  }
+
   get activeFilterCount(): number {
     let count = 0;
     if (this.searchTerm.trim()) count++;
@@ -140,7 +159,18 @@ export class UsersComponent implements OnInit, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(8), this.passwordValidator]],
-      role: [null, [Validators.required]]
+      role: [null, [Validators.required]],
+      subRoleId: [null]
+    });
+
+    // The sub-role is required only for Super Admin users.
+    this.userForm.get('role')!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      const subRole = this.userForm.get('subRoleId')!;
+      subRole.setValidators(this.needsSubRole ? [Validators.required] : []);
+      if (!this.needsSubRole) {
+        subRole.setValue(null, { emitEvent: false });
+      }
+      subRole.updateValueAndValidity({ emitEvent: false });
     });
   }
 
@@ -219,7 +249,8 @@ export class UsersComponent implements OnInit, OnDestroy {
       email: 'common.email',
       phoneNumber: 'common.phone',
       password: 'users.password',
-      role: 'users.role'
+      role: 'users.role',
+      subRoleId: 'users.subRole'
     };
     return this.localeService.translate(keys[fieldName] || fieldName);
   }
@@ -245,7 +276,15 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadRoles();
+    this.loadSubRoles();
     this.loadUsers();
+  }
+
+  loadSubRoles(): void {
+    this.subRoleClient.getAll(AppRole.SuperAdmin, true).subscribe({
+      next: roles => (this.subRoles = roles),
+      error: () => (this.subRoles = [])
+    });
   }
 
   ngOnDestroy(): void {
@@ -489,6 +528,7 @@ export class UsersComponent implements OnInit, OnDestroy {
     command.phoneNumber = formValue.phoneNumber || null;
     command.password = formValue.password;
     command.role = role;
+    command.subRoleId = role === AppRole.SuperAdmin ? formValue.subRoleId : null;
 
     this.adminUserClient.create(command).subscribe({
       next: () => {

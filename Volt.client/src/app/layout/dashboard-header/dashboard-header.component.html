@@ -61,7 +61,10 @@
         <div class="dashboard-header__user-avatar">
           <span>{{ avatarInitial }}</span>
         </div>
-        <span class="dashboard-header__user-name">{{ userData?.userName || ('header.admin' | t) }}</span>
+        <span class="dashboard-header__user-text">
+          <span class="dashboard-header__user-name">{{ userData?.userName || ('header.admin' | t) }}</span>
+          <span class="dashboard-header__user-role" *ngIf="subRoleLabel">{{ subRoleLabel }}</span>
+        </span>
         <svg class="dashboard-header__chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 9l-7 7-7-7"/>
         </svg>

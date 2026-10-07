@@ -19,6 +19,7 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-merchant-vehicles',
@@ -31,7 +32,8 @@ import {
     PaginationComponent,
     TranslatePipe,
     VehicleSpecsComponent,
-    MultiSelectComponent
+    MultiSelectComponent,
+    HasPermissionDirective
   ],
   templateUrl: './merchant-vehicles.component.html',
   styleUrls: [
