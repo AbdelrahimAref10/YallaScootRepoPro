@@ -54,6 +54,8 @@ import {
 import { VehicleSpecsComponent } from '../../../shared/components/vehicle-specs/vehicle-specs.component';
 import { memo } from '../../../shared/utils/memo';
 import { LookupService } from '../../../core/services/lookup.service';
+import { SuccessPopupComponent } from '../../../shared/components/success-popup/success-popup.component';
+import { PortalDirective } from '../../../shared/directives/portal.directive';
 
 type BrowseStep = 'categories' | 'subcategories' | 'vehicles';
 
@@ -78,7 +80,7 @@ interface BookedCalendarDay {
 @Component({
   selector: 'app-order-form',
   standalone: true,
-  imports: [
+  imports: [PortalDirective, SuccessPopupComponent, 
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -90,6 +92,7 @@ interface BookedCalendarDay {
   templateUrl: './order-form.component.html',
   styleUrls: [
     './order-form.component.css',
+    './order-review.css',
     '../../../shared/styles/entity-form.css',
     '../../../shared/styles/entity-tiles.css'
   ]
@@ -162,6 +165,9 @@ export class OrderFormComponent implements OnInit, OnDestroy {
 
   isPreviewOpen = false;
   previewData: AdminOrderTotalsPreviewDto | null = null;
+  /** Set after a successful create: shows the success popup, then opens the order. */
+  createdOrder: { orderId: number; orderCode: string } | null = null;
+  createdCustomerName = '';
   modalError = '';
 
   /** Mini calendar for reserved vehicle conflicting dates. */
@@ -782,13 +788,20 @@ export class OrderFormComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (order) => {
         this.isPreviewOpen = false;
-        this.router.navigate(['/main/orders', order.orderId]);
+        this.createdCustomerName = this.selectedCustomer?.fullName ?? '';
+        this.createdOrder = { orderId: order.orderId, orderCode: order.orderCode };
       },
       error: (error) => {
         this.modalError = this.extractErrorMessage(error)
           || this.localeService.translate('orders.failedToCreate');
       }
     });
+  }
+
+  openCreatedOrder(): void {
+    const id = this.createdOrder?.orderId;
+    this.createdOrder = null;
+    if (id) this.router.navigate(['/main/orders', id]);
   }
 
   onSubmitEdit(): void {

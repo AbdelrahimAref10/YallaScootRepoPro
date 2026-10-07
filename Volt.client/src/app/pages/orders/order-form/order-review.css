@@ -1,0 +1,529 @@
+/* ── Order review dialog (rendered under <body> via appPortal) ── */
+.rv {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(14, 10, 12, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: rv-fade 0.18s ease both;
+}
+
+.rv__dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(60rem, 100%);
+  max-height: min(48rem, calc(100dvh - 2.5rem));
+  border-radius: 1.35rem;
+  background: var(--volt-bg);
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--volt-border);
+  overflow: hidden;
+  animation: rv-rise 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+/* Header: brand band with the booking at a glance */
+.rv__head {
+  position: relative;
+  padding: 1.5rem 1.6rem 1.25rem;
+  color: #fff;
+  background:
+    radial-gradient(110% 160% at 0% 0%, rgba(225, 6, 0, 0.45) 0%, transparent 55%),
+    linear-gradient(135deg, #161316 0%, #2a1015 60%, #3a1216 100%);
+}
+
+.rv__kicker {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.rv__title {
+  margin: 0.3rem 0 0;
+  font-family: var(--volt-font-heading);
+  font-size: clamp(1.35rem, 1.1rem + 0.9vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.rv__subtitle {
+  margin: 0.3rem 0 0;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.86rem;
+}
+
+.rv__close {
+  position: absolute;
+  top: 1.1rem;
+  inset-inline-end: 1.1rem;
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.rv__close:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.rv__close svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.rv__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.6rem;
+  margin: 1.2rem 0 0;
+}
+
+.rv__fact {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rv__fact dt {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.rv__fact dd {
+  margin: 0.2rem 0 0;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+/* Body: vehicles + receipt */
+.rv__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(16rem, 1fr);
+  gap: 1rem;
+  padding: 1.2rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.rv__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.rv__section-head h3,
+.rv__receipt-title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--volt-text-muted);
+}
+
+.rv__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rv__vehicle {
+  display: grid;
+  grid-template-columns: 4.25rem minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: start;
+  padding: 0.85rem;
+  border: 1px solid var(--volt-border);
+  border-radius: 1rem;
+  background: var(--volt-surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rv__vehicle:hover {
+  border-color: var(--volt-border-strong);
+  box-shadow: var(--volt-shadow);
+}
+
+.rv__thumb {
+  display: grid;
+  place-items: center;
+  width: 4.25rem;
+  height: 4.25rem;
+  border-radius: 0.8rem;
+  background: var(--volt-surface-muted);
+  color: var(--volt-text-muted);
+  overflow: hidden;
+}
+
+.rv__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rv__thumb svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.rv__vehicle-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.rv__vehicle-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.rv__vehicle-top strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--volt-text-primary);
+}
+
+.rv__code {
+  color: var(--volt-text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.rv__merchant {
+  margin: 0;
+  color: var(--volt-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.rv__merchant span {
+  color: var(--volt-text-muted);
+  font-weight: 500;
+}
+
+.rv__rate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.rv__rate strong {
+  font-family: var(--volt-font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--volt-text-primary);
+}
+
+.rv__rate span {
+  color: var(--volt-text-muted);
+  font-size: 0.72rem;
+}
+
+.rv__rate small {
+  margin-top: 0.35rem;
+  color: var(--volt-text-secondary);
+  font-size: 0.72rem;
+}
+
+.rv__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--volt-surface-muted);
+  color: var(--volt-text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.rv__pill svg {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.rv__pill--ok {
+  background: var(--volt-ok-soft);
+  color: var(--volt-ok);
+}
+
+.rv__pill--warn {
+  background: var(--volt-warn-soft);
+  color: var(--volt-warn);
+}
+
+/* Receipt */
+.rv__receipt {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.1rem;
+  border: 1px solid var(--volt-border);
+  border-radius: 1rem;
+  background: var(--volt-surface);
+}
+
+.rv__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0 0 0.85rem;
+  list-style: none;
+  border-bottom: 1px dashed var(--volt-border-strong);
+}
+
+.rv__lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--volt-text-secondary);
+  font-size: 0.85rem;
+}
+
+.rv__lines strong {
+  color: var(--volt-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.rv__line--discount span,
+.rv__line--discount strong {
+  color: var(--volt-ok);
+}
+
+.rv__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.rv__total span {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--volt-text-secondary);
+}
+
+.rv__total strong {
+  font-family: var(--volt-font-heading);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--volt-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.rv__total small {
+  font-size: 0.8rem;
+  color: var(--volt-text-muted);
+}
+
+.rv__pay {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.7rem;
+  background: var(--volt-surface-muted);
+  color: var(--volt-text-secondary);
+  font-size: 0.8rem;
+}
+
+.rv__pay svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.rv__pay strong {
+  margin-inline-start: auto;
+  color: var(--volt-text-primary);
+}
+
+.rv__error {
+  margin: 0 1.2rem 0.8rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--volt-accent) 10%, var(--volt-surface));
+  color: var(--volt-accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Footer: always visible, total next to the action */
+.rv__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1.2rem;
+  border-top: 1px solid var(--volt-border);
+  background: var(--volt-surface);
+}
+
+.rv__foot-total {
+  display: flex;
+  flex-direction: column;
+}
+
+.rv__foot-total span {
+  color: var(--volt-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rv__foot-total strong {
+  font-family: var(--volt-font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.rv__foot-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-inline-start: auto;
+}
+
+.rv__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  height: 2.75rem;
+  padding: 0 1.2rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rv__btn svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.rv__btn:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.rv__btn--ghost {
+  border-color: var(--volt-border-strong);
+  background: var(--volt-surface);
+  color: var(--volt-text-primary);
+}
+
+.rv__btn--ghost:hover:not(:disabled) {
+  background: var(--volt-surface-hover);
+}
+
+.rv__btn--primary {
+  min-width: 13rem;
+  background: var(--volt-accent);
+  color: #fff;
+  box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--volt-accent) 80%, transparent);
+}
+
+.rv__btn--primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.rv__spin {
+  animation: rv-spin 0.75s linear infinite;
+}
+
+@keyframes rv-fade { from { opacity: 0; } }
+@keyframes rv-rise { from { opacity: 0; transform: translateY(18px) scale(0.98); } }
+@keyframes rv-spin { to { transform: rotate(360deg); } }
+
+/* Phones: a bottom sheet that uses the full height */
+@media (max-width: 760px) {
+  .rv {
+    padding: 0;
+    place-items: end stretch;
+  }
+
+  .rv__dialog {
+    width: 100%;
+    max-height: 94dvh;
+    border-radius: 1.35rem 1.35rem 0 0;
+  }
+
+  .rv__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rv__receipt {
+    position: static;
+  }
+
+  .rv__vehicle {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+  }
+
+  .rv__thumb {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .rv__rate {
+    grid-column: 2;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
+  .rv__foot {
+    flex-wrap: wrap;
+  }
+
+  .rv__foot-actions {
+    width: 100%;
+  }
+
+  .rv__btn {
+    flex: 1;
+  }
+
+  .rv__btn--primary {
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv, .rv__dialog { animation: none; }
+}

@@ -1,0 +1,30 @@
+<div class="sp" appPortal role="status" aria-live="polite" (click)="finish()">
+  <div class="sp__card" (click)="$event.stopPropagation()">
+    <div class="sp__burst" aria-hidden="true">
+      @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+        <span class="sp__spark" [style.--i]="i"></span>
+      }
+      <svg class="sp__check" viewBox="0 0 52 52">
+        <circle class="sp__check-ring" cx="26" cy="26" r="24" />
+        <path class="sp__check-mark" d="M15 27l7 7 15-16" />
+      </svg>
+    </div>
+
+    <h2 class="sp__title">{{ title }}</h2>
+    @if (badge) {
+      <span class="sp__badge">{{ badge }}</span>
+    }
+    @if (message) {
+      <p class="sp__message">{{ message }}</p>
+    }
+
+    <button type="button" class="sp__action" (click)="finish()">
+      {{ actionLabel }}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 12h14m-6-6l6 6-6 6"/></svg>
+    </button>
+
+    <span class="sp__timer" aria-hidden="true">
+      <span class="sp__timer-fill" [style.animation-duration.ms]="duration"></span>
+    </span>
+  </div>
+</div>

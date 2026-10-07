@@ -1,0 +1,181 @@
+.sp {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(14, 10, 12, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: sp-fade 0.2s ease both;
+}
+
+.sp__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(24rem, 100%);
+  padding: 2rem 1.75rem 1.6rem;
+  border-radius: 1.4rem;
+  background: var(--volt-surface);
+  box-shadow: 0 30px 60px -25px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--volt-border);
+  text-align: center;
+  overflow: hidden;
+  animation: sp-pop 0.42s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+.sp__card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 7rem;
+  background: radial-gradient(70% 100% at 50% 0%, color-mix(in srgb, var(--volt-ok) 22%, transparent), transparent);
+  pointer-events: none;
+}
+
+/* Check mark that draws itself, with a ring of sparks. */
+.sp__burst {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin-bottom: 1rem;
+}
+
+.sp__check {
+  width: 4.6rem;
+  height: 4.6rem;
+}
+
+.sp__check-ring {
+  fill: color-mix(in srgb, var(--volt-ok) 14%, transparent);
+  stroke: var(--volt-ok);
+  stroke-width: 2.5;
+  stroke-dasharray: 151;
+  stroke-dashoffset: 151;
+  animation: sp-draw 0.5s 0.1s ease-out forwards;
+}
+
+.sp__check-mark {
+  fill: none;
+  stroke: var(--volt-ok);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: sp-draw 0.35s 0.5s ease-out forwards;
+}
+
+.sp__spark {
+  --angle: calc(var(--i) * 45deg);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin: -0.225rem;
+  border-radius: 999px;
+  background: var(--volt-accent);
+  opacity: 0;
+  animation: sp-spark 0.7s 0.45s ease-out forwards;
+}
+
+.sp__spark:nth-child(even) {
+  background: var(--volt-gold);
+  width: 0.35rem;
+  height: 0.35rem;
+}
+
+.sp__title {
+  margin: 0;
+  font-family: var(--volt-font-heading);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--volt-text-primary);
+}
+
+.sp__badge {
+  margin-top: 0.6rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: var(--volt-accent-soft);
+  color: var(--volt-accent);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.sp__message {
+  margin: 0.75rem 0 0;
+  color: var(--volt-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.sp__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.3rem;
+  padding: 0.55rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--volt-surface-muted);
+  color: var(--volt-text-primary);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sp__action:hover {
+  background: var(--volt-surface-hover);
+}
+
+.sp__action svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+html[dir='rtl'] .sp__action svg {
+  transform: scaleX(-1);
+}
+
+.sp__timer {
+  position: absolute;
+  inset: auto 0 0;
+  height: 4px;
+  background: var(--volt-surface-muted);
+}
+
+.sp__timer-fill {
+  display: block;
+  height: 100%;
+  background: var(--volt-ok);
+  transform-origin: left;
+  animation: sp-countdown linear forwards;
+}
+
+html[dir='rtl'] .sp__timer-fill {
+  transform-origin: right;
+}
+
+@keyframes sp-fade { from { opacity: 0; } }
+@keyframes sp-pop { from { opacity: 0; transform: translateY(16px) scale(0.92); } }
+@keyframes sp-draw { to { stroke-dashoffset: 0; } }
+@keyframes sp-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes sp-spark {
+  0% { opacity: 1; transform: rotate(var(--angle)) translateY(0); }
+  100% { opacity: 0; transform: rotate(var(--angle)) translateY(-3.2rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp, .sp__card, .sp__spark { animation: none; }
+  .sp__check-ring, .sp__check-mark { animation: none; stroke-dashoffset: 0; }
+}

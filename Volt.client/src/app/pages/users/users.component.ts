@@ -15,11 +15,12 @@ import {
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { userNameValidator } from '../../shared/validators/user-name.validator';
 import { memo } from '../../shared/utils/memo';
+import { PortalDirective } from '../../shared/directives/portal.directive';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [
+  imports: [PortalDirective, 
     FormsModule,
     ReactiveFormsModule,
     RouterModule,

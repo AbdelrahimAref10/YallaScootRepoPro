@@ -576,7 +576,7 @@
 
   <!-- Send to merchants modal -->
   @if (showMerchantsModal) {
-    <div class="od-modal" (click)="onCloseMerchantsModal()">
+    <div class="od-modal" appPortal (click)="onCloseMerchantsModal()">
       <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -633,7 +633,7 @@
 
   <!-- Reassign merchant modal -->
   @if (showReassignModal) {
-    <div class="od-modal" (click)="onCloseReassignModal()">
+    <div class="od-modal" appPortal (click)="onCloseReassignModal()">
       <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -685,7 +685,7 @@
 
   <!-- Replace vehicle modal -->
   @if (showReplaceVehicleModal) {
-    <div class="od-modal" (click)="onCloseReplaceVehicleModal()">
+    <div class="od-modal" appPortal (click)="onCloseReplaceVehicleModal()">
       <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -740,7 +740,7 @@
 
   <!-- Assign / reassign riders modal (delivery + return trip per vehicle) -->
   @if (showDeliveryModal) {
-    <div class="od-modal" (click)="onCloseDeliveryModal()">
+    <div class="od-modal" appPortal (click)="onCloseDeliveryModal()">
       <div class="od-modal__dialog od-modal__dialog--assign" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -893,7 +893,7 @@
 
   <!-- Handover photos viewer -->
   @if (galleryImage; as photo) {
-    <div class="od-modal" (click)="closeGallery()">
+    <div class="od-modal" appPortal (click)="closeGallery()">
       <div class="od-modal__dialog od-modal__dialog--gallery" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -941,7 +941,7 @@
 
   <!-- Handover modal -->
   @if (showHandoverModal) {
-    <div class="od-modal" (click)="onCloseHandoverModal()">
+    <div class="od-modal" appPortal (click)="onCloseHandoverModal()">
       <div class="od-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header">
           <div>
@@ -990,7 +990,7 @@
 
   <!-- Vehicle lifecycle proof modal -->
   @if (showLifecycleModal) {
-    <div class="od-modal" (click)="onCloseLifecycleModal()">
+    <div class="od-modal" appPortal (click)="onCloseLifecycleModal()">
       <div class="od-modal__dialog od-modal__dialog--proof" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <header class="od-modal__header od-proof__header">
           <div class="od-proof__heading">

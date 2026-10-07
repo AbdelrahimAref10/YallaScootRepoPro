@@ -14,6 +14,7 @@ import { AppRole } from '../../core/models/app-role';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { PortalDirective } from '../../shared/directives/portal.directive';
 
 /** Column order of the permission matrix. */
 const ACTIONS = ['View', 'Create', 'Edit', 'Delete'] as const;
@@ -26,7 +27,7 @@ type PanelScope = AppRole.SuperAdmin | AppRole.Merchant;
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, ConfirmDialogComponent, HasPermissionDirective],
+  imports: [PortalDirective, FormsModule, ReactiveFormsModule, TranslatePipe, ConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.css'
 })

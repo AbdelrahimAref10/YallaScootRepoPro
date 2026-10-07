@@ -71,6 +71,7 @@ import {
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { memo } from '../../../shared/utils/memo';
 import { LookupService } from '../../../core/services/lookup.service';
+import { PortalDirective } from '../../../shared/directives/portal.directive';
 
 interface PipelineStep {
   state: OrderState;
@@ -130,7 +131,7 @@ type OrderDetailTab = 'merchants' | 'riders' | 'journal' | 'documents';
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, ConfirmDialogComponent, VehicleSpecsComponent, MultiSelectComponent, RiderPickerComponent, HasPermissionDirective],
+  imports: [PortalDirective, CommonModule, FormsModule, RouterModule, TranslatePipe, ConfirmDialogComponent, VehicleSpecsComponent, MultiSelectComponent, RiderPickerComponent, HasPermissionDirective],
   templateUrl: './order-detail.component.html',
   styleUrls: [
     './order-detail.component.css',

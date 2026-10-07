@@ -172,7 +172,7 @@
 
 <!-- Cash debt limit -->
 @if (limitTarget; as target) {
-  <div class="dl-modal" (click)="onCloseDebtLimit()">
+  <div class="dl-modal" appPortal (click)="onCloseDebtLimit()">
     <div class="dl-modal__dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="dl-limit-title">
       <header class="dl-modal__header">
         <div>
