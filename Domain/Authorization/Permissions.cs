@@ -149,6 +149,11 @@ namespace Domain.Authorization
                 public const string View = "Merchant.Payments.View";
             }
 
+            public static class Reports
+            {
+                public const string View = "Merchant.Reports.View";
+            }
+
             public static class Staff
             {
                 public const string View = "Merchant.Staff.View";

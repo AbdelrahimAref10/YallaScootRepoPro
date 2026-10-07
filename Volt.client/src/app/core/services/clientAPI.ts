@@ -1068,6 +1068,196 @@ export class MerchantProfileClient {
 @Injectable({
     providedIn: 'root'
 })
+export class MerchantReportClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    run(key: string, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, cityIds?: number[] | null | undefined, merchantIds?: number[] | null | undefined, deliveryIds?: number[] | null | undefined, customerIds?: number[] | null | undefined, vehicleIds?: number[] | null | undefined, orderStates?: OrderState[] | null | undefined, paymentMethods?: PaymentMethod[] | null | undefined, paymentStates?: PaymentState[] | null | undefined, refundStates?: RefundState[] | null | undefined, directions?: SettlementDirection[] | null | undefined, partyTypes?: LedgerPartyType[] | null | undefined): Observable<ReportResultDto> {
+        let url_ = this.baseUrl + "/api/merchant/MerchantReport/{key}?";
+        if (key === undefined || key === null)
+            throw new Error("The parameter 'key' must be defined.");
+        url_ = url_.replace("{key}", encodeURIComponent("" + key));
+        if (fromDate !== undefined && fromDate !== null)
+            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
+        if (toDate !== undefined && toDate !== null)
+            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
+        if (cityIds !== undefined && cityIds !== null)
+            cityIds && cityIds.forEach(item => { url_ += "CityIds=" + encodeURIComponent("" + item) + "&"; });
+        if (merchantIds !== undefined && merchantIds !== null)
+            merchantIds && merchantIds.forEach(item => { url_ += "MerchantIds=" + encodeURIComponent("" + item) + "&"; });
+        if (deliveryIds !== undefined && deliveryIds !== null)
+            deliveryIds && deliveryIds.forEach(item => { url_ += "DeliveryIds=" + encodeURIComponent("" + item) + "&"; });
+        if (customerIds !== undefined && customerIds !== null)
+            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
+        if (vehicleIds !== undefined && vehicleIds !== null)
+            vehicleIds && vehicleIds.forEach(item => { url_ += "VehicleIds=" + encodeURIComponent("" + item) + "&"; });
+        if (orderStates !== undefined && orderStates !== null)
+            orderStates && orderStates.forEach(item => { url_ += "OrderStates=" + encodeURIComponent("" + item) + "&"; });
+        if (paymentMethods !== undefined && paymentMethods !== null)
+            paymentMethods && paymentMethods.forEach(item => { url_ += "PaymentMethods=" + encodeURIComponent("" + item) + "&"; });
+        if (paymentStates !== undefined && paymentStates !== null)
+            paymentStates && paymentStates.forEach(item => { url_ += "PaymentStates=" + encodeURIComponent("" + item) + "&"; });
+        if (refundStates !== undefined && refundStates !== null)
+            refundStates && refundStates.forEach(item => { url_ += "RefundStates=" + encodeURIComponent("" + item) + "&"; });
+        if (directions !== undefined && directions !== null)
+            directions && directions.forEach(item => { url_ += "Directions=" + encodeURIComponent("" + item) + "&"; });
+        if (partyTypes !== undefined && partyTypes !== null)
+            partyTypes && partyTypes.forEach(item => { url_ += "PartyTypes=" + encodeURIComponent("" + item) + "&"; });
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processRun(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processRun(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ReportResultDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ReportResultDto>;
+        }));
+    }
+
+    protected processRun(response: HttpResponseBase): Observable<ReportResultDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ReportResultDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    export(key: string, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, cityIds?: number[] | null | undefined, merchantIds?: number[] | null | undefined, deliveryIds?: number[] | null | undefined, customerIds?: number[] | null | undefined, vehicleIds?: number[] | null | undefined, orderStates?: OrderState[] | null | undefined, paymentMethods?: PaymentMethod[] | null | undefined, paymentStates?: PaymentState[] | null | undefined, refundStates?: RefundState[] | null | undefined, directions?: SettlementDirection[] | null | undefined, partyTypes?: LedgerPartyType[] | null | undefined, format?: ReportExportFormat | undefined): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/merchant/MerchantReport/{key}/Export?";
+        if (key === undefined || key === null)
+            throw new Error("The parameter 'key' must be defined.");
+        url_ = url_.replace("{key}", encodeURIComponent("" + key));
+        if (fromDate !== undefined && fromDate !== null)
+            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
+        if (toDate !== undefined && toDate !== null)
+            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
+        if (cityIds !== undefined && cityIds !== null)
+            cityIds && cityIds.forEach(item => { url_ += "CityIds=" + encodeURIComponent("" + item) + "&"; });
+        if (merchantIds !== undefined && merchantIds !== null)
+            merchantIds && merchantIds.forEach(item => { url_ += "MerchantIds=" + encodeURIComponent("" + item) + "&"; });
+        if (deliveryIds !== undefined && deliveryIds !== null)
+            deliveryIds && deliveryIds.forEach(item => { url_ += "DeliveryIds=" + encodeURIComponent("" + item) + "&"; });
+        if (customerIds !== undefined && customerIds !== null)
+            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
+        if (vehicleIds !== undefined && vehicleIds !== null)
+            vehicleIds && vehicleIds.forEach(item => { url_ += "VehicleIds=" + encodeURIComponent("" + item) + "&"; });
+        if (orderStates !== undefined && orderStates !== null)
+            orderStates && orderStates.forEach(item => { url_ += "OrderStates=" + encodeURIComponent("" + item) + "&"; });
+        if (paymentMethods !== undefined && paymentMethods !== null)
+            paymentMethods && paymentMethods.forEach(item => { url_ += "PaymentMethods=" + encodeURIComponent("" + item) + "&"; });
+        if (paymentStates !== undefined && paymentStates !== null)
+            paymentStates && paymentStates.forEach(item => { url_ += "PaymentStates=" + encodeURIComponent("" + item) + "&"; });
+        if (refundStates !== undefined && refundStates !== null)
+            refundStates && refundStates.forEach(item => { url_ += "RefundStates=" + encodeURIComponent("" + item) + "&"; });
+        if (directions !== undefined && directions !== null)
+            directions && directions.forEach(item => { url_ += "Directions=" + encodeURIComponent("" + item) + "&"; });
+        if (partyTypes !== undefined && partyTypes !== null)
+            partyTypes && partyTypes.forEach(item => { url_ += "PartyTypes=" + encodeURIComponent("" + item) + "&"; });
+        if (format === null)
+            throw new Error("The parameter 'format' cannot be null.");
+        else if (format !== undefined)
+            url_ += "format=" + encodeURIComponent("" + format) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processExport(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processExport(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processExport(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetail.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class MerchantStaffClient {
     private http: HttpClient;
     private baseUrl: string;
@@ -9447,30 +9637,37 @@ export class AdminReportClient {
         this.baseUrl = baseUrl ?? "";
     }
 
-    getOrdersDetails(cityIds?: number[] | null | undefined, orderStates?: number[] | null | undefined, customerIds?: number[] | null | undefined, paymentMethodIds?: number[] | null | undefined, paymentStates?: number[] | null | undefined, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, reservationFrom?: Date | null | undefined, reservationTo?: Date | null | undefined, orderCode?: string | null | undefined, isCancelled?: boolean | null | undefined): Observable<OrdersDetailsReportDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminReport/OrdersDetails?";
+    run(key: string, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, cityIds?: number[] | null | undefined, merchantIds?: number[] | null | undefined, deliveryIds?: number[] | null | undefined, customerIds?: number[] | null | undefined, vehicleIds?: number[] | null | undefined, orderStates?: OrderState[] | null | undefined, paymentMethods?: PaymentMethod[] | null | undefined, paymentStates?: PaymentState[] | null | undefined, refundStates?: RefundState[] | null | undefined, directions?: SettlementDirection[] | null | undefined, partyTypes?: LedgerPartyType[] | null | undefined): Observable<ReportResultDto> {
+        let url_ = this.baseUrl + "/api/admin/AdminReport/{key}?";
+        if (key === undefined || key === null)
+            throw new Error("The parameter 'key' must be defined.");
+        url_ = url_.replace("{key}", encodeURIComponent("" + key));
+        if (fromDate !== undefined && fromDate !== null)
+            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
+        if (toDate !== undefined && toDate !== null)
+            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
         if (cityIds !== undefined && cityIds !== null)
             cityIds && cityIds.forEach(item => { url_ += "CityIds=" + encodeURIComponent("" + item) + "&"; });
+        if (merchantIds !== undefined && merchantIds !== null)
+            merchantIds && merchantIds.forEach(item => { url_ += "MerchantIds=" + encodeURIComponent("" + item) + "&"; });
+        if (deliveryIds !== undefined && deliveryIds !== null)
+            deliveryIds && deliveryIds.forEach(item => { url_ += "DeliveryIds=" + encodeURIComponent("" + item) + "&"; });
+        if (customerIds !== undefined && customerIds !== null)
+            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
+        if (vehicleIds !== undefined && vehicleIds !== null)
+            vehicleIds && vehicleIds.forEach(item => { url_ += "VehicleIds=" + encodeURIComponent("" + item) + "&"; });
         if (orderStates !== undefined && orderStates !== null)
             orderStates && orderStates.forEach(item => { url_ += "OrderStates=" + encodeURIComponent("" + item) + "&"; });
-        if (customerIds !== undefined && customerIds !== null)
-            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
-        if (paymentMethodIds !== undefined && paymentMethodIds !== null)
-            paymentMethodIds && paymentMethodIds.forEach(item => { url_ += "PaymentMethodIds=" + encodeURIComponent("" + item) + "&"; });
+        if (paymentMethods !== undefined && paymentMethods !== null)
+            paymentMethods && paymentMethods.forEach(item => { url_ += "PaymentMethods=" + encodeURIComponent("" + item) + "&"; });
         if (paymentStates !== undefined && paymentStates !== null)
             paymentStates && paymentStates.forEach(item => { url_ += "PaymentStates=" + encodeURIComponent("" + item) + "&"; });
-        if (fromDate !== undefined && fromDate !== null)
-            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
-        if (toDate !== undefined && toDate !== null)
-            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
-        if (reservationFrom !== undefined && reservationFrom !== null)
-            url_ += "ReservationFrom=" + encodeURIComponent(reservationFrom ? "" + reservationFrom.toISOString() : "") + "&";
-        if (reservationTo !== undefined && reservationTo !== null)
-            url_ += "ReservationTo=" + encodeURIComponent(reservationTo ? "" + reservationTo.toISOString() : "") + "&";
-        if (orderCode !== undefined && orderCode !== null)
-            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
-        if (isCancelled !== undefined && isCancelled !== null)
-            url_ += "IsCancelled=" + encodeURIComponent("" + isCancelled) + "&";
+        if (refundStates !== undefined && refundStates !== null)
+            refundStates && refundStates.forEach(item => { url_ += "RefundStates=" + encodeURIComponent("" + item) + "&"; });
+        if (directions !== undefined && directions !== null)
+            directions && directions.forEach(item => { url_ += "Directions=" + encodeURIComponent("" + item) + "&"; });
+        if (partyTypes !== undefined && partyTypes !== null)
+            partyTypes && partyTypes.forEach(item => { url_ += "PartyTypes=" + encodeURIComponent("" + item) + "&"; });
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -9482,20 +9679,20 @@ export class AdminReportClient {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetOrdersDetails(response_);
+            return this.processRun(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetOrdersDetails(response_ as any);
+                    return this.processRun(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<OrdersDetailsReportDto>;
+                    return _observableThrow(e) as any as Observable<ReportResultDto>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<OrdersDetailsReportDto>;
+                return _observableThrow(response_) as any as Observable<ReportResultDto>;
         }));
     }
 
-    protected processGetOrdersDetails(response: HttpResponseBase): Observable<OrdersDetailsReportDto> {
+    protected processRun(response: HttpResponseBase): Observable<ReportResultDto> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -9506,7 +9703,7 @@ export class AdminReportClient {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = OrdersDetailsReportDto.fromJS(resultData200);
+            result200 = ReportResultDto.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status === 400) {
@@ -9524,614 +9721,37 @@ export class AdminReportClient {
         return _observableOf(null as any);
     }
 
-    exportOrdersDetails(cityIds?: number[] | null | undefined, orderStates?: number[] | null | undefined, customerIds?: number[] | null | undefined, paymentMethodIds?: number[] | null | undefined, paymentStates?: number[] | null | undefined, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, reservationFrom?: Date | null | undefined, reservationTo?: Date | null | undefined, orderCode?: string | null | undefined, isCancelled?: boolean | null | undefined, format?: ReportExportFormat | undefined): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/admin/AdminReport/OrdersDetails/Export?";
+    export(key: string, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, cityIds?: number[] | null | undefined, merchantIds?: number[] | null | undefined, deliveryIds?: number[] | null | undefined, customerIds?: number[] | null | undefined, vehicleIds?: number[] | null | undefined, orderStates?: OrderState[] | null | undefined, paymentMethods?: PaymentMethod[] | null | undefined, paymentStates?: PaymentState[] | null | undefined, refundStates?: RefundState[] | null | undefined, directions?: SettlementDirection[] | null | undefined, partyTypes?: LedgerPartyType[] | null | undefined, format?: ReportExportFormat | undefined): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/admin/AdminReport/{key}/Export?";
+        if (key === undefined || key === null)
+            throw new Error("The parameter 'key' must be defined.");
+        url_ = url_.replace("{key}", encodeURIComponent("" + key));
+        if (fromDate !== undefined && fromDate !== null)
+            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
+        if (toDate !== undefined && toDate !== null)
+            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
         if (cityIds !== undefined && cityIds !== null)
             cityIds && cityIds.forEach(item => { url_ += "CityIds=" + encodeURIComponent("" + item) + "&"; });
+        if (merchantIds !== undefined && merchantIds !== null)
+            merchantIds && merchantIds.forEach(item => { url_ += "MerchantIds=" + encodeURIComponent("" + item) + "&"; });
+        if (deliveryIds !== undefined && deliveryIds !== null)
+            deliveryIds && deliveryIds.forEach(item => { url_ += "DeliveryIds=" + encodeURIComponent("" + item) + "&"; });
+        if (customerIds !== undefined && customerIds !== null)
+            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
+        if (vehicleIds !== undefined && vehicleIds !== null)
+            vehicleIds && vehicleIds.forEach(item => { url_ += "VehicleIds=" + encodeURIComponent("" + item) + "&"; });
         if (orderStates !== undefined && orderStates !== null)
             orderStates && orderStates.forEach(item => { url_ += "OrderStates=" + encodeURIComponent("" + item) + "&"; });
-        if (customerIds !== undefined && customerIds !== null)
-            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
-        if (paymentMethodIds !== undefined && paymentMethodIds !== null)
-            paymentMethodIds && paymentMethodIds.forEach(item => { url_ += "PaymentMethodIds=" + encodeURIComponent("" + item) + "&"; });
+        if (paymentMethods !== undefined && paymentMethods !== null)
+            paymentMethods && paymentMethods.forEach(item => { url_ += "PaymentMethods=" + encodeURIComponent("" + item) + "&"; });
         if (paymentStates !== undefined && paymentStates !== null)
             paymentStates && paymentStates.forEach(item => { url_ += "PaymentStates=" + encodeURIComponent("" + item) + "&"; });
-        if (fromDate !== undefined && fromDate !== null)
-            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
-        if (toDate !== undefined && toDate !== null)
-            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
-        if (reservationFrom !== undefined && reservationFrom !== null)
-            url_ += "ReservationFrom=" + encodeURIComponent(reservationFrom ? "" + reservationFrom.toISOString() : "") + "&";
-        if (reservationTo !== undefined && reservationTo !== null)
-            url_ += "ReservationTo=" + encodeURIComponent(reservationTo ? "" + reservationTo.toISOString() : "") + "&";
-        if (orderCode !== undefined && orderCode !== null)
-            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
-        if (isCancelled !== undefined && isCancelled !== null)
-            url_ += "IsCancelled=" + encodeURIComponent("" + isCancelled) + "&";
-        if (format === null)
-            throw new Error("The parameter 'format' cannot be null.");
-        else if (format !== undefined)
-            url_ += "format=" + encodeURIComponent("" + format) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/octet-stream"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processExportOrdersDetails(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processExportOrdersDetails(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<FileResponse>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<FileResponse>;
-        }));
-    }
-
-    protected processExportOrdersDetails(response: HttpResponseBase): Observable<FileResponse> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getCancelledOrders(cityIds?: number[] | null | undefined, customerIds?: number[] | null | undefined, paymentMethodIds?: number[] | null | undefined, cancellationFeeStates?: number[] | null | undefined, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, orderCode?: string | null | undefined, cancellationFeePaid?: boolean | null | undefined, moneyRefunded?: boolean | null | undefined): Observable<CancelledOrdersReportDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminReport/CancelledOrders?";
-        if (cityIds !== undefined && cityIds !== null)
-            cityIds && cityIds.forEach(item => { url_ += "CityIds=" + encodeURIComponent("" + item) + "&"; });
-        if (customerIds !== undefined && customerIds !== null)
-            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
-        if (paymentMethodIds !== undefined && paymentMethodIds !== null)
-            paymentMethodIds && paymentMethodIds.forEach(item => { url_ += "PaymentMethodIds=" + encodeURIComponent("" + item) + "&"; });
-        if (cancellationFeeStates !== undefined && cancellationFeeStates !== null)
-            cancellationFeeStates && cancellationFeeStates.forEach(item => { url_ += "CancellationFeeStates=" + encodeURIComponent("" + item) + "&"; });
-        if (fromDate !== undefined && fromDate !== null)
-            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
-        if (toDate !== undefined && toDate !== null)
-            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
-        if (orderCode !== undefined && orderCode !== null)
-            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
-        if (cancellationFeePaid !== undefined && cancellationFeePaid !== null)
-            url_ += "CancellationFeePaid=" + encodeURIComponent("" + cancellationFeePaid) + "&";
-        if (moneyRefunded !== undefined && moneyRefunded !== null)
-            url_ += "MoneyRefunded=" + encodeURIComponent("" + moneyRefunded) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetCancelledOrders(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetCancelledOrders(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<CancelledOrdersReportDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<CancelledOrdersReportDto>;
-        }));
-    }
-
-    protected processGetCancelledOrders(response: HttpResponseBase): Observable<CancelledOrdersReportDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = CancelledOrdersReportDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    exportCancelledOrders(cityIds?: number[] | null | undefined, customerIds?: number[] | null | undefined, paymentMethodIds?: number[] | null | undefined, cancellationFeeStates?: number[] | null | undefined, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, orderCode?: string | null | undefined, cancellationFeePaid?: boolean | null | undefined, moneyRefunded?: boolean | null | undefined, format?: ReportExportFormat | undefined): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/admin/AdminReport/CancelledOrders/Export?";
-        if (cityIds !== undefined && cityIds !== null)
-            cityIds && cityIds.forEach(item => { url_ += "CityIds=" + encodeURIComponent("" + item) + "&"; });
-        if (customerIds !== undefined && customerIds !== null)
-            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
-        if (paymentMethodIds !== undefined && paymentMethodIds !== null)
-            paymentMethodIds && paymentMethodIds.forEach(item => { url_ += "PaymentMethodIds=" + encodeURIComponent("" + item) + "&"; });
-        if (cancellationFeeStates !== undefined && cancellationFeeStates !== null)
-            cancellationFeeStates && cancellationFeeStates.forEach(item => { url_ += "CancellationFeeStates=" + encodeURIComponent("" + item) + "&"; });
-        if (fromDate !== undefined && fromDate !== null)
-            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
-        if (toDate !== undefined && toDate !== null)
-            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
-        if (orderCode !== undefined && orderCode !== null)
-            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
-        if (cancellationFeePaid !== undefined && cancellationFeePaid !== null)
-            url_ += "CancellationFeePaid=" + encodeURIComponent("" + cancellationFeePaid) + "&";
-        if (moneyRefunded !== undefined && moneyRefunded !== null)
-            url_ += "MoneyRefunded=" + encodeURIComponent("" + moneyRefunded) + "&";
-        if (format === null)
-            throw new Error("The parameter 'format' cannot be null.");
-        else if (format !== undefined)
-            url_ += "format=" + encodeURIComponent("" + format) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/octet-stream"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processExportCancelledOrders(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processExportCancelledOrders(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<FileResponse>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<FileResponse>;
-        }));
-    }
-
-    protected processExportCancelledOrders(response: HttpResponseBase): Observable<FileResponse> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getCancellationDebts(customerIds?: number[] | null | undefined, states?: number[] | null | undefined, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, customerSearch?: string | null | undefined, orderCode?: string | null | undefined): Observable<CancellationDebtsReportDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminReport/CancellationDebts?";
-        if (customerIds !== undefined && customerIds !== null)
-            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
-        if (states !== undefined && states !== null)
-            states && states.forEach(item => { url_ += "States=" + encodeURIComponent("" + item) + "&"; });
-        if (fromDate !== undefined && fromDate !== null)
-            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
-        if (toDate !== undefined && toDate !== null)
-            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
-        if (customerSearch !== undefined && customerSearch !== null)
-            url_ += "CustomerSearch=" + encodeURIComponent("" + customerSearch) + "&";
-        if (orderCode !== undefined && orderCode !== null)
-            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetCancellationDebts(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetCancellationDebts(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<CancellationDebtsReportDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<CancellationDebtsReportDto>;
-        }));
-    }
-
-    protected processGetCancellationDebts(response: HttpResponseBase): Observable<CancellationDebtsReportDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = CancellationDebtsReportDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    exportCancellationDebts(customerIds?: number[] | null | undefined, states?: number[] | null | undefined, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, customerSearch?: string | null | undefined, orderCode?: string | null | undefined, format?: ReportExportFormat | undefined): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/admin/AdminReport/CancellationDebts/Export?";
-        if (customerIds !== undefined && customerIds !== null)
-            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
-        if (states !== undefined && states !== null)
-            states && states.forEach(item => { url_ += "States=" + encodeURIComponent("" + item) + "&"; });
-        if (fromDate !== undefined && fromDate !== null)
-            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
-        if (toDate !== undefined && toDate !== null)
-            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
-        if (customerSearch !== undefined && customerSearch !== null)
-            url_ += "CustomerSearch=" + encodeURIComponent("" + customerSearch) + "&";
-        if (orderCode !== undefined && orderCode !== null)
-            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
-        if (format === null)
-            throw new Error("The parameter 'format' cannot be null.");
-        else if (format !== undefined)
-            url_ += "format=" + encodeURIComponent("" + format) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/octet-stream"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processExportCancellationDebts(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processExportCancellationDebts(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<FileResponse>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<FileResponse>;
-        }));
-    }
-
-    protected processExportCancellationDebts(response: HttpResponseBase): Observable<FileResponse> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getPayments(cityIds?: number[] | null | undefined, customerIds?: number[] | null | undefined, paymentMethodIds?: number[] | null | undefined, paymentStates?: number[] | null | undefined, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, orderCode?: string | null | undefined): Observable<PaymentsReportDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminReport/Payments?";
-        if (cityIds !== undefined && cityIds !== null)
-            cityIds && cityIds.forEach(item => { url_ += "CityIds=" + encodeURIComponent("" + item) + "&"; });
-        if (customerIds !== undefined && customerIds !== null)
-            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
-        if (paymentMethodIds !== undefined && paymentMethodIds !== null)
-            paymentMethodIds && paymentMethodIds.forEach(item => { url_ += "PaymentMethodIds=" + encodeURIComponent("" + item) + "&"; });
-        if (paymentStates !== undefined && paymentStates !== null)
-            paymentStates && paymentStates.forEach(item => { url_ += "PaymentStates=" + encodeURIComponent("" + item) + "&"; });
-        if (fromDate !== undefined && fromDate !== null)
-            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
-        if (toDate !== undefined && toDate !== null)
-            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
-        if (orderCode !== undefined && orderCode !== null)
-            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetPayments(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetPayments(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<PaymentsReportDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<PaymentsReportDto>;
-        }));
-    }
-
-    protected processGetPayments(response: HttpResponseBase): Observable<PaymentsReportDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = PaymentsReportDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    exportPayments(cityIds?: number[] | null | undefined, customerIds?: number[] | null | undefined, paymentMethodIds?: number[] | null | undefined, paymentStates?: number[] | null | undefined, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, orderCode?: string | null | undefined, format?: ReportExportFormat | undefined): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/admin/AdminReport/Payments/Export?";
-        if (cityIds !== undefined && cityIds !== null)
-            cityIds && cityIds.forEach(item => { url_ += "CityIds=" + encodeURIComponent("" + item) + "&"; });
-        if (customerIds !== undefined && customerIds !== null)
-            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
-        if (paymentMethodIds !== undefined && paymentMethodIds !== null)
-            paymentMethodIds && paymentMethodIds.forEach(item => { url_ += "PaymentMethodIds=" + encodeURIComponent("" + item) + "&"; });
-        if (paymentStates !== undefined && paymentStates !== null)
-            paymentStates && paymentStates.forEach(item => { url_ += "PaymentStates=" + encodeURIComponent("" + item) + "&"; });
-        if (fromDate !== undefined && fromDate !== null)
-            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
-        if (toDate !== undefined && toDate !== null)
-            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
-        if (orderCode !== undefined && orderCode !== null)
-            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
-        if (format === null)
-            throw new Error("The parameter 'format' cannot be null.");
-        else if (format !== undefined)
-            url_ += "format=" + encodeURIComponent("" + format) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/octet-stream"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processExportPayments(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processExportPayments(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<FileResponse>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<FileResponse>;
-        }));
-    }
-
-    protected processExportPayments(response: HttpResponseBase): Observable<FileResponse> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getPayPalRefunds(customerIds?: number[] | null | undefined, refundStates?: number[] | null | undefined, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, orderCode?: string | null | undefined, moneyRefunded?: boolean | null | undefined): Observable<PayPalRefundsReportDto> {
-        let url_ = this.baseUrl + "/api/admin/AdminReport/PayPalRefunds?";
-        if (customerIds !== undefined && customerIds !== null)
-            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
         if (refundStates !== undefined && refundStates !== null)
             refundStates && refundStates.forEach(item => { url_ += "RefundStates=" + encodeURIComponent("" + item) + "&"; });
-        if (fromDate !== undefined && fromDate !== null)
-            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
-        if (toDate !== undefined && toDate !== null)
-            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
-        if (orderCode !== undefined && orderCode !== null)
-            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
-        if (moneyRefunded !== undefined && moneyRefunded !== null)
-            url_ += "MoneyRefunded=" + encodeURIComponent("" + moneyRefunded) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetPayPalRefunds(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetPayPalRefunds(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<PayPalRefundsReportDto>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<PayPalRefundsReportDto>;
-        }));
-    }
-
-    protected processGetPayPalRefunds(response: HttpResponseBase): Observable<PayPalRefundsReportDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = PayPalRefundsReportDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status === 400) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ProblemDetail.fromJS(resultData400);
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    exportPayPalRefunds(customerIds?: number[] | null | undefined, refundStates?: number[] | null | undefined, fromDate?: Date | null | undefined, toDate?: Date | null | undefined, orderCode?: string | null | undefined, moneyRefunded?: boolean | null | undefined, format?: ReportExportFormat | undefined): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/admin/AdminReport/PayPalRefunds/Export?";
-        if (customerIds !== undefined && customerIds !== null)
-            customerIds && customerIds.forEach(item => { url_ += "CustomerIds=" + encodeURIComponent("" + item) + "&"; });
-        if (refundStates !== undefined && refundStates !== null)
-            refundStates && refundStates.forEach(item => { url_ += "RefundStates=" + encodeURIComponent("" + item) + "&"; });
-        if (fromDate !== undefined && fromDate !== null)
-            url_ += "FromDate=" + encodeURIComponent(fromDate ? "" + fromDate.toISOString() : "") + "&";
-        if (toDate !== undefined && toDate !== null)
-            url_ += "ToDate=" + encodeURIComponent(toDate ? "" + toDate.toISOString() : "") + "&";
-        if (orderCode !== undefined && orderCode !== null)
-            url_ += "OrderCode=" + encodeURIComponent("" + orderCode) + "&";
-        if (moneyRefunded !== undefined && moneyRefunded !== null)
-            url_ += "MoneyRefunded=" + encodeURIComponent("" + moneyRefunded) + "&";
+        if (directions !== undefined && directions !== null)
+            directions && directions.forEach(item => { url_ += "Directions=" + encodeURIComponent("" + item) + "&"; });
+        if (partyTypes !== undefined && partyTypes !== null)
+            partyTypes && partyTypes.forEach(item => { url_ += "PartyTypes=" + encodeURIComponent("" + item) + "&"; });
         if (format === null)
             throw new Error("The parameter 'format' cannot be null.");
         else if (format !== undefined)
@@ -10147,11 +9767,11 @@ export class AdminReportClient {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processExportPayPalRefunds(response_);
+            return this.processExport(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processExportPayPalRefunds(response_ as any);
+                    return this.processExport(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<FileResponse>;
                 }
@@ -10160,7 +9780,7 @@ export class AdminReportClient {
         }));
     }
 
-    protected processExportPayPalRefunds(response: HttpResponseBase): Observable<FileResponse> {
+    protected processExport(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -16053,6 +15673,199 @@ export class SubCategoryDto {
     }
 }
 
+export class ReportResultDto {
+    key!: string;
+    title!: string;
+    columns!: ReportColumnDto[];
+    rows!: { [key: string]: any; }[];
+    totals!: { [key: string]: number; };
+    kpis!: ReportKpiDto[];
+
+    init(_data?: any) {
+        if (_data) {
+            this.key = _data["key"] !== undefined ? _data["key"] : <any>null;
+            this.title = _data["title"] !== undefined ? _data["title"] : <any>null;
+            if (Array.isArray(_data["columns"])) {
+                this.columns = [] as any;
+                for (let item of _data["columns"])
+                    this.columns!.push(ReportColumnDto.fromJS(item));
+            }
+            else {
+                this.columns = <any>null;
+            }
+            if (Array.isArray(_data["rows"])) {
+                this.rows = [] as any;
+                for (let item of _data["rows"])
+                    this.rows!.push(item);
+            }
+            else {
+                this.rows = <any>null;
+            }
+            if (_data["totals"]) {
+                this.totals = {} as any;
+                for (let key in _data["totals"]) {
+                    if (_data["totals"].hasOwnProperty(key))
+                        (<any>this.totals)![key] = _data["totals"][key] !== undefined ? _data["totals"][key] : <any>null;
+                }
+            }
+            else {
+                this.totals = <any>null;
+            }
+            if (Array.isArray(_data["kpis"])) {
+                this.kpis = [] as any;
+                for (let item of _data["kpis"])
+                    this.kpis!.push(ReportKpiDto.fromJS(item));
+            }
+            else {
+                this.kpis = <any>null;
+            }
+        }
+    }
+
+    static fromJS(data: any): ReportResultDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ReportResultDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["key"] = this.key !== undefined ? this.key : <any>null;
+        data["title"] = this.title !== undefined ? this.title : <any>null;
+        if (Array.isArray(this.columns)) {
+            data["columns"] = [];
+            for (let item of this.columns)
+                data["columns"].push(item.toJSON());
+        }
+        if (Array.isArray(this.rows)) {
+            data["rows"] = [];
+            for (let item of this.rows)
+                data["rows"].push(item);
+        }
+        if (this.totals) {
+            data["totals"] = {};
+            for (let key in this.totals) {
+                if (this.totals.hasOwnProperty(key))
+                    (<any>data["totals"])[key] = this.totals[key] !== undefined ? this.totals[key] : <any>null;
+            }
+        }
+        if (Array.isArray(this.kpis)) {
+            data["kpis"] = [];
+            for (let item of this.kpis)
+                data["kpis"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export class ReportColumnDto {
+    key!: string;
+    label!: string;
+    labelKey!: string;
+    type!: ReportColumnType;
+    total!: boolean;
+    valueKeyPrefix!: string | null;
+
+    init(_data?: any) {
+        if (_data) {
+            this.key = _data["key"] !== undefined ? _data["key"] : <any>null;
+            this.label = _data["label"] !== undefined ? _data["label"] : <any>null;
+            this.labelKey = _data["labelKey"] !== undefined ? _data["labelKey"] : <any>null;
+            this.type = _data["type"] !== undefined ? _data["type"] : <any>null;
+            this.total = _data["total"] !== undefined ? _data["total"] : <any>null;
+            this.valueKeyPrefix = _data["valueKeyPrefix"] !== undefined ? _data["valueKeyPrefix"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): ReportColumnDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ReportColumnDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["key"] = this.key !== undefined ? this.key : <any>null;
+        data["label"] = this.label !== undefined ? this.label : <any>null;
+        data["labelKey"] = this.labelKey !== undefined ? this.labelKey : <any>null;
+        data["type"] = this.type !== undefined ? this.type : <any>null;
+        data["total"] = this.total !== undefined ? this.total : <any>null;
+        data["valueKeyPrefix"] = this.valueKeyPrefix !== undefined ? this.valueKeyPrefix : <any>null;
+        return data;
+    }
+}
+
+export enum ReportColumnType {
+    Text = 1,
+    Number = 2,
+    Money = 3,
+    Date = 4,
+    DateTime = 5,
+    Badge = 6,
+}
+
+export class ReportKpiDto {
+    label!: string;
+    labelKey!: string;
+    value!: number;
+    type!: ReportColumnType;
+
+    init(_data?: any) {
+        if (_data) {
+            this.label = _data["label"] !== undefined ? _data["label"] : <any>null;
+            this.labelKey = _data["labelKey"] !== undefined ? _data["labelKey"] : <any>null;
+            this.value = _data["value"] !== undefined ? _data["value"] : <any>null;
+            this.type = _data["type"] !== undefined ? _data["type"] : <any>null;
+        }
+    }
+
+    static fromJS(data: any): ReportKpiDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ReportKpiDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["label"] = this.label !== undefined ? this.label : <any>null;
+        data["labelKey"] = this.labelKey !== undefined ? this.labelKey : <any>null;
+        data["value"] = this.value !== undefined ? this.value : <any>null;
+        data["type"] = this.type !== undefined ? this.type : <any>null;
+        return data;
+    }
+}
+
+export enum PaymentMethod {
+    Cash = 0,
+    PayPal = 1,
+}
+
+export enum PaymentState {
+    Pending = 0,
+    Paid = 1,
+    Failed = 2,
+    Refunded = 3,
+}
+
+export enum RefundState {
+    Pending = 0,
+    Success = 1,
+    Failed = 2,
+}
+
+export enum SettlementDirection {
+    CollectFromParty = 1,
+    PayToParty = 2,
+}
+
+export enum ReportExportFormat {
+    Excel = 1,
+    Pdf = 2,
+}
+
 export class MerchantStaffDto {
     merchantUserId!: number;
     userId!: number;
@@ -18472,11 +18285,6 @@ export class OrderDto {
         data["priceBreakdown"] = this.priceBreakdown ? this.priceBreakdown.toJSON() : <any>null;
         return data;
     }
-}
-
-export enum PaymentMethod {
-    Cash = 0,
-    PayPal = 1,
 }
 
 export class CustomerOrderRiderDto {
@@ -20985,13 +20793,6 @@ export class OrderPaymentDto {
     }
 }
 
-export enum PaymentState {
-    Pending = 0,
-    Paid = 1,
-    Failed = 2,
-    Refunded = 3,
-}
-
 export class RefundablePaypalAmountDto {
     id!: number;
     customerId!: number;
@@ -21034,12 +20835,6 @@ export class RefundablePaypalAmountDto {
         data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
         return data;
     }
-}
-
-export enum RefundState {
-    Pending = 0,
-    Success = 1,
-    Failed = 2,
 }
 
 export class OrderTotalsDto {
@@ -22216,708 +22011,6 @@ export class MarkCustomerRejectedReceiptCommand {
     }
 }
 
-export class OrdersDetailsReportDto {
-    items!: OrdersDetailsReportRowDto[];
-    totals!: OrdersDetailsReportTotalsDto;
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(OrdersDetailsReportRowDto.fromJS(item));
-            }
-            else {
-                this.items = <any>null;
-            }
-            this.totals = _data["totals"] ? OrdersDetailsReportTotalsDto.fromJS(_data["totals"]) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): OrdersDetailsReportDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new OrdersDetailsReportDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item.toJSON());
-        }
-        data["totals"] = this.totals ? this.totals.toJSON() : <any>null;
-        return data;
-    }
-}
-
-export class OrdersDetailsReportRowDto {
-    orderId!: number;
-    orderCode!: string;
-    customerId!: number;
-    customerName!: string;
-    customerMobile!: string;
-    cityId!: number;
-    cityName!: string;
-    subCategoryName!: string;
-    reservationDateFrom!: Date;
-    reservationDateTo!: Date;
-    vehiclesCount!: number;
-    orderSubTotal!: number;
-    previousDebt!: number;
-    orderTotal!: number;
-    paymentMethod!: PaymentMethod;
-    paymentState!: PaymentState | null;
-    orderState!: OrderState;
-    moneyRefunded!: boolean;
-    isCancelled!: boolean;
-    createdDate!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
-            this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
-            this.customerId = _data["customerId"] !== undefined ? _data["customerId"] : <any>null;
-            this.customerName = _data["customerName"] !== undefined ? _data["customerName"] : <any>null;
-            this.customerMobile = _data["customerMobile"] !== undefined ? _data["customerMobile"] : <any>null;
-            this.cityId = _data["cityId"] !== undefined ? _data["cityId"] : <any>null;
-            this.cityName = _data["cityName"] !== undefined ? _data["cityName"] : <any>null;
-            this.subCategoryName = _data["subCategoryName"] !== undefined ? _data["subCategoryName"] : <any>null;
-            this.reservationDateFrom = _data["reservationDateFrom"] ? new Date(_data["reservationDateFrom"].toString()) : <any>null;
-            this.reservationDateTo = _data["reservationDateTo"] ? new Date(_data["reservationDateTo"].toString()) : <any>null;
-            this.vehiclesCount = _data["vehiclesCount"] !== undefined ? _data["vehiclesCount"] : <any>null;
-            this.orderSubTotal = _data["orderSubTotal"] !== undefined ? _data["orderSubTotal"] : <any>null;
-            this.previousDebt = _data["previousDebt"] !== undefined ? _data["previousDebt"] : <any>null;
-            this.orderTotal = _data["orderTotal"] !== undefined ? _data["orderTotal"] : <any>null;
-            this.paymentMethod = _data["paymentMethod"] !== undefined ? _data["paymentMethod"] : <any>null;
-            this.paymentState = _data["paymentState"] !== undefined ? _data["paymentState"] : <any>null;
-            this.orderState = _data["orderState"] !== undefined ? _data["orderState"] : <any>null;
-            this.moneyRefunded = _data["moneyRefunded"] !== undefined ? _data["moneyRefunded"] : <any>null;
-            this.isCancelled = _data["isCancelled"] !== undefined ? _data["isCancelled"] : <any>null;
-            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): OrdersDetailsReportRowDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new OrdersDetailsReportRowDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
-        data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
-        data["customerId"] = this.customerId !== undefined ? this.customerId : <any>null;
-        data["customerName"] = this.customerName !== undefined ? this.customerName : <any>null;
-        data["customerMobile"] = this.customerMobile !== undefined ? this.customerMobile : <any>null;
-        data["cityId"] = this.cityId !== undefined ? this.cityId : <any>null;
-        data["cityName"] = this.cityName !== undefined ? this.cityName : <any>null;
-        data["subCategoryName"] = this.subCategoryName !== undefined ? this.subCategoryName : <any>null;
-        data["reservationDateFrom"] = this.reservationDateFrom ? this.reservationDateFrom.toISOString() : <any>null;
-        data["reservationDateTo"] = this.reservationDateTo ? this.reservationDateTo.toISOString() : <any>null;
-        data["vehiclesCount"] = this.vehiclesCount !== undefined ? this.vehiclesCount : <any>null;
-        data["orderSubTotal"] = this.orderSubTotal !== undefined ? this.orderSubTotal : <any>null;
-        data["previousDebt"] = this.previousDebt !== undefined ? this.previousDebt : <any>null;
-        data["orderTotal"] = this.orderTotal !== undefined ? this.orderTotal : <any>null;
-        data["paymentMethod"] = this.paymentMethod !== undefined ? this.paymentMethod : <any>null;
-        data["paymentState"] = this.paymentState !== undefined ? this.paymentState : <any>null;
-        data["orderState"] = this.orderState !== undefined ? this.orderState : <any>null;
-        data["moneyRefunded"] = this.moneyRefunded !== undefined ? this.moneyRefunded : <any>null;
-        data["isCancelled"] = this.isCancelled !== undefined ? this.isCancelled : <any>null;
-        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class OrdersDetailsReportTotalsDto {
-    ordersCount!: number;
-    totalSubTotal!: number;
-    totalPreviousDebt!: number;
-    totalOrderAmount!: number;
-    totalPaidAmount!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.ordersCount = _data["ordersCount"] !== undefined ? _data["ordersCount"] : <any>null;
-            this.totalSubTotal = _data["totalSubTotal"] !== undefined ? _data["totalSubTotal"] : <any>null;
-            this.totalPreviousDebt = _data["totalPreviousDebt"] !== undefined ? _data["totalPreviousDebt"] : <any>null;
-            this.totalOrderAmount = _data["totalOrderAmount"] !== undefined ? _data["totalOrderAmount"] : <any>null;
-            this.totalPaidAmount = _data["totalPaidAmount"] !== undefined ? _data["totalPaidAmount"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): OrdersDetailsReportTotalsDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new OrdersDetailsReportTotalsDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["ordersCount"] = this.ordersCount !== undefined ? this.ordersCount : <any>null;
-        data["totalSubTotal"] = this.totalSubTotal !== undefined ? this.totalSubTotal : <any>null;
-        data["totalPreviousDebt"] = this.totalPreviousDebt !== undefined ? this.totalPreviousDebt : <any>null;
-        data["totalOrderAmount"] = this.totalOrderAmount !== undefined ? this.totalOrderAmount : <any>null;
-        data["totalPaidAmount"] = this.totalPaidAmount !== undefined ? this.totalPaidAmount : <any>null;
-        return data;
-    }
-}
-
-export enum ReportExportFormat {
-    Excel = 1,
-    Pdf = 2,
-}
-
-export class CancelledOrdersReportDto {
-    items!: CancelledOrdersReportRowDto[];
-    totals!: CancelledOrdersReportTotalsDto;
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(CancelledOrdersReportRowDto.fromJS(item));
-            }
-            else {
-                this.items = <any>null;
-            }
-            this.totals = _data["totals"] ? CancelledOrdersReportTotalsDto.fromJS(_data["totals"]) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): CancelledOrdersReportDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new CancelledOrdersReportDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item.toJSON());
-        }
-        data["totals"] = this.totals ? this.totals.toJSON() : <any>null;
-        return data;
-    }
-}
-
-export class CancelledOrdersReportRowDto {
-    orderId!: number;
-    orderCode!: string;
-    customerId!: number;
-    customerName!: string;
-    customerMobile!: string;
-    cityId!: number;
-    cityName!: string;
-    orderTotal!: number;
-    previousDebt!: number;
-    paymentMethod!: PaymentMethod;
-    orderState!: OrderState;
-    cancellationFees!: number;
-    cancellationFeeState!: CustomerWalletState | null;
-    cancellationFeePaid!: boolean;
-    refundablePaypalAmount!: number;
-    paypalRefundState!: RefundState | null;
-    moneyRefunded!: boolean;
-    createdDate!: Date;
-    cancelledDate!: Date | null;
-
-    init(_data?: any) {
-        if (_data) {
-            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
-            this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
-            this.customerId = _data["customerId"] !== undefined ? _data["customerId"] : <any>null;
-            this.customerName = _data["customerName"] !== undefined ? _data["customerName"] : <any>null;
-            this.customerMobile = _data["customerMobile"] !== undefined ? _data["customerMobile"] : <any>null;
-            this.cityId = _data["cityId"] !== undefined ? _data["cityId"] : <any>null;
-            this.cityName = _data["cityName"] !== undefined ? _data["cityName"] : <any>null;
-            this.orderTotal = _data["orderTotal"] !== undefined ? _data["orderTotal"] : <any>null;
-            this.previousDebt = _data["previousDebt"] !== undefined ? _data["previousDebt"] : <any>null;
-            this.paymentMethod = _data["paymentMethod"] !== undefined ? _data["paymentMethod"] : <any>null;
-            this.orderState = _data["orderState"] !== undefined ? _data["orderState"] : <any>null;
-            this.cancellationFees = _data["cancellationFees"] !== undefined ? _data["cancellationFees"] : <any>null;
-            this.cancellationFeeState = _data["cancellationFeeState"] !== undefined ? _data["cancellationFeeState"] : <any>null;
-            this.cancellationFeePaid = _data["cancellationFeePaid"] !== undefined ? _data["cancellationFeePaid"] : <any>null;
-            this.refundablePaypalAmount = _data["refundablePaypalAmount"] !== undefined ? _data["refundablePaypalAmount"] : <any>null;
-            this.paypalRefundState = _data["paypalRefundState"] !== undefined ? _data["paypalRefundState"] : <any>null;
-            this.moneyRefunded = _data["moneyRefunded"] !== undefined ? _data["moneyRefunded"] : <any>null;
-            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
-            this.cancelledDate = _data["cancelledDate"] ? new Date(_data["cancelledDate"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): CancelledOrdersReportRowDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new CancelledOrdersReportRowDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
-        data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
-        data["customerId"] = this.customerId !== undefined ? this.customerId : <any>null;
-        data["customerName"] = this.customerName !== undefined ? this.customerName : <any>null;
-        data["customerMobile"] = this.customerMobile !== undefined ? this.customerMobile : <any>null;
-        data["cityId"] = this.cityId !== undefined ? this.cityId : <any>null;
-        data["cityName"] = this.cityName !== undefined ? this.cityName : <any>null;
-        data["orderTotal"] = this.orderTotal !== undefined ? this.orderTotal : <any>null;
-        data["previousDebt"] = this.previousDebt !== undefined ? this.previousDebt : <any>null;
-        data["paymentMethod"] = this.paymentMethod !== undefined ? this.paymentMethod : <any>null;
-        data["orderState"] = this.orderState !== undefined ? this.orderState : <any>null;
-        data["cancellationFees"] = this.cancellationFees !== undefined ? this.cancellationFees : <any>null;
-        data["cancellationFeeState"] = this.cancellationFeeState !== undefined ? this.cancellationFeeState : <any>null;
-        data["cancellationFeePaid"] = this.cancellationFeePaid !== undefined ? this.cancellationFeePaid : <any>null;
-        data["refundablePaypalAmount"] = this.refundablePaypalAmount !== undefined ? this.refundablePaypalAmount : <any>null;
-        data["paypalRefundState"] = this.paypalRefundState !== undefined ? this.paypalRefundState : <any>null;
-        data["moneyRefunded"] = this.moneyRefunded !== undefined ? this.moneyRefunded : <any>null;
-        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
-        data["cancelledDate"] = this.cancelledDate ? this.cancelledDate.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class CancelledOrdersReportTotalsDto {
-    ordersCount!: number;
-    totalOrderAmount!: number;
-    totalCancellationFees!: number;
-    totalPaidCancellationFees!: number;
-    totalUnpaidCancellationFees!: number;
-    totalRefundablePaypal!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.ordersCount = _data["ordersCount"] !== undefined ? _data["ordersCount"] : <any>null;
-            this.totalOrderAmount = _data["totalOrderAmount"] !== undefined ? _data["totalOrderAmount"] : <any>null;
-            this.totalCancellationFees = _data["totalCancellationFees"] !== undefined ? _data["totalCancellationFees"] : <any>null;
-            this.totalPaidCancellationFees = _data["totalPaidCancellationFees"] !== undefined ? _data["totalPaidCancellationFees"] : <any>null;
-            this.totalUnpaidCancellationFees = _data["totalUnpaidCancellationFees"] !== undefined ? _data["totalUnpaidCancellationFees"] : <any>null;
-            this.totalRefundablePaypal = _data["totalRefundablePaypal"] !== undefined ? _data["totalRefundablePaypal"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): CancelledOrdersReportTotalsDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new CancelledOrdersReportTotalsDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["ordersCount"] = this.ordersCount !== undefined ? this.ordersCount : <any>null;
-        data["totalOrderAmount"] = this.totalOrderAmount !== undefined ? this.totalOrderAmount : <any>null;
-        data["totalCancellationFees"] = this.totalCancellationFees !== undefined ? this.totalCancellationFees : <any>null;
-        data["totalPaidCancellationFees"] = this.totalPaidCancellationFees !== undefined ? this.totalPaidCancellationFees : <any>null;
-        data["totalUnpaidCancellationFees"] = this.totalUnpaidCancellationFees !== undefined ? this.totalUnpaidCancellationFees : <any>null;
-        data["totalRefundablePaypal"] = this.totalRefundablePaypal !== undefined ? this.totalRefundablePaypal : <any>null;
-        return data;
-    }
-}
-
-export class CancellationDebtsReportDto {
-    items!: CancellationDebtsReportRowDto[];
-    totals!: CancellationDebtsReportTotalsDto;
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(CancellationDebtsReportRowDto.fromJS(item));
-            }
-            else {
-                this.items = <any>null;
-            }
-            this.totals = _data["totals"] ? CancellationDebtsReportTotalsDto.fromJS(_data["totals"]) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): CancellationDebtsReportDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new CancellationDebtsReportDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item.toJSON());
-        }
-        data["totals"] = this.totals ? this.totals.toJSON() : <any>null;
-        return data;
-    }
-}
-
-export class CancellationDebtsReportRowDto {
-    walletId!: number;
-    customerId!: number;
-    customerName!: string;
-    customerMobile!: string;
-    orderId!: number | null;
-    orderCode!: string | null;
-    amount!: number;
-    state!: CustomerWalletState;
-    description!: string;
-    createdDate!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            this.walletId = _data["walletId"] !== undefined ? _data["walletId"] : <any>null;
-            this.customerId = _data["customerId"] !== undefined ? _data["customerId"] : <any>null;
-            this.customerName = _data["customerName"] !== undefined ? _data["customerName"] : <any>null;
-            this.customerMobile = _data["customerMobile"] !== undefined ? _data["customerMobile"] : <any>null;
-            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
-            this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
-            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
-            this.state = _data["state"] !== undefined ? _data["state"] : <any>null;
-            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
-            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): CancellationDebtsReportRowDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new CancellationDebtsReportRowDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["walletId"] = this.walletId !== undefined ? this.walletId : <any>null;
-        data["customerId"] = this.customerId !== undefined ? this.customerId : <any>null;
-        data["customerName"] = this.customerName !== undefined ? this.customerName : <any>null;
-        data["customerMobile"] = this.customerMobile !== undefined ? this.customerMobile : <any>null;
-        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
-        data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
-        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
-        data["state"] = this.state !== undefined ? this.state : <any>null;
-        data["description"] = this.description !== undefined ? this.description : <any>null;
-        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class CancellationDebtsReportTotalsDto {
-    entriesCount!: number;
-    customersCount!: number;
-    totalAmount!: number;
-    totalPending!: number;
-    totalUnderPayment!: number;
-    totalPaid!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.entriesCount = _data["entriesCount"] !== undefined ? _data["entriesCount"] : <any>null;
-            this.customersCount = _data["customersCount"] !== undefined ? _data["customersCount"] : <any>null;
-            this.totalAmount = _data["totalAmount"] !== undefined ? _data["totalAmount"] : <any>null;
-            this.totalPending = _data["totalPending"] !== undefined ? _data["totalPending"] : <any>null;
-            this.totalUnderPayment = _data["totalUnderPayment"] !== undefined ? _data["totalUnderPayment"] : <any>null;
-            this.totalPaid = _data["totalPaid"] !== undefined ? _data["totalPaid"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): CancellationDebtsReportTotalsDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new CancellationDebtsReportTotalsDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["entriesCount"] = this.entriesCount !== undefined ? this.entriesCount : <any>null;
-        data["customersCount"] = this.customersCount !== undefined ? this.customersCount : <any>null;
-        data["totalAmount"] = this.totalAmount !== undefined ? this.totalAmount : <any>null;
-        data["totalPending"] = this.totalPending !== undefined ? this.totalPending : <any>null;
-        data["totalUnderPayment"] = this.totalUnderPayment !== undefined ? this.totalUnderPayment : <any>null;
-        data["totalPaid"] = this.totalPaid !== undefined ? this.totalPaid : <any>null;
-        return data;
-    }
-}
-
-export class PaymentsReportDto {
-    items!: PaymentsReportRowDto[];
-    totals!: PaymentsReportTotalsDto;
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(PaymentsReportRowDto.fromJS(item));
-            }
-            else {
-                this.items = <any>null;
-            }
-            this.totals = _data["totals"] ? PaymentsReportTotalsDto.fromJS(_data["totals"]) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): PaymentsReportDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new PaymentsReportDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item.toJSON());
-        }
-        data["totals"] = this.totals ? this.totals.toJSON() : <any>null;
-        return data;
-    }
-}
-
-export class PaymentsReportRowDto {
-    paymentId!: number;
-    orderId!: number;
-    orderCode!: string;
-    customerId!: number;
-    customerName!: string;
-    cityName!: string;
-    paymentMethod!: PaymentMethod;
-    state!: PaymentState;
-    amount!: number;
-    previousDebt!: number;
-    orderState!: OrderState;
-    createdDate!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            this.paymentId = _data["paymentId"] !== undefined ? _data["paymentId"] : <any>null;
-            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
-            this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
-            this.customerId = _data["customerId"] !== undefined ? _data["customerId"] : <any>null;
-            this.customerName = _data["customerName"] !== undefined ? _data["customerName"] : <any>null;
-            this.cityName = _data["cityName"] !== undefined ? _data["cityName"] : <any>null;
-            this.paymentMethod = _data["paymentMethod"] !== undefined ? _data["paymentMethod"] : <any>null;
-            this.state = _data["state"] !== undefined ? _data["state"] : <any>null;
-            this.amount = _data["amount"] !== undefined ? _data["amount"] : <any>null;
-            this.previousDebt = _data["previousDebt"] !== undefined ? _data["previousDebt"] : <any>null;
-            this.orderState = _data["orderState"] !== undefined ? _data["orderState"] : <any>null;
-            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): PaymentsReportRowDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new PaymentsReportRowDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["paymentId"] = this.paymentId !== undefined ? this.paymentId : <any>null;
-        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
-        data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
-        data["customerId"] = this.customerId !== undefined ? this.customerId : <any>null;
-        data["customerName"] = this.customerName !== undefined ? this.customerName : <any>null;
-        data["cityName"] = this.cityName !== undefined ? this.cityName : <any>null;
-        data["paymentMethod"] = this.paymentMethod !== undefined ? this.paymentMethod : <any>null;
-        data["state"] = this.state !== undefined ? this.state : <any>null;
-        data["amount"] = this.amount !== undefined ? this.amount : <any>null;
-        data["previousDebt"] = this.previousDebt !== undefined ? this.previousDebt : <any>null;
-        data["orderState"] = this.orderState !== undefined ? this.orderState : <any>null;
-        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class PaymentsReportTotalsDto {
-    paymentsCount!: number;
-    totalAmount!: number;
-    totalPaid!: number;
-    totalPending!: number;
-    totalFailed!: number;
-    totalRefunded!: number;
-    totalCashPaid!: number;
-    totalPayPalPaid!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.paymentsCount = _data["paymentsCount"] !== undefined ? _data["paymentsCount"] : <any>null;
-            this.totalAmount = _data["totalAmount"] !== undefined ? _data["totalAmount"] : <any>null;
-            this.totalPaid = _data["totalPaid"] !== undefined ? _data["totalPaid"] : <any>null;
-            this.totalPending = _data["totalPending"] !== undefined ? _data["totalPending"] : <any>null;
-            this.totalFailed = _data["totalFailed"] !== undefined ? _data["totalFailed"] : <any>null;
-            this.totalRefunded = _data["totalRefunded"] !== undefined ? _data["totalRefunded"] : <any>null;
-            this.totalCashPaid = _data["totalCashPaid"] !== undefined ? _data["totalCashPaid"] : <any>null;
-            this.totalPayPalPaid = _data["totalPayPalPaid"] !== undefined ? _data["totalPayPalPaid"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): PaymentsReportTotalsDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new PaymentsReportTotalsDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["paymentsCount"] = this.paymentsCount !== undefined ? this.paymentsCount : <any>null;
-        data["totalAmount"] = this.totalAmount !== undefined ? this.totalAmount : <any>null;
-        data["totalPaid"] = this.totalPaid !== undefined ? this.totalPaid : <any>null;
-        data["totalPending"] = this.totalPending !== undefined ? this.totalPending : <any>null;
-        data["totalFailed"] = this.totalFailed !== undefined ? this.totalFailed : <any>null;
-        data["totalRefunded"] = this.totalRefunded !== undefined ? this.totalRefunded : <any>null;
-        data["totalCashPaid"] = this.totalCashPaid !== undefined ? this.totalCashPaid : <any>null;
-        data["totalPayPalPaid"] = this.totalPayPalPaid !== undefined ? this.totalPayPalPaid : <any>null;
-        return data;
-    }
-}
-
-export class PayPalRefundsReportDto {
-    items!: PayPalRefundsReportRowDto[];
-    totals!: PayPalRefundsReportTotalsDto;
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(PayPalRefundsReportRowDto.fromJS(item));
-            }
-            else {
-                this.items = <any>null;
-            }
-            this.totals = _data["totals"] ? PayPalRefundsReportTotalsDto.fromJS(_data["totals"]) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): PayPalRefundsReportDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new PayPalRefundsReportDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item.toJSON());
-        }
-        data["totals"] = this.totals ? this.totals.toJSON() : <any>null;
-        return data;
-    }
-}
-
-export class PayPalRefundsReportRowDto {
-    refundId!: number;
-    orderId!: number;
-    orderCode!: string;
-    customerId!: number;
-    customerName!: string;
-    customerMobile!: string;
-    orderTotal!: number;
-    cancellationFees!: number;
-    refundableAmount!: number;
-    state!: RefundState;
-    moneyRefunded!: boolean;
-    createdDate!: Date;
-
-    init(_data?: any) {
-        if (_data) {
-            this.refundId = _data["refundId"] !== undefined ? _data["refundId"] : <any>null;
-            this.orderId = _data["orderId"] !== undefined ? _data["orderId"] : <any>null;
-            this.orderCode = _data["orderCode"] !== undefined ? _data["orderCode"] : <any>null;
-            this.customerId = _data["customerId"] !== undefined ? _data["customerId"] : <any>null;
-            this.customerName = _data["customerName"] !== undefined ? _data["customerName"] : <any>null;
-            this.customerMobile = _data["customerMobile"] !== undefined ? _data["customerMobile"] : <any>null;
-            this.orderTotal = _data["orderTotal"] !== undefined ? _data["orderTotal"] : <any>null;
-            this.cancellationFees = _data["cancellationFees"] !== undefined ? _data["cancellationFees"] : <any>null;
-            this.refundableAmount = _data["refundableAmount"] !== undefined ? _data["refundableAmount"] : <any>null;
-            this.state = _data["state"] !== undefined ? _data["state"] : <any>null;
-            this.moneyRefunded = _data["moneyRefunded"] !== undefined ? _data["moneyRefunded"] : <any>null;
-            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): PayPalRefundsReportRowDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new PayPalRefundsReportRowDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["refundId"] = this.refundId !== undefined ? this.refundId : <any>null;
-        data["orderId"] = this.orderId !== undefined ? this.orderId : <any>null;
-        data["orderCode"] = this.orderCode !== undefined ? this.orderCode : <any>null;
-        data["customerId"] = this.customerId !== undefined ? this.customerId : <any>null;
-        data["customerName"] = this.customerName !== undefined ? this.customerName : <any>null;
-        data["customerMobile"] = this.customerMobile !== undefined ? this.customerMobile : <any>null;
-        data["orderTotal"] = this.orderTotal !== undefined ? this.orderTotal : <any>null;
-        data["cancellationFees"] = this.cancellationFees !== undefined ? this.cancellationFees : <any>null;
-        data["refundableAmount"] = this.refundableAmount !== undefined ? this.refundableAmount : <any>null;
-        data["state"] = this.state !== undefined ? this.state : <any>null;
-        data["moneyRefunded"] = this.moneyRefunded !== undefined ? this.moneyRefunded : <any>null;
-        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>null;
-        return data;
-    }
-}
-
-export class PayPalRefundsReportTotalsDto {
-    entriesCount!: number;
-    totalOrderAmount!: number;
-    totalCancellationFees!: number;
-    totalRefundable!: number;
-    totalPendingRefundable!: number;
-    totalCompletedRefundable!: number;
-
-    init(_data?: any) {
-        if (_data) {
-            this.entriesCount = _data["entriesCount"] !== undefined ? _data["entriesCount"] : <any>null;
-            this.totalOrderAmount = _data["totalOrderAmount"] !== undefined ? _data["totalOrderAmount"] : <any>null;
-            this.totalCancellationFees = _data["totalCancellationFees"] !== undefined ? _data["totalCancellationFees"] : <any>null;
-            this.totalRefundable = _data["totalRefundable"] !== undefined ? _data["totalRefundable"] : <any>null;
-            this.totalPendingRefundable = _data["totalPendingRefundable"] !== undefined ? _data["totalPendingRefundable"] : <any>null;
-            this.totalCompletedRefundable = _data["totalCompletedRefundable"] !== undefined ? _data["totalCompletedRefundable"] : <any>null;
-        }
-    }
-
-    static fromJS(data: any): PayPalRefundsReportTotalsDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new PayPalRefundsReportTotalsDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["entriesCount"] = this.entriesCount !== undefined ? this.entriesCount : <any>null;
-        data["totalOrderAmount"] = this.totalOrderAmount !== undefined ? this.totalOrderAmount : <any>null;
-        data["totalCancellationFees"] = this.totalCancellationFees !== undefined ? this.totalCancellationFees : <any>null;
-        data["totalRefundable"] = this.totalRefundable !== undefined ? this.totalRefundable : <any>null;
-        data["totalPendingRefundable"] = this.totalPendingRefundable !== undefined ? this.totalPendingRefundable : <any>null;
-        data["totalCompletedRefundable"] = this.totalCompletedRefundable !== undefined ? this.totalCompletedRefundable : <any>null;
-        return data;
-    }
-}
-
 export class SettlementSummaryDto {
     partyType!: LedgerPartyType;
     partyId!: number;
@@ -22974,11 +22067,6 @@ export class SettlementSummaryDto {
         }
         return data;
     }
-}
-
-export enum SettlementDirection {
-    CollectFromParty = 1,
-    PayToParty = 2,
 }
 
 export class SettlementOpenItemDto {

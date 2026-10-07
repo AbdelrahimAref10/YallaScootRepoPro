@@ -749,6 +749,460 @@
         }
       }
     },
+    "/api/merchant/MerchantReport/{key}": {
+      "get": {
+        "tags": [
+          "Merchant / MerchantReport"
+        ],
+        "operationId": "MerchantReport_Run",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "x-position": 2
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "x-position": 3
+          },
+          {
+            "name": "CityIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 4
+          },
+          {
+            "name": "MerchantIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 5
+          },
+          {
+            "name": "DeliveryIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 6
+          },
+          {
+            "name": "CustomerIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 7
+          },
+          {
+            "name": "VehicleIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 8
+          },
+          {
+            "name": "OrderStates",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/OrderState"
+              }
+            },
+            "x-position": 9
+          },
+          {
+            "name": "PaymentMethods",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/PaymentMethod"
+              }
+            },
+            "x-position": 10
+          },
+          {
+            "name": "PaymentStates",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/PaymentState"
+              }
+            },
+            "x-position": 11
+          },
+          {
+            "name": "RefundStates",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/RefundState"
+              }
+            },
+            "x-position": 12
+          },
+          {
+            "name": "Directions",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/SettlementDirection"
+              }
+            },
+            "x-position": 13
+          },
+          {
+            "name": "PartyTypes",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/LedgerPartyType"
+              }
+            },
+            "x-position": 14
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/merchant/MerchantReport/{key}/Export": {
+      "get": {
+        "tags": [
+          "Merchant / MerchantReport"
+        ],
+        "operationId": "MerchantReport_Export",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "x-position": 2
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "x-position": 3
+          },
+          {
+            "name": "CityIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 4
+          },
+          {
+            "name": "MerchantIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 5
+          },
+          {
+            "name": "DeliveryIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 6
+          },
+          {
+            "name": "CustomerIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 7
+          },
+          {
+            "name": "VehicleIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 8
+          },
+          {
+            "name": "OrderStates",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/OrderState"
+              }
+            },
+            "x-position": 9
+          },
+          {
+            "name": "PaymentMethods",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/PaymentMethod"
+              }
+            },
+            "x-position": 10
+          },
+          {
+            "name": "PaymentStates",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/PaymentState"
+              }
+            },
+            "x-position": 11
+          },
+          {
+            "name": "RefundStates",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/RefundState"
+              }
+            },
+            "x-position": 12
+          },
+          {
+            "name": "Directions",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/SettlementDirection"
+              }
+            },
+            "x-position": 13
+          },
+          {
+            "name": "PartyTypes",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/LedgerPartyType"
+              }
+            },
+            "x-position": 14
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ReportExportFormat"
+                }
+              ]
+            },
+            "x-position": 15
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/merchant/MerchantStaff": {
       "get": {
         "tags": [
@@ -6957,60 +7411,44 @@
         }
       }
     },
-    "/api/admin/AdminReport/OrdersDetails": {
+    "/api/admin/AdminReport/{key}": {
       "get": {
         "tags": [
           "Admin / AdminReport"
         ],
-        "operationId": "AdminReport_GetOrdersDetails",
+        "operationId": "AdminReport_Run",
         "parameters": [
           {
-            "name": "CityIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
+            "name": "key",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
+              "type": "string"
             },
             "x-position": 1
           },
           {
-            "name": "OrderStates",
+            "name": "FromDate",
             "in": "query",
-            "style": "form",
-            "explode": true,
             "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
             },
             "x-position": 2
           },
           {
-            "name": "CustomerIds",
+            "name": "ToDate",
             "in": "query",
-            "style": "form",
-            "explode": true,
             "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
             },
             "x-position": 3
           },
           {
-            "name": "PaymentMethodIds",
+            "name": "CityIds",
             "in": "query",
             "style": "form",
             "explode": true,
@@ -7025,7 +7463,7 @@
             "x-position": 4
           },
           {
-            "name": "PaymentStates",
+            "name": "MerchantIds",
             "in": "query",
             "style": "form",
             "explode": true,
@@ -7040,124 +7478,19 @@
             "x-position": 5
           },
           {
-            "name": "FromDate",
+            "name": "DeliveryIds",
             "in": "query",
+            "style": "form",
+            "explode": true,
             "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
             },
             "x-position": 6
-          },
-          {
-            "name": "ToDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 7
-          },
-          {
-            "name": "ReservationFrom",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 8
-          },
-          {
-            "name": "ReservationTo",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 9
-          },
-          {
-            "name": "OrderCode",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 10
-          },
-          {
-            "name": "IsCancelled",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "nullable": true
-            },
-            "x-position": 11
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersDetailsReportDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminReport/OrdersDetails/Export": {
-      "get": {
-        "tags": [
-          "Admin / AdminReport"
-        ],
-        "operationId": "AdminReport_ExportOrdersDetails",
-        "parameters": [
-          {
-            "name": "CityIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 1
-          },
-          {
-            "name": "OrderStates",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 2
           },
           {
             "name": "CustomerIds",
@@ -7172,10 +7505,10 @@
                 "format": "int32"
               }
             },
-            "x-position": 3
+            "x-position": 7
           },
           {
-            "name": "PaymentMethodIds",
+            "name": "VehicleIds",
             "in": "query",
             "style": "form",
             "explode": true,
@@ -7187,7 +7520,35 @@
                 "format": "int32"
               }
             },
-            "x-position": 4
+            "x-position": 8
+          },
+          {
+            "name": "OrderStates",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/OrderState"
+              }
+            },
+            "x-position": 9
+          },
+          {
+            "name": "PaymentMethods",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/PaymentMethod"
+              }
+            },
+            "x-position": 10
           },
           {
             "name": "PaymentStates",
@@ -7198,92 +7559,61 @@
               "type": "array",
               "nullable": true,
               "items": {
-                "type": "integer",
-                "format": "int32"
+                "$ref": "#/components/schemas/PaymentState"
               }
-            },
-            "x-position": 5
-          },
-          {
-            "name": "FromDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 6
-          },
-          {
-            "name": "ToDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 7
-          },
-          {
-            "name": "ReservationFrom",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 8
-          },
-          {
-            "name": "ReservationTo",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 9
-          },
-          {
-            "name": "OrderCode",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 10
-          },
-          {
-            "name": "IsCancelled",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "nullable": true
             },
             "x-position": 11
           },
           {
-            "name": "format",
+            "name": "RefundStates",
             "in": "query",
+            "style": "form",
+            "explode": true,
             "schema": {
-              "default": 1,
-              "oneOf": [
-                {
-                  "$ref": "#/components/schemas/ReportExportFormat"
-                }
-              ]
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/RefundState"
+              }
             },
             "x-position": 12
+          },
+          {
+            "name": "Directions",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/SettlementDirection"
+              }
+            },
+            "x-position": 13
+          },
+          {
+            "name": "PartyTypes",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/LedgerPartyType"
+              }
+            },
+            "x-position": 14
           }
         ],
         "responses": {
           "200": {
             "description": "",
             "content": {
-              "application/octet-stream": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "binary"
+                  "$ref": "#/components/schemas/ReportResultDto"
                 }
               }
             }
@@ -7301,60 +7631,44 @@
         }
       }
     },
-    "/api/admin/AdminReport/CancelledOrders": {
+    "/api/admin/AdminReport/{key}/Export": {
       "get": {
         "tags": [
           "Admin / AdminReport"
         ],
-        "operationId": "AdminReport_GetCancelledOrders",
+        "operationId": "AdminReport_Export",
         "parameters": [
           {
-            "name": "CityIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
+            "name": "key",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
+              "type": "string"
             },
             "x-position": 1
           },
           {
-            "name": "CustomerIds",
+            "name": "FromDate",
             "in": "query",
-            "style": "form",
-            "explode": true,
             "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
             },
             "x-position": 2
           },
           {
-            "name": "PaymentMethodIds",
+            "name": "ToDate",
             "in": "query",
-            "style": "form",
-            "explode": true,
             "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
             },
             "x-position": 3
           },
           {
-            "name": "CancellationFeeStates",
+            "name": "CityIds",
             "in": "query",
             "style": "form",
             "explode": true,
@@ -7369,86 +7683,7 @@
             "x-position": 4
           },
           {
-            "name": "FromDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 5
-          },
-          {
-            "name": "ToDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 6
-          },
-          {
-            "name": "OrderCode",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 7
-          },
-          {
-            "name": "CancellationFeePaid",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "nullable": true
-            },
-            "x-position": 8
-          },
-          {
-            "name": "MoneyRefunded",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "nullable": true
-            },
-            "x-position": 9
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CancelledOrdersReportDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminReport/CancelledOrders/Export": {
-      "get": {
-        "tags": [
-          "Admin / AdminReport"
-        ],
-        "operationId": "AdminReport_ExportCancelledOrders",
-        "parameters": [
-          {
-            "name": "CityIds",
+            "name": "MerchantIds",
             "in": "query",
             "style": "form",
             "explode": true,
@@ -7460,7 +7695,22 @@
                 "format": "int32"
               }
             },
-            "x-position": 1
+            "x-position": 5
+          },
+          {
+            "name": "DeliveryIds",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "x-position": 6
           },
           {
             "name": "CustomerIds",
@@ -7475,389 +7725,50 @@
                 "format": "int32"
               }
             },
-            "x-position": 2
-          },
-          {
-            "name": "PaymentMethodIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 3
-          },
-          {
-            "name": "CancellationFeeStates",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 4
-          },
-          {
-            "name": "FromDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 5
-          },
-          {
-            "name": "ToDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 6
-          },
-          {
-            "name": "OrderCode",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
             "x-position": 7
           },
           {
-            "name": "CancellationFeePaid",
+            "name": "VehicleIds",
             "in": "query",
+            "style": "form",
+            "explode": true,
             "schema": {
-              "type": "boolean",
-              "nullable": true
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
             },
             "x-position": 8
           },
           {
-            "name": "MoneyRefunded",
+            "name": "OrderStates",
             "in": "query",
+            "style": "form",
+            "explode": true,
             "schema": {
-              "type": "boolean",
-              "nullable": true
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/OrderState"
+              }
             },
             "x-position": 9
           },
           {
-            "name": "format",
+            "name": "PaymentMethods",
             "in": "query",
+            "style": "form",
+            "explode": true,
             "schema": {
-              "default": 1,
-              "oneOf": [
-                {
-                  "$ref": "#/components/schemas/ReportExportFormat"
-                }
-              ]
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "$ref": "#/components/schemas/PaymentMethod"
+              }
             },
             "x-position": 10
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminReport/CancellationDebts": {
-      "get": {
-        "tags": [
-          "Admin / AdminReport"
-        ],
-        "operationId": "AdminReport_GetCancellationDebts",
-        "parameters": [
-          {
-            "name": "CustomerIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 1
-          },
-          {
-            "name": "States",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 2
-          },
-          {
-            "name": "FromDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 3
-          },
-          {
-            "name": "ToDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 4
-          },
-          {
-            "name": "CustomerSearch",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 5
-          },
-          {
-            "name": "OrderCode",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 6
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CancellationDebtsReportDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminReport/CancellationDebts/Export": {
-      "get": {
-        "tags": [
-          "Admin / AdminReport"
-        ],
-        "operationId": "AdminReport_ExportCancellationDebts",
-        "parameters": [
-          {
-            "name": "CustomerIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 1
-          },
-          {
-            "name": "States",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 2
-          },
-          {
-            "name": "FromDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 3
-          },
-          {
-            "name": "ToDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 4
-          },
-          {
-            "name": "CustomerSearch",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 5
-          },
-          {
-            "name": "OrderCode",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 6
-          },
-          {
-            "name": "format",
-            "in": "query",
-            "schema": {
-              "default": 1,
-              "oneOf": [
-                {
-                  "$ref": "#/components/schemas/ReportExportFormat"
-                }
-              ]
-            },
-            "x-position": 7
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminReport/Payments": {
-      "get": {
-        "tags": [
-          "Admin / AdminReport"
-        ],
-        "operationId": "AdminReport_GetPayments",
-        "parameters": [
-          {
-            "name": "CityIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 1
-          },
-          {
-            "name": "CustomerIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 2
-          },
-          {
-            "name": "PaymentMethodIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 3
           },
           {
             "name": "PaymentStates",
@@ -7868,75 +7779,13 @@
               "type": "array",
               "nullable": true,
               "items": {
-                "type": "integer",
-                "format": "int32"
+                "$ref": "#/components/schemas/PaymentState"
               }
             },
-            "x-position": 4
+            "x-position": 11
           },
           {
-            "name": "FromDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 5
-          },
-          {
-            "name": "ToDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 6
-          },
-          {
-            "name": "OrderCode",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 7
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentsReportDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminReport/Payments/Export": {
-      "get": {
-        "tags": [
-          "Admin / AdminReport"
-        ],
-        "operationId": "AdminReport_ExportPayments",
-        "parameters": [
-          {
-            "name": "CityIds",
+            "name": "RefundStates",
             "in": "query",
             "style": "form",
             "explode": true,
@@ -7944,14 +7793,13 @@
               "type": "array",
               "nullable": true,
               "items": {
-                "type": "integer",
-                "format": "int32"
+                "$ref": "#/components/schemas/RefundState"
               }
             },
-            "x-position": 1
+            "x-position": 12
           },
           {
-            "name": "CustomerIds",
+            "name": "Directions",
             "in": "query",
             "style": "form",
             "explode": true,
@@ -7959,14 +7807,13 @@
               "type": "array",
               "nullable": true,
               "items": {
-                "type": "integer",
-                "format": "int32"
+                "$ref": "#/components/schemas/SettlementDirection"
               }
             },
-            "x-position": 2
+            "x-position": 13
           },
           {
-            "name": "PaymentMethodIds",
+            "name": "PartyTypes",
             "in": "query",
             "style": "form",
             "explode": true,
@@ -7974,55 +7821,10 @@
               "type": "array",
               "nullable": true,
               "items": {
-                "type": "integer",
-                "format": "int32"
+                "$ref": "#/components/schemas/LedgerPartyType"
               }
             },
-            "x-position": 3
-          },
-          {
-            "name": "PaymentStates",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 4
-          },
-          {
-            "name": "FromDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 5
-          },
-          {
-            "name": "ToDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 6
-          },
-          {
-            "name": "OrderCode",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 7
+            "x-position": 14
           },
           {
             "name": "format",
@@ -8035,221 +7837,7 @@
                 }
               ]
             },
-            "x-position": 8
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminReport/PayPalRefunds": {
-      "get": {
-        "tags": [
-          "Admin / AdminReport"
-        ],
-        "operationId": "AdminReport_GetPayPalRefunds",
-        "parameters": [
-          {
-            "name": "CustomerIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 1
-          },
-          {
-            "name": "RefundStates",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 2
-          },
-          {
-            "name": "FromDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 3
-          },
-          {
-            "name": "ToDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 4
-          },
-          {
-            "name": "OrderCode",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 5
-          },
-          {
-            "name": "MoneyRefunded",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "nullable": true
-            },
-            "x-position": 6
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PayPalRefundsReportDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/AdminReport/PayPalRefunds/Export": {
-      "get": {
-        "tags": [
-          "Admin / AdminReport"
-        ],
-        "operationId": "AdminReport_ExportPayPalRefunds",
-        "parameters": [
-          {
-            "name": "CustomerIds",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 1
-          },
-          {
-            "name": "RefundStates",
-            "in": "query",
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "nullable": true,
-              "items": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "x-position": 2
-          },
-          {
-            "name": "FromDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 3
-          },
-          {
-            "name": "ToDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "x-position": 4
-          },
-          {
-            "name": "OrderCode",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            },
-            "x-position": 5
-          },
-          {
-            "name": "MoneyRefunded",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "nullable": true
-            },
-            "x-position": 6
-          },
-          {
-            "name": "format",
-            "in": "query",
-            "schema": {
-              "default": 1,
-              "oneOf": [
-                {
-                  "$ref": "#/components/schemas/ReportExportFormat"
-                }
-              ]
-            },
-            "x-position": 7
+            "x-position": 15
           }
         ],
         "responses": {
@@ -12876,6 +12464,174 @@
           }
         }
       },
+      "ReportResultDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportColumnDto"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "decimal"
+            }
+          },
+          "kpis": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportKpiDto"
+            }
+          }
+        }
+      },
+      "ReportColumnDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "labelKey": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ReportColumnType"
+          },
+          "total": {
+            "type": "boolean"
+          },
+          "valueKeyPrefix": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ReportColumnType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Text",
+          "Number",
+          "Money",
+          "Date",
+          "DateTime",
+          "Badge"
+        ],
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "ReportKpiDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "labelKey": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ReportColumnType"
+          }
+        }
+      },
+      "PaymentMethod": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Cash",
+          "PayPal"
+        ],
+        "enum": [
+          0,
+          1
+        ]
+      },
+      "PaymentState": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Paid",
+          "Failed",
+          "Refunded"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "RefundState": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Success",
+          "Failed"
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
+      },
+      "SettlementDirection": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "CollectFromParty",
+          "PayToParty"
+        ],
+        "enum": [
+          1,
+          2
+        ]
+      },
+      "ReportExportFormat": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Excel",
+          "Pdf"
+        ],
+        "enum": [
+          1,
+          2
+        ]
+      },
       "MerchantStaffDto": {
         "type": "object",
         "additionalProperties": false,
@@ -14724,18 +14480,6 @@
             ]
           }
         }
-      },
-      "PaymentMethod": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Cash",
-          "PayPal"
-        ],
-        "enum": [
-          0,
-          1
-        ]
       },
       "CustomerOrderRiderDto": {
         "type": "object",
@@ -16660,22 +16404,6 @@
           }
         }
       },
-      "PaymentState": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Pending",
-          "Paid",
-          "Failed",
-          "Refunded"
-        ],
-        "enum": [
-          0,
-          1,
-          2,
-          3
-        ]
-      },
       "RefundablePaypalAmountDto": {
         "type": "object",
         "additionalProperties": false,
@@ -16712,20 +16440,6 @@
             "format": "date-time"
           }
         }
-      },
-      "RefundState": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Pending",
-          "Success",
-          "Failed"
-        ],
-        "enum": [
-          0,
-          1,
-          2
-        ]
       },
       "OrderTotalsDto": {
         "type": "object",
@@ -17618,551 +17332,6 @@
           }
         }
       },
-      "OrdersDetailsReportDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OrdersDetailsReportRowDto"
-            }
-          },
-          "totals": {
-            "$ref": "#/components/schemas/OrdersDetailsReportTotalsDto"
-          }
-        }
-      },
-      "OrdersDetailsReportRowDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "orderId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "orderCode": {
-            "type": "string"
-          },
-          "customerId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "customerName": {
-            "type": "string"
-          },
-          "customerMobile": {
-            "type": "string"
-          },
-          "cityId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "cityName": {
-            "type": "string"
-          },
-          "subCategoryName": {
-            "type": "string"
-          },
-          "reservationDateFrom": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "reservationDateTo": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "vehiclesCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "orderSubTotal": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "previousDebt": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "orderTotal": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "paymentMethod": {
-            "$ref": "#/components/schemas/PaymentMethod"
-          },
-          "paymentState": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/PaymentState"
-              }
-            ]
-          },
-          "orderState": {
-            "$ref": "#/components/schemas/OrderState"
-          },
-          "moneyRefunded": {
-            "type": "boolean"
-          },
-          "isCancelled": {
-            "type": "boolean"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "OrdersDetailsReportTotalsDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "ordersCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalSubTotal": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalPreviousDebt": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalOrderAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalPaidAmount": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
-      "ReportExportFormat": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Excel",
-          "Pdf"
-        ],
-        "enum": [
-          1,
-          2
-        ]
-      },
-      "CancelledOrdersReportDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CancelledOrdersReportRowDto"
-            }
-          },
-          "totals": {
-            "$ref": "#/components/schemas/CancelledOrdersReportTotalsDto"
-          }
-        }
-      },
-      "CancelledOrdersReportRowDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "orderId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "orderCode": {
-            "type": "string"
-          },
-          "customerId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "customerName": {
-            "type": "string"
-          },
-          "customerMobile": {
-            "type": "string"
-          },
-          "cityId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "cityName": {
-            "type": "string"
-          },
-          "orderTotal": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "previousDebt": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "paymentMethod": {
-            "$ref": "#/components/schemas/PaymentMethod"
-          },
-          "orderState": {
-            "$ref": "#/components/schemas/OrderState"
-          },
-          "cancellationFees": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "cancellationFeeState": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/CustomerWalletState"
-              }
-            ]
-          },
-          "cancellationFeePaid": {
-            "type": "boolean"
-          },
-          "refundablePaypalAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "paypalRefundState": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/RefundState"
-              }
-            ]
-          },
-          "moneyRefunded": {
-            "type": "boolean"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "cancelledDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        }
-      },
-      "CancelledOrdersReportTotalsDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "ordersCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalOrderAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalCancellationFees": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalPaidCancellationFees": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalUnpaidCancellationFees": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalRefundablePaypal": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
-      "CancellationDebtsReportDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CancellationDebtsReportRowDto"
-            }
-          },
-          "totals": {
-            "$ref": "#/components/schemas/CancellationDebtsReportTotalsDto"
-          }
-        }
-      },
-      "CancellationDebtsReportRowDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "walletId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "customerId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "customerName": {
-            "type": "string"
-          },
-          "customerMobile": {
-            "type": "string"
-          },
-          "orderId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "orderCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "amount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "state": {
-            "$ref": "#/components/schemas/CustomerWalletState"
-          },
-          "description": {
-            "type": "string"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "CancellationDebtsReportTotalsDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "entriesCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "customersCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalPending": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalUnderPayment": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalPaid": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
-      "PaymentsReportDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PaymentsReportRowDto"
-            }
-          },
-          "totals": {
-            "$ref": "#/components/schemas/PaymentsReportTotalsDto"
-          }
-        }
-      },
-      "PaymentsReportRowDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "paymentId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "orderId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "orderCode": {
-            "type": "string"
-          },
-          "customerId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "customerName": {
-            "type": "string"
-          },
-          "cityName": {
-            "type": "string"
-          },
-          "paymentMethod": {
-            "$ref": "#/components/schemas/PaymentMethod"
-          },
-          "state": {
-            "$ref": "#/components/schemas/PaymentState"
-          },
-          "amount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "previousDebt": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "orderState": {
-            "$ref": "#/components/schemas/OrderState"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "PaymentsReportTotalsDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "paymentsCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalPaid": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalPending": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalFailed": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalRefunded": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalCashPaid": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalPayPalPaid": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
-      "PayPalRefundsReportDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PayPalRefundsReportRowDto"
-            }
-          },
-          "totals": {
-            "$ref": "#/components/schemas/PayPalRefundsReportTotalsDto"
-          }
-        }
-      },
-      "PayPalRefundsReportRowDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "refundId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "orderId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "orderCode": {
-            "type": "string"
-          },
-          "customerId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "customerName": {
-            "type": "string"
-          },
-          "customerMobile": {
-            "type": "string"
-          },
-          "orderTotal": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "cancellationFees": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "refundableAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "state": {
-            "$ref": "#/components/schemas/RefundState"
-          },
-          "moneyRefunded": {
-            "type": "boolean"
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "PayPalRefundsReportTotalsDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "entriesCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalOrderAmount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalCancellationFees": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalRefundable": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalPendingRefundable": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "totalCompletedRefundable": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
       "SettlementSummaryDto": {
         "type": "object",
         "additionalProperties": false,
@@ -18208,18 +17377,6 @@
             }
           }
         }
-      },
-      "SettlementDirection": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "CollectFromParty",
-          "PayToParty"
-        ],
-        "enum": [
-          1,
-          2
-        ]
       },
       "SettlementOpenItemDto": {
         "type": "object",

@@ -1,0 +1,108 @@
+<div class="rp" *ngIf="definition as def">
+  <div class="rp__top">
+    <div>
+      <button type="button" class="rp__back" (click)="back()">← {{ 'reports.backToReports' | t }}</button>
+      <p class="rp__eyebrow">{{ 'reports.title' | t }}</p>
+      <h1 class="rp__title">{{ def.titleKey | t }}</h1>
+      <p class="rp__subtitle">{{ def.descriptionKey | t }}</p>
+    </div>
+    <div class="rp__actions">
+      <button type="button" class="rp__btn rp__btn--excel" (click)="export(ExportFormat.Excel)" [disabled]="isExporting || isLoading">{{ 'reports.exportExcel' | t }}</button>
+      <button type="button" class="rp__btn rp__btn--pdf" (click)="export(ExportFormat.Pdf)" [disabled]="isExporting || isLoading">{{ 'reports.exportPdf' | t }}</button>
+    </div>
+  </div>
+
+  <section class="rp__panel">
+    <div class="rp__panel-head">
+      <div>
+        <h2 class="rp__panel-title">{{ 'reports.filters' | t }}</h2>
+        <p class="rp__panel-hint">{{ 'reports.filtersHint' | t }}</p>
+      </div>
+      <div class="rp__actions">
+        <button type="button" class="rp__btn rp__btn--ghost" (click)="clearFilters()" [disabled]="isLoading">{{ 'common.clear' | t }}</button>
+        <button type="button" class="rp__btn rp__btn--primary" (click)="run()" [disabled]="isLoading">
+          {{ isLoading ? ('reports.loading' | t) : ('reports.generate' | t) }}
+        </button>
+      </div>
+    </div>
+    <div class="rp__filters">
+      <div class="rp__field">
+        <label class="rp__label" for="rv-from">{{ 'reports.fromDate' | t }}</label>
+        <input id="rv-from" class="rp__input" type="date" [(ngModel)]="fromDate" [max]="toDate || null" />
+      </div>
+      <div class="rp__field">
+        <label class="rp__label" for="rv-to">{{ 'reports.toDate' | t }}</label>
+        <input id="rv-to" class="rp__input" type="date" [(ngModel)]="toDate" [min]="fromDate || null" />
+      </div>
+      <div class="rp__field" *ngFor="let field of filterFields">
+        <app-multi-select
+          [label]="field.labelKey | t"
+          [placeholder]="'common.all' | t"
+          [options]="options[field.key] || []"
+          [values]="selected[field.key] || []"
+          (valuesChange)="onFilterChange(field.key, $event)"></app-multi-select>
+      </div>
+    </div>
+  </section>
+
+  <div class="rp__error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <ng-container *ngIf="report as data">
+    <div class="rp__kpis" *ngIf="data.kpis?.length">
+      <article class="rp__kpi" *ngFor="let kpi of data.kpis">
+        <p class="rp__kpi-label">{{ kpiLabel(kpi) }}</p>
+        <p class="rp__kpi-value" [class.rv__neg]="kpi.value < 0">{{ formatKpi(kpi) }}</p>
+      </article>
+    </div>
+
+    <section class="rp__table-card">
+      <div class="rv__toolbar">
+        <input
+          class="rp__input rv__search"
+          type="search"
+          [(ngModel)]="search"
+          (ngModelChange)="applySearch()"
+          [placeholder]="'reports.searchPlaceholder' | t" />
+        <span class="rp__meta">{{ 'reports.rowsCount' | t: { count: visibleRows.length } }}</span>
+      </div>
+
+      <div class="rp__loading" *ngIf="isLoading">{{ 'reports.loading' | t }}</div>
+      <div class="rp__empty" *ngIf="!isLoading && !visibleRows.length">{{ 'reports.noResults' | t }}</div>
+      <div class="rp__table-wrap" *ngIf="!isLoading && visibleRows.length">
+        <table class="rp__table">
+          <thead>
+            <tr>
+              <th *ngFor="let col of data.columns" [class.rp__num]="isNumeric(col)">{{ columnLabel(col) }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of visibleRows; trackBy: trackRow" [class.rv__opening]="isOpeningRow(row)">
+              <td *ngFor="let col of data.columns" [class.rp__num]="isNumeric(col)" [ngClass]="moneyClass(col, row[col.key])">
+                <ng-container [ngSwitch]="col.type">
+                  <ng-container *ngSwitchCase="ColumnType.Money">{{ formatMoney(row[col.key]) }}</ng-container>
+                  <ng-container *ngSwitchCase="ColumnType.Number">{{ formatNumber(row[col.key]) }}</ng-container>
+                  <ng-container *ngSwitchCase="ColumnType.Date">{{ $any(row[col.key]) ? ($any(row[col.key]) | date:'mediumDate') : '—' }}</ng-container>
+                  <ng-container *ngSwitchCase="ColumnType.DateTime">{{ $any(row[col.key]) ? ($any(row[col.key]) | date:'short') : '—' }}</ng-container>
+                  <span *ngSwitchCase="ColumnType.Badge" class="rp__chip" [ngClass]="badgeClass(row[col.key])">{{ badgeLabel(col, row[col.key]) }}</span>
+                  <ng-container *ngSwitchDefault>
+                    <span [class.rp__code]="col.key === 'orderCode' || col.key === 'voucherNo'">{{ $any(row[col.key]) || '—' }}</span>
+                  </ng-container>
+                </ng-container>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot *ngIf="hasTotals">
+            <tr class="rv__totals">
+              <td *ngFor="let col of data.columns; let first = first" [class.rp__num]="isNumeric(col)">
+                <ng-container *ngIf="col.total; else noTotal">
+                  {{ col.type === ColumnType.Number ? formatNumber(footerTotals[col.key]) : formatMoney(footerTotals[col.key]) }}
+                </ng-container>
+                <ng-template #noTotal>{{ first ? ('reports.total' | t) : '' }}</ng-template>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+  </ng-container>
+</div>
