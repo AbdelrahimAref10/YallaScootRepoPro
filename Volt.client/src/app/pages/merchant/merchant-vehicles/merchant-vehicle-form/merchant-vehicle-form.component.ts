@@ -18,6 +18,7 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../../../shared/components/multi-select/multi-select.component';
+import { memo } from '../../../../shared/utils/memo';
 
 @Component({
   selector: 'app-merchant-vehicle-form',
@@ -27,6 +28,10 @@ import {
   styleUrls: ['./merchant-vehicle-form.component.css', '../../../../shared/styles/entity-form.css', '../../../../shared/styles/record-form.css']
 })
 export class MerchantVehicleFormComponent implements OnInit {
+  private readonly categoryOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly subCategoryOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly statusSelectOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
   private readonly merchantProfileClient = inject(MerchantProfileClient);
   private readonly merchantVehicleClient = inject(MerchantVehicleClient);
@@ -82,22 +87,25 @@ export class MerchantVehicleFormComponent implements OnInit {
   }
 
   get categoryOptions(): MultiSelectOption[] {
-    return this.categories
-      .filter(c => c.categoryId != null)
-      .map(c => ({ value: c.categoryId as number, label: c.name || '' }));
+    return this.categoryOptionsMemo([this.categories], () =>
+      this.categories
+        .filter(c => c.categoryId != null)
+        .map(c => ({ value: c.categoryId as number, label: c.name || '' })));
   }
 
   get subCategoryOptions(): MultiSelectOption[] {
-    return this.subCategories
-      .filter(s => s.subCategoryId != null)
-      .map(s => ({ value: s.subCategoryId as number, label: s.name || '' }));
+    return this.subCategoryOptionsMemo([this.subCategories], () =>
+      this.subCategories
+        .filter(s => s.subCategoryId != null)
+        .map(s => ({ value: s.subCategoryId as number, label: s.name || '' })));
   }
 
   get statusSelectOptions(): MultiSelectOption[] {
-    return this.statusOptions.map(opt => ({
-      value: opt.value,
-      label: this.localeService.translate(opt.key)
-    }));
+    return this.statusSelectOptionsMemo([this.statusOptions, this.localeService.locale()], () =>
+      this.statusOptions.map(opt => ({
+        value: opt.value,
+        label: this.localeService.translate(opt.key)
+      })));
   }
 
   ngOnInit(): void {

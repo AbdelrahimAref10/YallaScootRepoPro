@@ -1,11 +1,11 @@
-import { Component, Input, forwardRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, FormControl } from '@angular/forms';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-input',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './input.component.html',
   styleUrl: './input.component.css',
   providers: [
@@ -17,6 +17,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, FormContr
   ]
 })
 export class InputComponent implements ControlValueAccessor {
+  private readonly cdr = inject(ChangeDetectorRef);
   @Input() label = '';
   @Input() type: 'text' | 'password' | 'email' | 'number' = 'text';
   @Input() placeholder = '';
@@ -33,6 +34,7 @@ export class InputComponent implements ControlValueAccessor {
   private onTouched = () => {};
 
   writeValue(value: string): void {
+    this.cdr.markForCheck();
     this.value = value || '';
   }
 
@@ -45,6 +47,7 @@ export class InputComponent implements ControlValueAccessor {
   }
 
   setDisabledState(isDisabled: boolean): void {
+    this.cdr.markForCheck();
     this.disabled = isDisabled;
   }
 
@@ -59,6 +62,7 @@ export class InputComponent implements ControlValueAccessor {
   }
 
   setInvalid(invalid: boolean): void {
+    this.cdr.markForCheck();
     this.isInvalid = invalid;
   }
 }

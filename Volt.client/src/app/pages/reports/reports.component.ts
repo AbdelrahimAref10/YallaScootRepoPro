@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { ReportDefinition, ReportScopeName, reportsBaseRoute, reportsFor } from './reports.config';
@@ -12,7 +11,7 @@ interface ReportGroup {
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.css', './report-page-shared.css']
 })

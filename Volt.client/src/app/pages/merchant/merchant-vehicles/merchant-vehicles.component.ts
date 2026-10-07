@@ -20,6 +20,7 @@ import {
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { memo } from '../../../shared/utils/memo';
 
 @Component({
   selector: 'app-merchant-vehicles',
@@ -44,6 +45,9 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
   ]
 })
 export class MerchantVehiclesComponent implements OnInit {
+  private readonly categoryOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly subCategoryOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
   private readonly merchantProfileClient = inject(MerchantProfileClient);
   private readonly merchantVehicleClient = inject(MerchantVehicleClient);
@@ -78,15 +82,17 @@ export class MerchantVehiclesComponent implements OnInit {
   ];
 
   get categoryOptions(): MultiSelectOption[] {
-    return this.categories
-      .filter(c => c.categoryId != null)
-      .map(c => ({ value: c.categoryId as number, label: c.name || '' }));
+    return this.categoryOptionsMemo([this.categories], () =>
+      this.categories
+        .filter(c => c.categoryId != null)
+        .map(c => ({ value: c.categoryId as number, label: c.name || '' })));
   }
 
   get subCategoryOptions(): MultiSelectOption[] {
-    return this.subCategories
-      .filter(s => s.subCategoryId != null)
-      .map(s => ({ value: s.subCategoryId as number, label: s.name || '' }));
+    return this.subCategoryOptionsMemo([this.subCategories], () =>
+      this.subCategories
+        .filter(s => s.subCategoryId != null)
+        .map(s => ({ value: s.subCategoryId as number, label: s.name || '' })));
   }
 
   ngOnInit(): void {

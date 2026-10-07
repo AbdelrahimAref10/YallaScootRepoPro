@@ -1,23 +1,27 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SubCategoryClient, SubCategoryDto, CreateSubCategoryCommand, UpdateSubCategoryCommand } from '../../../core/services/clientAPI';
-import { CategoryClient, CategoryLookupDto } from '../../../core/services/clientAPI';
+import { CategoryLookupDto } from '../../../core/services/clientAPI';
 import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { memo } from '../../../shared/utils/memo';
+import { LookupService } from '../../../core/services/lookup.service';
 
 @Component({
   selector: 'app-subcategory-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MultiSelectComponent, TranslatePipe],
+  imports: [FormsModule, ReactiveFormsModule, RouterModule, MultiSelectComponent, TranslatePipe],
   templateUrl: './subcategory-form.component.html',
   styleUrls: ['./subcategory-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
 export class SubCategoryFormComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly categoryOptionsMemo = memo<MultiSelectOption[]>();
+
   subCategoryForm: FormGroup;
   isEditMode = false;
   subCategoryId: number | null = null;
@@ -30,7 +34,6 @@ export class SubCategoryFormComponent implements OnInit {
 
   constructor(
     private subCategoryClient: SubCategoryClient,
-    private categoryClient: CategoryClient,
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder
@@ -60,10 +63,11 @@ export class SubCategoryFormComponent implements OnInit {
   }
 
   get categoryOptions(): MultiSelectOption[] {
-    return this.categories.map(category => ({
-      value: category.categoryId,
-      label: category.name
-    }));
+    return this.categoryOptionsMemo([this.categories], () =>
+      this.categories.map(category => ({
+        value: category.categoryId,
+        label: category.name
+      })));
   }
 
   ngOnInit(): void {
@@ -90,7 +94,7 @@ export class SubCategoryFormComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.categoryClient.getLookup().subscribe({
+    this.lookups.categories().subscribe({
       next: (result) => {
         this.categories = result || [];
       },

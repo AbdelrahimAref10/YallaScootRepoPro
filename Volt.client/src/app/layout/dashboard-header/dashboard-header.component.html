@@ -7,7 +7,7 @@
       [class.dashboard-header__menu-btn--open]="isMobileNavOpen"
       [attr.aria-label]="'header.toggleSidebar' | t"
       [attr.aria-expanded]="isMobileNavOpen"
-    >
+      >
       <span class="dashboard-header__burger" aria-hidden="true">
         <span></span>
         <span></span>
@@ -17,14 +17,14 @@
 
     <nav class="dashboard-header__crumbs" aria-label="breadcrumb">
       <span class="dashboard-header__crumb-root">{{ consoleKey | t }}</span>
-      <ng-container *ngIf="sectionKey">
+      @if (sectionKey) {
         <span class="dashboard-header__crumb-sep" aria-hidden="true">/</span>
         <span [class.dashboard-header__crumb-current]="!detailKey">{{ sectionKey | t }}</span>
-      </ng-container>
-      <ng-container *ngIf="detailKey">
+      }
+      @if (detailKey) {
         <span class="dashboard-header__crumb-sep" aria-hidden="true">/</span>
         <span class="dashboard-header__crumb-current">{{ detailKey | t }}</span>
-      </ng-container>
+      }
     </nav>
   </div>
 
@@ -33,28 +33,32 @@
     <app-lang-switcher></app-lang-switcher>
     <app-theme-toggle></app-theme-toggle>
 
-    <div class="dashboard-header__notification-menu" *ngIf="showNotifications">
-      <button
-        type="button"
-        (click)="onToggleNotification($event)"
-        class="dashboard-header__icon-btn"
-        [attr.aria-label]="'header.notifications' | t"
-      >
-        <svg class="dashboard-header__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-        </svg>
-        <span *ngIf="unreadCount > 0" class="dashboard-header__badge">{{ unreadCount }}</span>
-      </button>
-      <app-notification-dropdown
-        [notifications]="notifications"
-        [isOpen]="isNotificationOpen"
-        [viewAllOrdersRoute]="ordersBaseRoute"
-        (markAsRead)="onMarkAsRead($event)"
-        (markAllAsRead)="onMarkAllAsRead()"
-        (notificationClick)="onNotificationClick($event)"
-      ></app-notification-dropdown>
-    </div>
+    @if (showNotifications) {
+      <div class="dashboard-header__notification-menu">
+        <button
+          type="button"
+          (click)="onToggleNotification($event)"
+          class="dashboard-header__icon-btn"
+          [attr.aria-label]="'header.notifications' | t"
+          >
+          <svg class="dashboard-header__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          @if (unreadCount > 0) {
+            <span class="dashboard-header__badge">{{ unreadCount }}</span>
+          }
+        </button>
+        <app-notification-dropdown
+          [notifications]="notifications"
+          [isOpen]="isNotificationOpen"
+          [viewAllOrdersRoute]="ordersBaseRoute"
+          (markAsRead)="onMarkAsRead($event)"
+          (markAllAsRead)="onMarkAllAsRead()"
+          (notificationClick)="onNotificationClick($event)"
+        ></app-notification-dropdown>
+      </div>
+    }
 
     <div class="dashboard-header__user-menu" (click)="onToggleUserMenu($event)">
       <button type="button" class="dashboard-header__user-btn" [attr.aria-label]="'header.userMenu' | t">
@@ -63,7 +67,9 @@
         </div>
         <span class="dashboard-header__user-text">
           <span class="dashboard-header__user-name">{{ userData?.userName || ('header.admin' | t) }}</span>
-          <span class="dashboard-header__user-role" *ngIf="subRoleLabel">{{ subRoleLabel }}</span>
+          @if (subRoleLabel) {
+            <span class="dashboard-header__user-role">{{ subRoleLabel }}</span>
+          }
         </span>
         <svg class="dashboard-header__chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 9l-7 7-7-7"/>

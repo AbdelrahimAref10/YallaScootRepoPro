@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { AuthService } from '../../core/services/auth.service';
@@ -10,7 +9,7 @@ export type { DashboardMenuItem } from '../../core/models/panel-menus';
 @Component({
   selector: 'app-dashboard-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './dashboard-sidebar.component.html',
   styleUrl: './dashboard-sidebar.component.css'
 })

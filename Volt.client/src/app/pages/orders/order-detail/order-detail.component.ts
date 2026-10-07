@@ -17,7 +17,6 @@ import {
   MarkVehicleNotReceivedByCustomerCommand,
   MarkVehicleReceivedFromCustomerCommand,
   MarkVehicleReceivedFromOwnerCommand,
-  MerchantClient,
   MerchantLookupDto,
   MerchantOrderResponseStatus,
   MerchantVehicleResponseStatus,
@@ -70,6 +69,8 @@ import {
   nextLifecycleAction
 } from '../../../shared/order-cycle/order-vehicle-cycle';
 import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { memo } from '../../../shared/utils/memo';
+import { LookupService } from '../../../core/services/lookup.service';
 
 interface PipelineStep {
   state: OrderState;
@@ -137,8 +138,12 @@ type OrderDetailTab = 'merchants' | 'riders' | 'journal' | 'documents';
   ]
 })
 export class OrderDetailComponent implements OnInit, OnDestroy {
+  private readonly lookups = inject(LookupService);
+  private readonly reassignMerchantOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly replaceVehicleOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly faultPartyOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
-  private readonly merchantClient = inject(MerchantClient);
   private readonly dispatchService = inject(RiderDispatchService);
   private readonly adminNotifications = inject(AdminNotificationService);
   private readonly destroy$ = new Subject<void>();
@@ -204,30 +209,33 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   ];
 
   get reassignMerchantOptions(): MultiSelectOption[] {
-    return this.reassignMerchants
-      .filter(m => m.merchantId != null)
-      .map(m => ({
-        value: m.merchantId as number,
-        label: m.fullName || String(m.merchantId),
-        description: m.mobileNumber || '—'
-      }));
+    return this.reassignMerchantOptionsMemo([this.reassignMerchants], () =>
+      this.reassignMerchants
+        .filter(m => m.merchantId != null)
+        .map(m => ({
+          value: m.merchantId as number,
+          label: m.fullName || String(m.merchantId),
+          description: m.mobileNumber || '—'
+        })));
   }
 
   get replaceVehicleOptions(): MultiSelectOption[] {
-    return this.replaceCandidates
-      .filter(v => v.vehicleId != null)
-      .map(v => ({
-        value: v.vehicleId as number,
-        label: `${v.name || ''} (${v.vehicleCode || ''})`.trim(),
-        description: v.merchantName || '—'
-      }));
+    return this.replaceVehicleOptionsMemo([this.replaceCandidates], () =>
+      this.replaceCandidates
+        .filter(v => v.vehicleId != null)
+        .map(v => ({
+          value: v.vehicleId as number,
+          label: `${v.name || ''} (${v.vehicleCode || ''})`.trim(),
+          description: v.merchantName || '—'
+        })));
   }
 
   get faultPartyOptions(): MultiSelectOption[] {
-    return this.operationalFaultParties.map(party => ({
-      value: party,
-      label: this.getFaultPartyLabel(party)
-    }));
+    return this.faultPartyOptionsMemo([this.operationalFaultParties, this.localeService.locale()], () =>
+      this.operationalFaultParties.map(party => ({
+        value: party,
+        label: this.getFaultPartyLabel(party)
+      })));
   }
 
   get vehiclesByMerchant(): Array<{
@@ -262,20 +270,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return [...groups.values()];
   }
 
-  // The getters above build new objects on every change detection. Without a stable identity
-  // ngFor would rebuild each card every pass, and the *appHasPermission effects inside them
-  // schedule another pass: an endless microtask loop that freezes the tab.
-  trackGroup(_: number, group: { merchantId: number }): number {
-    return group.merchantId;
-  }
-
-  trackVehicle(_: number, vehicle: OrderVehicleDto): number {
-    return vehicle.vehicleId;
-  }
-
-  trackEvent(_: number, ev: { date: Date; text: string }): string {
-    return `${ev.date.getTime()}|${ev.text}`;
-  }
+  // vehiclesByMerchant and timeline build new objects on every check, so their @for loops must
+  // track by id (merchantId / vehicleId / date+text). Tracking by object identity rebuilds every
+  // card each pass, and the *appHasPermission effects inside schedule another pass: an endless
+  // loop that freezes the tab.
 
   showLifecycleModal = false;
   lifecycleVehicle: OrderVehicleDto | null = null;
@@ -363,7 +361,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.isLoadingMerchants = true;
     this.errorMessage = '';
 
-    this.merchantClient.getActive().subscribe({
+    this.lookups.activeMerchants().subscribe({
       next: (list) => {
         this.activeMerchants = list || [];
         this.isLoadingMerchants = false;
@@ -430,7 +428,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.isLoadingReassign = true;
     this.reassignMerchants = [];
 
-    this.merchantClient.getActive().subscribe({
+    this.lookups.activeMerchants().subscribe({
       next: (list) => {
         this.reassignMerchants = (list || []).filter(m => m.merchantId !== oldMerchantId);
         this.isLoadingReassign = false;
@@ -861,9 +859,6 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.unavailableAssignments = [];
   }
 
-  trackUnavailable(_: number, item: UnavailableAssignment): string {
-    return item.key;
-  }
 
   private submitAssignments(assignments: LegAssignmentItem[]): void {
     if (!assignments.length) return;

@@ -1,380 +1,454 @@
-<div class="mod mod--loading" *ngIf="isLoading">
-  <div class="mod__spinner" aria-hidden="true"></div>
-  <p>{{ 'common.loading' | t }}</p>
-</div>
+@if (isLoading) {
+  <div class="mod mod--loading">
+    <div class="mod__spinner" aria-hidden="true"></div>
+    <p>{{ 'common.loading' | t }}</p>
+  </div>
+}
 
-<div class="mod" *ngIf="!isLoading && order">
-  <!-- Action bar -->
-  <header class="mod-bar">
-    <button type="button" class="mod-bar__back" (click)="back()" [attr.aria-label]="'common.back' | t">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
-      <span>{{ 'merchant.nav.orders' | t }}</span>
-    </button>
-    <div class="mod__hero-actions mod-bar__actions" *ngIf="order.canAccept || order.canReject || order.canHandover">
-      <ng-container *appHasPermission="'Merchant.Orders.Edit'">
-        <button
-          *ngIf="order.canReject"
-          type="button"
-          class="mod__btn mod__btn--ghost"
-          [disabled]="!!actionLoading"
-          (click)="openReject()"
-        >
-          {{ 'merchant.rejectWholeOrder' | t }}
-        </button>
-      </ng-container>
-      <ng-container *appHasPermission="'Merchant.Orders.Edit'">
-        <button
-          *ngIf="order.canHandover"
-          type="button"
-          class="mod__btn mod__btn--warn"
-          [disabled]="!!actionLoading"
-          (click)="openHandover()"
-        >
-          {{ 'orders.markHandover' | t }}
-        </button>
-      </ng-container>
-      <ng-container *appHasPermission="'Merchant.Orders.Edit'">
-        <button
-          *ngIf="order.canAccept"
-          type="button"
-          class="mod__btn mod__btn--primary"
-          [disabled]="isBusy('accept') || !confirmedVehicleIds.length"
-          (click)="onAccept()"
-        >
-          {{ isBusy('accept') ? ('orders.processing' | t) : ('merchant.confirmSelectedVehicles' | t) }}
-        </button>
-      </ng-container>
-    </div>
-  </header>
-
-  <!-- Invoice header -->
-  <article class="mod-inv">
-    <div class="mod-inv__top">
-      <div class="mod-inv__brand">
-        <span class="mod-inv__wordmark">Yalla<b>Scoot</b></span>
-        <p>{{ 'merchant.statementFor' | t }}</p>
-      </div>
-      <div class="mod-inv__meta">
-        <p class="mod-inv__eyebrow">{{ 'merchant.orderStatement' | t }}</p>
-        <h1 class="mod-inv__no">{{ order.orderCode }}</h1>
-        <div class="mod-inv__chips">
-          <span class="mod__status" [ngClass]="getStateClass(order.orderState)">
-            <span class="mod__status-dot" aria-hidden="true"></span>
-            {{ getStateLabel(order.orderState) }}
-          </span>
-          <span class="mod__chip" [ngClass]="getResponseClass(order.myResponseStatus)">{{ getResponseLabel(order.myResponseStatus) }}</span>
-          <span *ngIf="order.isUrgent" class="mod__chip mod__chip--danger">{{ 'orders.urgent' | t }}</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="mod-inv__facts">
-      <div>
-        <h4>{{ 'orders.rentalPeriod' | t }}</h4>
-        <p><strong>{{ order.reservationDateFrom | date:'d MMM' }} – {{ order.reservationDateTo | date:'d MMM y' }}</strong></p>
-        <p *ngIf="reservationDays">{{ 'orders.daysCount' | t:{ n: reservationDays } }}</p>
-      </div>
-      <div>
-        <h4>{{ 'orders.colSubcategory' | t }}</h4>
-        <p><strong>{{ order.subCategoryName }}</strong></p>
-        <p>{{ order.cityName }}</p>
-      </div>
-      <div>
-        <h4>{{ 'merchant.myVehicles' | t }}</h4>
-        <p><strong>{{ 'orders.nVehicles' | t:{ n: order.myVehicles.length } }}</strong></p>
-        <p>{{ order.createdDate | date:'d MMM y · HH:mm' }}</p>
-      </div>
-    </div>
-
-    <div class="mod-inv__sum">
-      <div>
-        <span>{{ 'merchant.rental' | t }}</span>
-        <b>{{ order.myRentalTotal | number:'1.2-2' }}</b>
-      </div>
-      <i aria-hidden="true">−</i>
-      <div>
-        <span>{{ 'merchant.companyCommission' | t }}</span>
-        <b>{{ (order.myCompanyCommissionTotal || 0) | number:'1.2-2' }}</b>
-      </div>
-      <i aria-hidden="true">=</i>
-      <div class="mod-inv__net">
-        <span>{{ 'merchant.myNet' | t }}</span>
-        <b>{{ order.myNetTotal | number:'1.2-2' }}<small>{{ 'common.currency' | t }}</small></b>
-      </div>
-    </div>
-  </article>
-
-  <div *ngIf="successMessage" class="mod__alert mod__alert--ok" role="status">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="mod__alert" role="alert">{{ errorMessage }}</div>
-
-  <p *ngIf="order.canAccept" class="mod__hint">{{ 'merchant.partialConfirmHint' | t }}</p>
-  <p *ngIf="order.canAccept && skippedVehicleCount > 0" class="mod__hint mod__hint--warn">
-    {{ 'merchant.skippedVehiclesHint' | t:{ n: skippedVehicleCount } }}
-  </p>
-
-
-  <div class="mod__layout">
-    <div class="mod__main">
-      <section class="mod__card">
-        <header class="mod__card-head">
-          <div>
-            <p class="mod__card-kicker">{{ 'merchant.myVehicles' | t }}</p>
-            <h2 class="mod__card-title">{{ 'orders.nVehicles' | t:{ n: order.myVehicles.length } }}</h2>
-          </div>
-        </header>
-        <div *ngIf="!order.myVehicles.length" class="mod__empty">{{ 'merchant.noVehiclesOnOrder' | t }}</div>
-        <div class="mod__invoice" *ngIf="order.myVehicles.length">
-          <article *ngFor="let v of order.myVehicles" class="mod__invoice-item" [class.mod__invoice-item--declined]="isDeclinedVehicle(v)">
-            <div class="mod__invoice-main">
-              <label *ngIf="order.canAccept && isPendingVehicle(v)" class="mod__invoice-check">
-                <input
-                  type="checkbox"
-                  [checked]="isVehicleConfirmed(v.vehicleId)"
-                  (change)="toggleConfirmedVehicle(v.vehicleId)"
-                  [attr.aria-label]="'merchant.confirmThisVehicle' | t"
-                />
-              </label>
-              <div class="mod__invoice-thumb">
-                <img *ngIf="v.imageUrl" [src]="v.imageUrl" [alt]="v.vehicleName" />
-                <div *ngIf="!v.imageUrl" class="mod__invoice-fallback" aria-hidden="true">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                  </svg>
-                </div>
-              </div>
-              <div class="mod__invoice-info">
-                <strong>{{ v.vehicleName }}</strong>
-                <span>#{{ v.vehicleCode }}</span>
-                <span *ngIf="isConfirmedVehicle(v)" class="mod__chip mod__chip--ok">{{ 'orders.confirmedByMerchant' | t }}</span>
-                <span *ngIf="isDeclinedVehicle(v)" class="mod__chip mod__chip--danger">{{ 'orders.declinedByMerchant' | t }}</span>
-                <app-vehicle-specs
-                  [compact]="true"
-                  [showPrice]="false"
-                  [color]="v.color"
-                  [type]="v.type"
-                  [model]="v.model"
-                  [speedKmh]="v.speedKmh"
-                  [engineCapacityCc]="v.engineCapacityCc"
-                ></app-vehicle-specs>
-              </div>
-              <div class="mod__invoice-rate">
-                <strong>{{ v.price | number:'1.2-2' }}</strong>
-                <span>{{ 'common.currency' | t }} / {{ 'vehicles.perDay' | t }}</span>
-              </div>
-            </div>
-            <ol class="mod__cycle" *ngIf="v.receivedFromOwner || v.deliveryFailed || showVehicleCycle(order.orderState)">
-              <li
-                *ngFor="let step of lifecycleSteps"
-                class="mod__cycle-step"
-                [class.mod__cycle-step--done]="isCycleStepDone(v, step.id)"
-              >
-                <span class="mod__cycle-dot" aria-hidden="true"></span>
-                {{ step.labelKey | t }}
-              </li>
-            </ol>
-            <p class="mod__fail" *ngIf="v.deliveryFailed">
-              {{ 'orders.vehicleCancelled' | t }}
-              <span *ngIf="v.deliveryFailureFaultParty"> · {{ getFaultPartyLabel(v.deliveryFailureFaultParty) }}</span>
-              <span *ngIf="v.deliveryFailureReason"> — {{ v.deliveryFailureReason }}</span>
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section class="mod__card">
-        <header class="mod__card-head">
-          <div>
-            <p class="mod__card-kicker">{{ 'orders.hotelName' | t }}</p>
-            <h2 class="mod__card-title">{{ order.hotelName || ('common.details' | t) }}</h2>
-          </div>
-        </header>
-        <div class="mod__rows">
-          <div class="mod__row">
-            <span>{{ 'common.city' | t }}</span>
-            <strong>{{ order.cityName }}</strong>
-          </div>
-          <div class="mod__row">
-            <span>{{ 'vehicles.subCategory' | t }}</span>
-            <strong>{{ order.subCategoryName }}</strong>
-          </div>
-          <div class="mod__row">
-            <span>{{ 'orders.reservationFrom' | t }}</span>
-            <strong>{{ order.reservationDateFrom | date:'MMM d, y' }} → {{ order.reservationDateTo | date:'MMM d, y' }}</strong>
-          </div>
-          <div class="mod__row">
-            <span>{{ 'merchant.cashOnReceive' | t }}</span>
-            <strong>{{ (order.cashOnReceive ? 'common.yes' : 'common.no') | t }}</strong>
-          </div>
-          <div class="mod__row mod__row--stack">
-            <span>{{ 'common.address' | t }}</span>
-            <strong>{{ order.hotelAddress || '—' }}</strong>
-          </div>
-          <div class="mod__row" *ngIf="order.hotelPhone">
-            <span>{{ 'common.phone' | t }}</span>
-            <strong>{{ order.hotelPhone }}</strong>
-          </div>
-        </div>
-      </section>
-
-      <section class="mod__card">
-        <header class="mod__card-head">
-          <div>
-            <p class="mod__card-kicker">{{ 'merchant.handoverStatus' | t }}</p>
-            <h2 class="mod__card-title">{{ 'orders.nVehicles' | t:{ n: order.myHandovers.length } }}</h2>
-          </div>
-        </header>
-        <div *ngIf="!order.myHandovers.length" class="mod__empty">{{ 'merchant.noHandoverYet' | t }}</div>
-        <div class="mod__handovers" *ngIf="order.myHandovers.length">
-          <article class="mod__handover" *ngFor="let h of order.myHandovers">
-            <div class="mod__handover-copy">
-              <strong>{{ h.vehicleCode }}</strong>
-              <span *ngIf="!h.assignedToDelivery">{{ 'merchant.waitingDeliveryAssign' | t }}</span>
-              <span *ngIf="h.assignedToDelivery && !h.deliveryReceivedFromMerchant">
-                {{ 'orders.handoverPending' | t }} · {{ h.deliveryName }}
-              </span>
-              <span *ngIf="h.deliveryReceivedFromMerchant">
-                {{ 'orders.handoverDone' | t }}
-                <ng-container *ngIf="h.receivedFromMerchantAt"> · {{ h.receivedFromMerchantAt | date:'MMM d, y · HH:mm' }}</ng-container>
-              </span>
-            </div>
-            <ng-container *appHasPermission="'Merchant.Orders.Edit'">
+@if (!isLoading && order) {
+  <div class="mod">
+    <!-- Action bar -->
+    <header class="mod-bar">
+      <button type="button" class="mod-bar__back" (click)="back()" [attr.aria-label]="'common.back' | t">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        <span>{{ 'merchant.nav.orders' | t }}</span>
+      </button>
+      @if (order.canAccept || order.canReject || order.canHandover) {
+        <div class="mod__hero-actions mod-bar__actions">
+          <ng-container *appHasPermission="'Merchant.Orders.Edit'">
+            @if (order.canReject) {
               <button
-                *ngIf="order.canHandover && h.assignedToDelivery && !h.deliveryReceivedFromMerchant"
                 type="button"
-                class="mod__btn mod__btn--warn mod__btn--sm"
+                class="mod__btn mod__btn--ghost"
                 [disabled]="!!actionLoading"
-                (click)="handoverSingle(h.vehicleId)"
-              >
+                (click)="openReject()"
+                >
+                {{ 'merchant.rejectWholeOrder' | t }}
+              </button>
+            }
+          </ng-container>
+          <ng-container *appHasPermission="'Merchant.Orders.Edit'">
+            @if (order.canHandover) {
+              <button
+                type="button"
+                class="mod__btn mod__btn--warn"
+                [disabled]="!!actionLoading"
+                (click)="openHandover()"
+                >
                 {{ 'orders.markHandover' | t }}
               </button>
-            </ng-container>
-            <span
-              *ngIf="h.deliveryReceivedFromMerchant"
-              class="mod__chip mod__chip--ok"
-            >
-              {{ 'orders.handoverDone' | t }}
-            </span>
-            <span
-              *ngIf="!h.assignedToDelivery"
-              class="mod__chip mod__chip--muted"
-            >
-              {{ 'common.pending' | t }}
-            </span>
-          </article>
+            }
+          </ng-container>
+          <ng-container *appHasPermission="'Merchant.Orders.Edit'">
+            @if (order.canAccept) {
+              <button
+                type="button"
+                class="mod__btn mod__btn--primary"
+                [disabled]="isBusy('accept') || !confirmedVehicleIds.length"
+                (click)="onAccept()"
+                >
+                {{ isBusy('accept') ? ('orders.processing' | t) : ('merchant.confirmSelectedVehicles' | t) }}
+              </button>
+            }
+          </ng-container>
         </div>
-      </section>
-
-      <section class="mod__card">
-        <header class="mod__card-head">
-          <div>
-            <p class="mod__card-kicker">{{ 'merchant.orderTransactions' | t }}</p>
-            <h2 class="mod__card-title">{{ order.myJournals.length }}</h2>
-          </div>
-        </header>
-        <div *ngIf="!order.myJournals.length" class="mod__empty">{{ 'journals.empty' | t }}</div>
-        <div class="mod__table-wrap" *ngIf="order.myJournals.length">
-          <table class="mod__table">
-            <thead>
-              <tr>
-                <th>{{ 'journals.colDate' | t }}</th>
-                <th>{{ 'orders.journalKindCol' | t }}</th>
-                <th>{{ 'orders.journalDirection' | t }}</th>
-                <th>{{ 'common.amount' | t }}</th>
-                <th>{{ 'common.notes' | t }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let j of order.myJournals">
-                <td>{{ j.createdDate | date:'yyyy-MM-dd HH:mm' }}</td>
-                <td>{{ getJournalKindLabel(j.entryKind) }}</td>
-                <td>
-                  {{ j.direction === JournalDirection.Debit
-                    ? ('orders.journalDebit' | t)
-                    : ('orders.journalCredit' | t) }}
-                </td>
-                <td class="mod__table-num">{{ formatMoney(j.amount) }}</td>
-                <td>{{ j.note || '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
+      }
+    </header>
+    <!-- Invoice header -->
+    <article class="mod-inv">
+      <div class="mod-inv__top">
+        <div class="mod-inv__brand">
+          <span class="mod-inv__wordmark">Yalla<b>Scoot</b></span>
+          <p>{{ 'merchant.statementFor' | t }}</p>
         </div>
-      </section>
-    </div>
-
-    <aside class="mod__aside">
-      <section class="mod__card mod__card--receipt">
-        <header class="mod__card-head">
-          <div>
-            <p class="mod__card-kicker">{{ 'merchant.paymentBreakdown' | t }}</p>
-            <h2 class="mod__card-title">{{ 'merchant.myNet' | t }}</h2>
+        <div class="mod-inv__meta">
+          <p class="mod-inv__eyebrow">{{ 'merchant.orderStatement' | t }}</p>
+          <h1 class="mod-inv__no">{{ order.orderCode }}</h1>
+          <div class="mod-inv__chips">
+            <span class="mod__status" [ngClass]="getStateClass(order.orderState)">
+              <span class="mod__status-dot" aria-hidden="true"></span>
+              {{ getStateLabel(order.orderState) }}
+            </span>
+            <span class="mod__chip" [ngClass]="getResponseClass(order.myResponseStatus)">{{ getResponseLabel(order.myResponseStatus) }}</span>
+            @if (order.isUrgent) {
+              <span class="mod__chip mod__chip--danger">{{ 'orders.urgent' | t }}</span>
+            }
           </div>
-        </header>
-        <div *ngIf="!order.myPaymentDetails.length" class="mod__empty">{{ 'merchant.paymentsAfterConfirm' | t }}</div>
-        <ng-container *ngIf="order.myPaymentDetails.length">
-          <div class="mod__receipt-lines">
-            <div class="mod__receipt-line" *ngFor="let p of order.myPaymentDetails">
-              <span>{{ p.vehicleCode }}</span>
-              <strong>{{ formatMoney(p.netAmount) }}</strong>
+        </div>
+      </div>
+      <div class="mod-inv__facts">
+        <div>
+          <h4>{{ 'orders.rentalPeriod' | t }}</h4>
+          <p><strong>{{ order.reservationDateFrom | date:'d MMM' }} – {{ order.reservationDateTo | date:'d MMM y' }}</strong></p>
+          @if (reservationDays) {
+            <p>{{ 'orders.daysCount' | t:{ n: reservationDays } }}</p>
+          }
+        </div>
+        <div>
+          <h4>{{ 'orders.colSubcategory' | t }}</h4>
+          <p><strong>{{ order.subCategoryName }}</strong></p>
+          <p>{{ order.cityName }}</p>
+        </div>
+        <div>
+          <h4>{{ 'merchant.myVehicles' | t }}</h4>
+          <p><strong>{{ 'orders.nVehicles' | t:{ n: order.myVehicles.length } }}</strong></p>
+          <p>{{ order.createdDate | date:'d MMM y · HH:mm' }}</p>
+        </div>
+      </div>
+      <div class="mod-inv__sum">
+        <div>
+          <span>{{ 'merchant.rental' | t }}</span>
+          <b>{{ order.myRentalTotal | number:'1.2-2' }}</b>
+        </div>
+        <i aria-hidden="true">−</i>
+        <div>
+          <span>{{ 'merchant.companyCommission' | t }}</span>
+          <b>{{ (order.myCompanyCommissionTotal || 0) | number:'1.2-2' }}</b>
+        </div>
+        <i aria-hidden="true">=</i>
+        <div class="mod-inv__net">
+          <span>{{ 'merchant.myNet' | t }}</span>
+          <b>{{ order.myNetTotal | number:'1.2-2' }}<small>{{ 'common.currency' | t }}</small></b>
+        </div>
+      </div>
+    </article>
+    @if (successMessage) {
+      <div class="mod__alert mod__alert--ok" role="status">{{ successMessage }}</div>
+    }
+    @if (errorMessage) {
+      <div class="mod__alert" role="alert">{{ errorMessage }}</div>
+    }
+    @if (order.canAccept) {
+      <p class="mod__hint">{{ 'merchant.partialConfirmHint' | t }}</p>
+    }
+    @if (order.canAccept && skippedVehicleCount > 0) {
+      <p class="mod__hint mod__hint--warn">
+        {{ 'merchant.skippedVehiclesHint' | t:{ n: skippedVehicleCount } }}
+      </p>
+    }
+    <div class="mod__layout">
+      <div class="mod__main">
+        <section class="mod__card">
+          <header class="mod__card-head">
+            <div>
+              <p class="mod__card-kicker">{{ 'merchant.myVehicles' | t }}</p>
+              <h2 class="mod__card-title">{{ 'orders.nVehicles' | t:{ n: order.myVehicles.length } }}</h2>
             </div>
+          </header>
+          @if (!order.myVehicles.length) {
+            <div class="mod__empty">{{ 'merchant.noVehiclesOnOrder' | t }}</div>
+          }
+          @if (order.myVehicles.length) {
+            <div class="mod__invoice">
+              @for (v of order.myVehicles; track v) {
+                <article class="mod__invoice-item" [class.mod__invoice-item--declined]="isDeclinedVehicle(v)">
+                  <div class="mod__invoice-main">
+                    @if (order.canAccept && isPendingVehicle(v)) {
+                      <label class="mod__invoice-check">
+                        <input
+                          type="checkbox"
+                          [checked]="isVehicleConfirmed(v.vehicleId)"
+                          (change)="toggleConfirmedVehicle(v.vehicleId)"
+                          [attr.aria-label]="'merchant.confirmThisVehicle' | t"
+                          />
+                      </label>
+                    }
+                    <div class="mod__invoice-thumb">
+                      @if (v.imageUrl) {
+                        <img [src]="v.imageUrl" [alt]="v.vehicleName" />
+                      }
+                      @if (!v.imageUrl) {
+                        <div class="mod__invoice-fallback" aria-hidden="true">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                          </svg>
+                        </div>
+                      }
+                    </div>
+                    <div class="mod__invoice-info">
+                      <strong>{{ v.vehicleName }}</strong>
+                      <span>#{{ v.vehicleCode }}</span>
+                      @if (isConfirmedVehicle(v)) {
+                        <span class="mod__chip mod__chip--ok">{{ 'orders.confirmedByMerchant' | t }}</span>
+                      }
+                      @if (isDeclinedVehicle(v)) {
+                        <span class="mod__chip mod__chip--danger">{{ 'orders.declinedByMerchant' | t }}</span>
+                      }
+                      <app-vehicle-specs
+                        [compact]="true"
+                        [showPrice]="false"
+                        [color]="v.color"
+                        [type]="v.type"
+                        [model]="v.model"
+                        [speedKmh]="v.speedKmh"
+                        [engineCapacityCc]="v.engineCapacityCc"
+                      ></app-vehicle-specs>
+                    </div>
+                    <div class="mod__invoice-rate">
+                      <strong>{{ v.price | number:'1.2-2' }}</strong>
+                      <span>{{ 'common.currency' | t }} / {{ 'vehicles.perDay' | t }}</span>
+                    </div>
+                  </div>
+                  @if (v.receivedFromOwner || v.deliveryFailed || showVehicleCycle(order.orderState)) {
+                    <ol class="mod__cycle">
+                      @for (step of lifecycleSteps; track step) {
+                        <li
+                          class="mod__cycle-step"
+                          [class.mod__cycle-step--done]="isCycleStepDone(v, step.id)"
+                          >
+                          <span class="mod__cycle-dot" aria-hidden="true"></span>
+                          {{ step.labelKey | t }}
+                        </li>
+                      }
+                    </ol>
+                  }
+                  @if (v.deliveryFailed) {
+                    <p class="mod__fail">
+                      {{ 'orders.vehicleCancelled' | t }}
+                      @if (v.deliveryFailureFaultParty) {
+                        <span> · {{ getFaultPartyLabel(v.deliveryFailureFaultParty) }}</span>
+                      }
+                      @if (v.deliveryFailureReason) {
+                        <span> — {{ v.deliveryFailureReason }}</span>
+                      }
+                    </p>
+                  }
+                </article>
+              }
+            </div>
+          }
+        </section>
+        <section class="mod__card">
+          <header class="mod__card-head">
+            <div>
+              <p class="mod__card-kicker">{{ 'orders.hotelName' | t }}</p>
+              <h2 class="mod__card-title">{{ order.hotelName || ('common.details' | t) }}</h2>
+            </div>
+          </header>
+          <div class="mod__rows">
+            <div class="mod__row">
+              <span>{{ 'common.city' | t }}</span>
+              <strong>{{ order.cityName }}</strong>
+            </div>
+            <div class="mod__row">
+              <span>{{ 'vehicles.subCategory' | t }}</span>
+              <strong>{{ order.subCategoryName }}</strong>
+            </div>
+            <div class="mod__row">
+              <span>{{ 'orders.reservationFrom' | t }}</span>
+              <strong>{{ order.reservationDateFrom | date:'MMM d, y' }} → {{ order.reservationDateTo | date:'MMM d, y' }}</strong>
+            </div>
+            <div class="mod__row">
+              <span>{{ 'merchant.cashOnReceive' | t }}</span>
+              <strong>{{ (order.cashOnReceive ? 'common.yes' : 'common.no') | t }}</strong>
+            </div>
+            <div class="mod__row mod__row--stack">
+              <span>{{ 'common.address' | t }}</span>
+              <strong>{{ order.hotelAddress || '—' }}</strong>
+            </div>
+            @if (order.hotelPhone) {
+              <div class="mod__row">
+                <span>{{ 'common.phone' | t }}</span>
+                <strong>{{ order.hotelPhone }}</strong>
+              </div>
+            }
           </div>
-          <div class="mod__receipt-meta">
-            <div><span>{{ 'merchant.rental' | t }}</span><strong>{{ formatMoney(order.myRentalTotal) }}</strong></div>
-            <div *ngIf="order.myCompanyCommissionTotal"><span>{{ 'merchant.companyCommission' | t }}</span><strong>− {{ formatMoney(order.myCompanyCommissionTotal) }}</strong></div>
-          </div>
-          <div class="mod__receipt-total">
-            <span>{{ 'merchant.myNet' | t }}</span>
-            <strong>{{ formatMoney(order.myNetTotal) }}</strong>
-          </div>
-        </ng-container>
-      </section>
-    </aside>
-  </div>
-</div>
-
-<div *ngIf="!isLoading && !order && errorMessage" class="mod__alert" role="alert">{{ errorMessage }}</div>
-
-<div class="mod__modal" *ngIf="showRejectModal" (click)="showRejectModal = false">
-  <div class="mod__modal-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-    <h3>{{ 'merchant.rejectWholeOrder' | t }}</h3>
-    <p>{{ 'merchant.rejectWholeOrderHint' | t }}</p>
-    <textarea
-      rows="4"
-      [(ngModel)]="rejectReason"
-      [placeholder]="'merchant.rejectReasonPlaceholder' | t"
-    ></textarea>
-    <div class="mod__modal-actions">
-      <button type="button" class="mod__btn mod__btn--ghost" (click)="showRejectModal = false">{{ 'common.cancel' | t }}</button>
-      <button type="button" class="mod__btn mod__btn--danger" [disabled]="isBusy('reject')" (click)="confirmReject()">
-        {{ 'merchant.rejectOrder' | t }}
-      </button>
+        </section>
+        <section class="mod__card">
+          <header class="mod__card-head">
+            <div>
+              <p class="mod__card-kicker">{{ 'merchant.handoverStatus' | t }}</p>
+              <h2 class="mod__card-title">{{ 'orders.nVehicles' | t:{ n: order.myHandovers.length } }}</h2>
+            </div>
+          </header>
+          @if (!order.myHandovers.length) {
+            <div class="mod__empty">{{ 'merchant.noHandoverYet' | t }}</div>
+          }
+          @if (order.myHandovers.length) {
+            <div class="mod__handovers">
+              @for (h of order.myHandovers; track h) {
+                <article class="mod__handover">
+                  <div class="mod__handover-copy">
+                    <strong>{{ h.vehicleCode }}</strong>
+                    @if (!h.assignedToDelivery) {
+                      <span>{{ 'merchant.waitingDeliveryAssign' | t }}</span>
+                    }
+                    @if (h.assignedToDelivery && !h.deliveryReceivedFromMerchant) {
+                      <span>
+                        {{ 'orders.handoverPending' | t }} · {{ h.deliveryName }}
+                      </span>
+                    }
+                    @if (h.deliveryReceivedFromMerchant) {
+                      <span>
+                        {{ 'orders.handoverDone' | t }}
+                        @if (h.receivedFromMerchantAt) {
+                          · {{ h.receivedFromMerchantAt | date:'MMM d, y · HH:mm' }}
+                        }
+                      </span>
+                    }
+                  </div>
+                  <ng-container *appHasPermission="'Merchant.Orders.Edit'">
+                    @if (order.canHandover && h.assignedToDelivery && !h.deliveryReceivedFromMerchant) {
+                      <button
+                        type="button"
+                        class="mod__btn mod__btn--warn mod__btn--sm"
+                        [disabled]="!!actionLoading"
+                        (click)="handoverSingle(h.vehicleId)"
+                        >
+                        {{ 'orders.markHandover' | t }}
+                      </button>
+                    }
+                  </ng-container>
+                  @if (h.deliveryReceivedFromMerchant) {
+                    <span
+                      class="mod__chip mod__chip--ok"
+                      >
+                      {{ 'orders.handoverDone' | t }}
+                    </span>
+                  }
+                  @if (!h.assignedToDelivery) {
+                    <span
+                      class="mod__chip mod__chip--muted"
+                      >
+                      {{ 'common.pending' | t }}
+                    </span>
+                  }
+                </article>
+              }
+            </div>
+          }
+        </section>
+        <section class="mod__card">
+          <header class="mod__card-head">
+            <div>
+              <p class="mod__card-kicker">{{ 'merchant.orderTransactions' | t }}</p>
+              <h2 class="mod__card-title">{{ order.myJournals.length }}</h2>
+            </div>
+          </header>
+          @if (!order.myJournals.length) {
+            <div class="mod__empty">{{ 'journals.empty' | t }}</div>
+          }
+          @if (order.myJournals.length) {
+            <div class="mod__table-wrap">
+              <table class="mod__table">
+                <thead>
+                  <tr>
+                    <th>{{ 'journals.colDate' | t }}</th>
+                    <th>{{ 'orders.journalKindCol' | t }}</th>
+                    <th>{{ 'orders.journalDirection' | t }}</th>
+                    <th>{{ 'common.amount' | t }}</th>
+                    <th>{{ 'common.notes' | t }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (j of order.myJournals; track j) {
+                    <tr>
+                      <td>{{ j.createdDate | date:'yyyy-MM-dd HH:mm' }}</td>
+                      <td>{{ getJournalKindLabel(j.entryKind) }}</td>
+                      <td>
+                        {{ j.direction === JournalDirection.Debit
+                        ? ('orders.journalDebit' | t)
+                        : ('orders.journalCredit' | t) }}
+                      </td>
+                      <td class="mod__table-num">{{ formatMoney(j.amount) }}</td>
+                      <td>{{ j.note || '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+      </div>
+      <aside class="mod__aside">
+        <section class="mod__card mod__card--receipt">
+          <header class="mod__card-head">
+            <div>
+              <p class="mod__card-kicker">{{ 'merchant.paymentBreakdown' | t }}</p>
+              <h2 class="mod__card-title">{{ 'merchant.myNet' | t }}</h2>
+            </div>
+          </header>
+          @if (!order.myPaymentDetails.length) {
+            <div class="mod__empty">{{ 'merchant.paymentsAfterConfirm' | t }}</div>
+          }
+          @if (order.myPaymentDetails.length) {
+            <div class="mod__receipt-lines">
+              @for (p of order.myPaymentDetails; track p) {
+                <div class="mod__receipt-line">
+                  <span>{{ p.vehicleCode }}</span>
+                  <strong>{{ formatMoney(p.netAmount) }}</strong>
+                </div>
+              }
+            </div>
+            <div class="mod__receipt-meta">
+              <div><span>{{ 'merchant.rental' | t }}</span><strong>{{ formatMoney(order.myRentalTotal) }}</strong></div>
+              @if (order.myCompanyCommissionTotal) {
+                <div><span>{{ 'merchant.companyCommission' | t }}</span><strong>− {{ formatMoney(order.myCompanyCommissionTotal) }}</strong></div>
+              }
+            </div>
+            <div class="mod__receipt-total">
+              <span>{{ 'merchant.myNet' | t }}</span>
+              <strong>{{ formatMoney(order.myNetTotal) }}</strong>
+            </div>
+          }
+        </section>
+      </aside>
     </div>
   </div>
-</div>
+}
 
-<div class="mod__modal" *ngIf="showHandoverModal" (click)="showHandoverModal = false">
-  <div class="mod__modal-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-    <h3>{{ 'orders.markHandover' | t }}</h3>
-    <p>{{ 'merchant.handoverHint' | t }}</p>
-    <label *ngFor="let h of pendingHandoverVehicles" class="mod__check">
-      <input
-        type="checkbox"
-        [checked]="selectedHandoverVehicleIds.includes(h.vehicleId)"
-        (change)="toggleHandoverVehicle(h.vehicleId)"
-      />
-      <span>{{ h.vehicleCode }} — {{ h.deliveryName }}</span>
-    </label>
-    <div class="mod__modal-actions">
-      <button type="button" class="mod__btn mod__btn--ghost" (click)="showHandoverModal = false">{{ 'common.cancel' | t }}</button>
-      <button
-        type="button"
-        class="mod__btn mod__btn--primary"
-        [disabled]="!selectedHandoverVehicleIds.length || isBusy('handover')"
-        (click)="confirmHandover()"
-      >
-        {{ 'orders.markHandover' | t }}
-      </button>
+@if (!isLoading && !order && errorMessage) {
+  <div class="mod__alert" role="alert">{{ errorMessage }}</div>
+}
+
+@if (showRejectModal) {
+  <div class="mod__modal" (click)="showRejectModal = false">
+    <div class="mod__modal-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <h3>{{ 'merchant.rejectWholeOrder' | t }}</h3>
+      <p>{{ 'merchant.rejectWholeOrderHint' | t }}</p>
+      <textarea
+        rows="4"
+        [(ngModel)]="rejectReason"
+        [placeholder]="'merchant.rejectReasonPlaceholder' | t"
+      ></textarea>
+      <div class="mod__modal-actions">
+        <button type="button" class="mod__btn mod__btn--ghost" (click)="showRejectModal = false">{{ 'common.cancel' | t }}</button>
+        <button type="button" class="mod__btn mod__btn--danger" [disabled]="isBusy('reject')" (click)="confirmReject()">
+          {{ 'merchant.rejectOrder' | t }}
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}
+
+@if (showHandoverModal) {
+  <div class="mod__modal" (click)="showHandoverModal = false">
+    <div class="mod__modal-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <h3>{{ 'orders.markHandover' | t }}</h3>
+      <p>{{ 'merchant.handoverHint' | t }}</p>
+      @for (h of pendingHandoverVehicles; track h) {
+        <label class="mod__check">
+          <input
+            type="checkbox"
+            [checked]="selectedHandoverVehicleIds.includes(h.vehicleId)"
+            (change)="toggleHandoverVehicle(h.vehicleId)"
+            />
+          <span>{{ h.vehicleCode }} — {{ h.deliveryName }}</span>
+        </label>
+      }
+      <div class="mod__modal-actions">
+        <button type="button" class="mod__btn mod__btn--ghost" (click)="showHandoverModal = false">{{ 'common.cancel' | t }}</button>
+        <button
+          type="button"
+          class="mod__btn mod__btn--primary"
+          [disabled]="!selectedHandoverVehicleIds.length || isBusy('handover')"
+          (click)="confirmHandover()"
+          >
+          {{ 'orders.markHandover' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

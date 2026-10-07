@@ -6,12 +6,16 @@
     </div>
   </header>
 
-  <div *ngIf="successMessage" class="st-alert st-alert--ok" role="status">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="st-alert st-alert--err" role="alert">{{ errorMessage }}</div>
+  @if (successMessage) {
+    <div class="st-alert st-alert--ok" role="status">{{ successMessage }}</div>
+  }
+  @if (errorMessage) {
+    <div class="st-alert st-alert--err" role="alert">{{ errorMessage }}</div>
+  }
 
   <nav class="st-types" role="tablist" aria-label="Settlement party">
     <button type="button" role="tab" class="st-type" [class.st-type--on]="activeTab === 'delivery'"
-            [attr.aria-selected]="activeTab === 'delivery'" (click)="setTab('delivery')">
+      [attr.aria-selected]="activeTab === 'delivery'" (click)="setTab('delivery')">
       <span class="st-type__icon st-type__icon--in" aria-hidden="true">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
       </span>
@@ -21,7 +25,7 @@
       </span>
     </button>
     <button type="button" role="tab" class="st-type" [class.st-type--on]="activeTab === 'merchant'"
-            [attr.aria-selected]="activeTab === 'merchant'" (click)="setTab('merchant')">
+      [attr.aria-selected]="activeTab === 'merchant'" (click)="setTab('merchant')">
       <span class="st-type__icon st-type__icon--merchant" aria-hidden="true">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M3 9l1.5-5h15L21 9M3 9h18M3 9a3 3 0 006 0 3 3 0 006 0 3 3 0 006 0M5 12v8h14v-8M10 20v-5h4v5"/></svg>
       </span>
@@ -55,14 +59,18 @@
           ></app-multi-select>
         </div>
 
-        <div *ngIf="isLoadingParty" class="st-empty">{{ 'common.loading' | t }}</div>
+        @if (isLoadingParty) {
+          <div class="st-empty">{{ 'common.loading' | t }}</div>
+        }
 
-        <ng-container *ngIf="summary && !isLoadingParty">
+        @if (summary && !isLoadingParty) {
           <div class="st-balances">
-            <div class="st-balance" *ngIf="activeTab === 'delivery'">
-              <span>{{ 'settlements.cashOwedToCompany' | t }}</span>
-              <strong>{{ summary.cashOwedToCompany | number:'1.2-2' }}</strong>
-            </div>
+            @if (activeTab === 'delivery') {
+              <div class="st-balance">
+                <span>{{ 'settlements.cashOwedToCompany' | t }}</span>
+                <strong>{{ summary.cashOwedToCompany | number:'1.2-2' }}</strong>
+              </div>
+            }
             <div class="st-balance">
               <span>{{ (activeTab === 'delivery' ? 'settlements.commissionOwed' : 'settlements.owedByCompany') | t }}</span>
               <strong>{{ summary.owedByCompany | number:'1.2-2' }}</strong>
@@ -72,8 +80,7 @@
               <strong>{{ summary.maxAmount | number:'1.2-2' }} <small>{{ 'common.currency' | t }}</small></strong>
             </div>
           </div>
-
-          <ng-container *ngIf="summary.direction">
+          @if (summary.direction) {
             <div class="st-field">
               <label>{{ (isCollecting ? 'settlements.amountCollected' : 'settlements.amountPaid') | t }}</label>
               <div class="st-money">
@@ -88,28 +95,30 @@
               <label>{{ 'common.notes' | t }}</label>
               <textarea class="st-input" rows="2" [(ngModel)]="note"></textarea>
             </div>
-
-            <div class="st-preview" *ngIf="preview.length">
-              <span class="st-panel__kicker">{{ 'settlements.previewTitle' | t }}</span>
-              <ul>
-                <li *ngFor="let line of preview; trackBy: trackPreviewLine">
-                  <span>{{ line.item.orderCode || (line.item.orderId ? '#' + line.item.orderId : ('settlements.noOrder' | t)) }}
-                    · {{ itemLabel(line.item.kind) }}</span>
-                  <span class="st-num">
-                    {{ line.amount | number:'1.2-2' }}
-                    <small class="st-tag" [class.st-tag--part]="!line.full">{{ (line.full ? 'settlements.full' : 'settlements.partial') | t }}</small>
-                  </span>
-                </li>
-              </ul>
-            </div>
-
+            @if (preview.length) {
+              <div class="st-preview">
+                <span class="st-panel__kicker">{{ 'settlements.previewTitle' | t }}</span>
+                <ul>
+                  @for (line of preview; track line.item) {
+                    <li>
+                      <span>{{ line.item.orderCode || (line.item.orderId ? '#' + line.item.orderId : ('settlements.noOrder' | t)) }}
+                      · {{ itemLabel(line.item.kind) }}</span>
+                      <span class="st-num">
+                        {{ line.amount | number:'1.2-2' }}
+                        <small class="st-tag" [class.st-tag--part]="!line.full">{{ (line.full ? 'settlements.full' : 'settlements.partial') | t }}</small>
+                      </span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
             <ng-container *appHasPermission="'Admin.Settlements.Create'">
               <button type="button" class="st-submit" (click)="onSubmit()" [disabled]="isSubmitting || !!amountError">
                 {{ isSubmitting ? ('common.saving' | t) : (isCollecting ? 'settlements.submitCollect' : 'settlements.submitPay') | t }}
               </button>
             </ng-container>
-          </ng-container>
-        </ng-container>
+          }
+        }
       </div>
     </section>
 
@@ -122,7 +131,7 @@
         </div>
       </header>
 
-      <ng-container *ngIf="vouchers.length">
+      @if (vouchers.length) {
         <span class="st-panel__kicker">{{ 'settlements.vouchers' | t }}</span>
         <div class="st-table-wrap">
           <table class="st-table">
@@ -135,32 +144,39 @@
               </tr>
             </thead>
             <tbody>
-              <ng-container *ngFor="let v of vouchers">
+              @for (v of vouchers; track v.settlementVoucherId) {
                 <tr class="st-click" (click)="toggleVoucher(v)">
-                  <td><strong>{{ v.voucherNo }}</strong><small *ngIf="v.note">{{ v.note }}</small></td>
-                  <td class="st-muted">{{ v.createdDate | date:'d MMM y HH:mm' }}<small>{{ v.createdBy }}</small></td>
-                  <td>{{ directionLabel(v.direction) }}</td>
-                  <td class="st-num" [class.st-cr]="v.direction === SettlementDirection.CollectFromParty" [class.st-dr]="v.direction === SettlementDirection.PayToParty">
-                    {{ v.amount | number:'1.2-2' }}
-                  </td>
-                </tr>
-                <tr *ngIf="openVoucher?.settlementVoucherId === v.settlementVoucherId">
+                  <td><strong>{{ v.voucherNo }}</strong>@if (v.note) {
+                  <small>{{ v.note }}</small>
+                }</td>
+                <td class="st-muted">{{ v.createdDate | date:'d MMM y HH:mm' }}<small>{{ v.createdBy }}</small></td>
+                <td>{{ directionLabel(v.direction) }}</td>
+                <td class="st-num" [class.st-cr]="v.direction === SettlementDirection.CollectFromParty" [class.st-dr]="v.direction === SettlementDirection.PayToParty">
+                  {{ v.amount | number:'1.2-2' }}
+                </td>
+              </tr>
+              @if (openVoucher?.settlementVoucherId === v.settlementVoucherId) {
+                <tr>
                   <td colspan="4" class="st-alloc">
-                    <div *ngFor="let a of openVoucher!.allocations">
-                      <span>{{ a.orderCode || (a.orderId ? '#' + a.orderId : ('settlements.noOrder' | t)) }} · {{ itemLabel(a.kind) }}</span>
-                      <span class="st-num">{{ a.amount | number:'1.2-2' }}</span>
-                    </div>
+                    @for (a of openVoucher!.allocations; track a) {
+                      <div>
+                        <span>{{ a.orderCode || (a.orderId ? '#' + a.orderId : ('settlements.noOrder' | t)) }} · {{ itemLabel(a.kind) }}</span>
+                        <span class="st-num">{{ a.amount | number:'1.2-2' }}</span>
+                      </div>
+                    }
                   </td>
                 </tr>
-              </ng-container>
-            </tbody>
-          </table>
-        </div>
-      </ng-container>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
 
-            <ng-container *ngIf="ledger">
-        <span class="st-panel__kicker">{{ 'settlements.movements' | t }}</span>
-        <div class="st-table-wrap" *ngIf="ledger.entries?.length; else noEntries">
+    @if (ledger) {
+      <span class="st-panel__kicker">{{ 'settlements.movements' | t }}</span>
+      @if (ledger.entries.length) {
+        <div class="st-table-wrap">
           <table class="st-table">
             <thead>
               <tr>
@@ -171,32 +187,41 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let entry of ledger.entries">
-                <td class="st-muted">
-                  {{ entry.createdDate | date:'d MMM y' }}
-                  <small>{{ entry.createdDate | date:'HH:mm' }}</small>
-                </td>
-                <td>
-                  <strong>{{ getJournalKindLabel(entry.entryKind) }}</strong>
-                  <small *ngIf="entry.note">{{ entry.note }}</small>
-                </td>
-                <td class="st-num st-dr">{{ entry.direction === JournalDirection.Debit ? (entry.amount | number:'1.2-2') : '' }}</td>
-                <td class="st-num st-cr">{{ entry.direction === JournalDirection.Credit ? (entry.amount | number:'1.2-2') : '' }}</td>
-              </tr>
+              @for (entry of ledger.entries; track entry) {
+                <tr>
+                  <td class="st-muted">
+                    {{ entry.createdDate | date:'d MMM y' }}
+                    <small>{{ entry.createdDate | date:'HH:mm' }}</small>
+                  </td>
+                  <td>
+                    <strong>{{ getJournalKindLabel(entry.entryKind) }}</strong>
+                    @if (entry.note) {
+                      <small>{{ entry.note }}</small>
+                    }
+                  </td>
+                  <td class="st-num st-dr">{{ entry.direction === JournalDirection.Debit ? (entry.amount | number:'1.2-2') : '' }}</td>
+                  <td class="st-num st-cr">{{ entry.direction === JournalDirection.Credit ? (entry.amount | number:'1.2-2') : '' }}</td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>
-        <ng-template #noEntries>
-          <p class="st-empty">{{ 'settlements.noEntries' | t }}</p>
-        </ng-template>
-      </ng-container>
+      } @else {
+        <p class="st-empty">{{ 'settlements.noEntries' | t }}</p>
+      }
+      <ng-template #noEntries>
+        <p class="st-empty">{{ 'settlements.noEntries' | t }}</p>
+      </ng-template>
+    }
 
-      <div *ngIf="!summary && !isLoadingParty" class="st-empty st-empty--hint">
+    @if (!summary && !isLoadingParty) {
+      <div class="st-empty st-empty--hint">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
         <p>{{ 'settlements.pickPartyHint' | t }}</p>
       </div>
-    </section>
-  </div>
+    }
+  </section>
+</div>
 </div>

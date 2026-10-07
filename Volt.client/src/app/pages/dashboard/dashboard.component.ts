@@ -17,7 +17,6 @@ import { Subscription } from 'rxjs';
 import { Chart, registerables, TooltipItem } from 'chart.js';
 import {
   AdminHomeClient,
-  CityClient,
   DashboardAmountDto,
   DashboardBucket,
   DashboardDto,
@@ -31,6 +30,7 @@ import { ThemeService } from '../../core/services/theme.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { MultiSelectComponent, MultiSelectOption } from '../../shared/components/multi-select/multi-select.component';
+import { LookupService } from '../../core/services/lookup.service';
 
 Chart.register(...registerables);
 
@@ -61,10 +61,10 @@ const ISO = (d: Date): string =>
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
+  private readonly lookups = inject(LookupService);
   @ViewChild('trendCanvas') trendCanvas?: ElementRef<HTMLCanvasElement>;
 
   private readonly client = inject(AdminHomeClient);
-  private readonly cityClient = inject(CityClient);
   private readonly locale = inject(LocaleService);
   private readonly theme = inject(ThemeService);
   private readonly auth = inject(AuthService);
@@ -163,7 +163,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.cityClient.getAll(1, 500).subscribe({
+    this.lookups.allCities().subscribe({
       next: res => this.cityOptions.set((res.items || []).map(c => ({ value: c.cityId, label: c.name })))
     });
     this.applyPreset('30d');
@@ -314,13 +314,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       : '';
   }
 
-  trackKey(_: number, row: { key: string }): string {
-    return row.key;
-  }
 
-  trackId(_: number, row: { id?: number; partyId?: number; orderId?: number }): number {
-    return row.id ?? row.partyId ?? row.orderId ?? 0;
-  }
 
   private numberLocale(): string {
     return this.locale.locale() === 'ar' ? 'ar-EG' : 'en-US';

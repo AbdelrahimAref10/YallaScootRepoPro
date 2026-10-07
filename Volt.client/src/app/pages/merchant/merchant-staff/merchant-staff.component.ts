@@ -1,6 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   CreateMerchantStaffCommand,
@@ -26,7 +25,7 @@ type StaffAction = 'delete' | 'activate' | 'deactivate';
 @Component({
   selector: 'app-merchant-staff',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, ConfirmDialogComponent, MultiSelectComponent, HasPermissionDirective],
+  imports: [ReactiveFormsModule, TranslatePipe, ConfirmDialogComponent, MultiSelectComponent, HasPermissionDirective],
   templateUrl: './merchant-staff.component.html',
   styleUrls: ['../../users/users.component.css', '../../../shared/styles/entity-form.css']
 })

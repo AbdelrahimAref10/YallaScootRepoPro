@@ -1,5 +1,4 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
@@ -12,6 +11,7 @@ import {
 } from '../../../core/services/clientAPI';
 import { LocaleService } from '../../../core/services/locale.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { LookupService } from '../../../core/services/lookup.service';
 
 interface RateRow {
   toZoneId: number;
@@ -23,11 +23,12 @@ interface RateRow {
 @Component({
   selector: 'app-city-zone-rates',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe],
+  imports: [FormsModule, RouterModule, TranslatePipe],
   templateUrl: './city-zone-rates.component.html',
   styleUrls: ['./city-zone-rates.component.css', '../../../shared/styles/entity-form.css']
 })
 export class CityZoneRatesComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
   private readonly cityClient = inject(CityClient);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -119,7 +120,7 @@ export class CityZoneRatesComponent implements OnInit {
           this.isLoading = false;
           return;
         }
-        this.cityClient.getZonesByCity(this.cityId).subscribe({
+        this.lookups.zonesByCity(this.cityId).subscribe({
           next: (zones) => {
             this.zones = zones || [];
             this.fromZoneId = this.zones[0]?.zoneId ?? null;

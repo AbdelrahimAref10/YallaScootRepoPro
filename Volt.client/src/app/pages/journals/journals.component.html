@@ -6,7 +6,9 @@
     </div>
   </header>
 
-  <div *ngIf="errorMessage" class="journals__alert journals__alert--err" role="alert">{{ errorMessage }}</div>
+  @if (errorMessage) {
+    <div class="journals__alert journals__alert--err" role="alert">{{ errorMessage }}</div>
+  }
 
   <section class="journals__filters" aria-label="filters">
     <div class="journals__field">
@@ -17,7 +19,7 @@
         [(ngModel)]="filterOrderCode"
         [placeholder]="'orders.searchPlaceholder' | t"
         (keyup.enter)="loadJournals()"
-      />
+        />
     </div>
 
     <div class="journals__field">
@@ -60,75 +62,94 @@
     </div>
   </section>
 
-  <div *ngIf="isLoading" class="journals__loading">{{ 'common.loading' | t }}</div>
+  @if (isLoading) {
+    <div class="journals__loading">{{ 'common.loading' | t }}</div>
+  }
 
-  <section *ngIf="!isLoading" class="journals__panel">
-    <div class="journals__table-scroll">
-      <table class="journals__table">
-        <thead>
-          <tr>
-            <th>{{ 'journals.colDate' | t }}</th>
-            <th>{{ 'orders.orderCode' | t }}</th>
-            <th>{{ 'orders.journalParty' | t }}</th>
-            <th>{{ 'orders.journalKindCol' | t }}</th>
-            <th>{{ 'orders.journalDirection' | t }}</th>
-            <th>{{ 'common.amount' | t }}</th>
-            <th>{{ 'common.notes' | t }}</th>
-            <th>{{ 'orders.journalCreatedBy' | t }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="entries.length === 0">
-            <td colspan="8" class="journals__empty">{{ 'journals.empty' | t }}</td>
-          </tr>
-          <tr *ngFor="let row of entries">
-            <td>{{ row.createdDate | date:'yyyy-MM-dd HH:mm' }}</td>
-            <td>{{ row.orderCode || '—' }}</td>
-            <td>
-              <div class="journals__party">
-                <span class="journals__party-type">{{ getPartyTypeLabel(row.partyType) }}</span>
-                <strong *ngIf="row.partyName">{{ row.partyName }}</strong>
-                <span *ngIf="row.partyId" class="journals__party-id">#{{ row.partyId }}</span>
-              </div>
-            </td>
-            <td>{{ getJournalKindLabel(row.entryKind) }}</td>
-            <td>
-              <span
-                class="journals__dir"
-                [class.journals__dir--credit]="row.direction === JournalDirection.Credit"
-                [class.journals__dir--debit]="row.direction === JournalDirection.Debit"
-              >
-                {{ getJournalDirectionLabel(row.direction) }}
-              </span>
-            </td>
-            <td>{{ formatMoney(row.amount) }}</td>
-            <td>{{ row.note || '—' }}</td>
-            <td>{{ row.createdBy || '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <footer class="journals__totals" *ngIf="entries.length > 0">
-      <div class="journals__total">
-        <span>{{ 'journals.totalCredit' | t }}</span>
-        <strong>{{ formatMoney(totalCredit) }}</strong>
+  @if (!isLoading) {
+    <section class="journals__panel">
+      <div class="journals__table-scroll">
+        <table class="journals__table">
+          <thead>
+            <tr>
+              <th>{{ 'journals.colDate' | t }}</th>
+              <th>{{ 'orders.orderCode' | t }}</th>
+              <th>{{ 'orders.journalParty' | t }}</th>
+              <th>{{ 'orders.journalKindCol' | t }}</th>
+              <th>{{ 'orders.journalDirection' | t }}</th>
+              <th>{{ 'common.amount' | t }}</th>
+              <th>{{ 'common.notes' | t }}</th>
+              <th>{{ 'orders.journalCreatedBy' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (entries.length === 0) {
+              <tr>
+                <td colspan="8" class="journals__empty">{{ 'journals.empty' | t }}</td>
+              </tr>
+            }
+            @for (row of entries; track row) {
+              <tr>
+                <td>{{ row.createdDate | date:'yyyy-MM-dd HH:mm' }}</td>
+                <td>{{ row.orderCode || '—' }}</td>
+                <td>
+                  <div class="journals__party">
+                    <span class="journals__party-type">{{ getPartyTypeLabel(row.partyType) }}</span>
+                    @if (row.partyName) {
+                      <strong>{{ row.partyName }}</strong>
+                    }
+                    @if (row.partyId) {
+                      <span class="journals__party-id">#{{ row.partyId }}</span>
+                    }
+                  </div>
+                </td>
+                <td>{{ getJournalKindLabel(row.entryKind) }}</td>
+                <td>
+                  <span
+                    class="journals__dir"
+                    [class.journals__dir--credit]="row.direction === JournalDirection.Credit"
+                    [class.journals__dir--debit]="row.direction === JournalDirection.Debit"
+                    >
+                    {{ getJournalDirectionLabel(row.direction) }}
+                  </span>
+                </td>
+                <td>{{ formatMoney(row.amount) }}</td>
+                <td>{{ row.note || '—' }}</td>
+                <td>{{ row.createdBy || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
-      <div class="journals__total">
-        <span>{{ 'journals.totalDebit' | t }}</span>
-        <strong>{{ formatMoney(totalDebit) }}</strong>
-      </div>
-      <div
-        class="journals__total journals__total--balance"
-        [class.journals__total--positive]="balance > 0"
-        [class.journals__total--negative]="balance < 0"
-      >
-        <span>{{ 'journals.balance' | t }}</span>
-        <strong>{{ formatMoney(balance) }}</strong>
-        <small *ngIf="balance > 0">{{ 'journals.owedByCompany' | t }}</small>
-        <small *ngIf="balance < 0">{{ 'journals.owedToCompany' | t }}</small>
-        <small *ngIf="balance === 0">{{ 'journals.balanced' | t }}</small>
-      </div>
-    </footer>
-  </section>
+      @if (entries.length > 0) {
+        <footer class="journals__totals">
+          <div class="journals__total">
+            <span>{{ 'journals.totalCredit' | t }}</span>
+            <strong>{{ formatMoney(totalCredit) }}</strong>
+          </div>
+          <div class="journals__total">
+            <span>{{ 'journals.totalDebit' | t }}</span>
+            <strong>{{ formatMoney(totalDebit) }}</strong>
+          </div>
+          <div
+            class="journals__total journals__total--balance"
+            [class.journals__total--positive]="balance > 0"
+            [class.journals__total--negative]="balance < 0"
+            >
+            <span>{{ 'journals.balance' | t }}</span>
+            <strong>{{ formatMoney(balance) }}</strong>
+            @if (balance > 0) {
+              <small>{{ 'journals.owedByCompany' | t }}</small>
+            }
+            @if (balance < 0) {
+              <small>{{ 'journals.owedToCompany' | t }}</small>
+            }
+            @if (balance === 0) {
+              <small>{{ 'journals.balanced' | t }}</small>
+            }
+          </div>
+        </footer>
+      }
+    </section>
+  }
 </div>

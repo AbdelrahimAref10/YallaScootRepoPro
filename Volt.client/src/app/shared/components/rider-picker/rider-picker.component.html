@@ -4,7 +4,7 @@
   [class.ms--filled]="value != null"
   [class.ms--disabled]="disabled"
   [class.rp--up]="openUp"
->
+  >
   <div
     class="ms__trigger"
     role="button"
@@ -15,16 +15,15 @@
     [attr.aria-expanded]="open"
     [attr.aria-disabled]="disabled"
     aria-haspopup="listbox"
-  >
+    >
     <span class="ms__trigger-text" [class.ms__trigger-text--placeholder]="value == null">
-      <ng-container *ngIf="selected as s; else plainTrigger">
+      @if (selected; as s) {
         <span class="rp__dot" [ngClass]="'rp__dot--' + tone(s.status)" aria-hidden="true"></span>
         <span class="ms__trigger-label">{{ s.fullName }}</span>
         <span class="ms__trigger-meta">{{ statusLabel(s.status) }}</span>
-      </ng-container>
-      <ng-template #plainTrigger>
+      } @else {
         <span class="ms__trigger-label">{{ value != null ? (fallbackLabel || '#' + value) : placeholder }}</span>
-      </ng-template>
+      }
     </span>
     <span class="ms__trigger-actions">
       <svg class="ms__caret" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -33,60 +32,70 @@
     </span>
   </div>
 
-  <div *ngIf="open" class="ms__panel rp__panel" role="listbox" [style.max-height.px]="panelMaxHeight">
-    <div class="ms__search">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-      </svg>
-      <input
-        type="search"
-        class="ms__search-input"
-        [(ngModel)]="query"
-        [placeholder]="'common.search' | t"
-        (click)="$event.stopPropagation()"
-      />
-    </div>
-
-    <div class="ms__options rp__options">
-      <button
-        *ngFor="let c of filtered"
-        type="button"
-        class="ms__option rp__option"
-        role="option"
-        [class.ms__option--selected]="c.deliveryId === value"
-        [class.rp__option--blocked]="isBlocked(c)"
-        [attr.aria-selected]="c.deliveryId === value"
-        [attr.aria-disabled]="isBlocked(c) || null"
-        [attr.title]="isBlocked(c) ? ('riders.overDebtLimitHint' | t) : null"
-        (click)="pick(c, $event)"
-      >
-        <span class="rp__dot" [ngClass]="'rp__dot--' + tone(c.status)" aria-hidden="true"></span>
-        <span class="rp__body">
-          <span class="rp__head">
-            <span class="rp__name">
-              {{ c.fullName }}
-              <span class="rp__tag" *ngIf="c.deliveryId === currentId">{{ 'riders.current' | t }}</span>
+  @if (open) {
+    <div class="ms__panel rp__panel" role="listbox" [style.max-height.px]="panelMaxHeight">
+      <div class="ms__search">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input
+          type="search"
+          class="ms__search-input"
+          [(ngModel)]="query"
+          [placeholder]="'common.search' | t"
+          (click)="$event.stopPropagation()"
+          />
+      </div>
+      <div class="ms__options rp__options">
+        @for (c of filtered; track c) {
+          <button
+            type="button"
+            class="ms__option rp__option"
+            role="option"
+            [class.ms__option--selected]="c.deliveryId === value"
+            [class.rp__option--blocked]="isBlocked(c)"
+            [attr.aria-selected]="c.deliveryId === value"
+            [attr.aria-disabled]="isBlocked(c) || null"
+            [attr.title]="isBlocked(c) ? ('riders.overDebtLimitHint' | t) : null"
+            (click)="pick(c, $event)"
+            >
+            <span class="rp__dot" [ngClass]="'rp__dot--' + tone(c.status)" aria-hidden="true"></span>
+            <span class="rp__body">
+              <span class="rp__head">
+                <span class="rp__name">
+                  {{ c.fullName }}
+                  @if (c.deliveryId === currentId) {
+                    <span class="rp__tag">{{ 'riders.current' | t }}</span>
+                  }
+                </span>
+                <span class="rp__mobile">{{ c.mobileNumber }}</span>
+              </span>
+              <span class="rp__meta">
+                <span class="rp__chip" [ngClass]="'rp__status--' + tone(c.status)">{{ statusLabel(c.status) }}</span>
+                <span class="rp__chip">{{ c.currentShiftName || ('riders.noShiftNow' | t) }}</span>
+                <span class="rp__chip">{{ openTripsLabel(c.activeLegsCount) }}</span>
+                @if (c.zoneName) {
+                  <span class="rp__chip">{{ c.zoneName }}</span>
+                }
+                @if (hasDebtInfo(c)) {
+                  <span
+                    class="rp__chip rp__debt"
+                    [class.rp__debt--over]="c.isOverCashDebtLimit"
+                  >{{ debtLabel(c) }}</span>
+                }
+                @if (isBlocked(c)) {
+                  <span class="rp__chip rp__debt-block">{{ 'riders.overDebtLimit' | t }}</span>
+                }
+              </span>
             </span>
-            <span class="rp__mobile">{{ c.mobileNumber }}</span>
-          </span>
-          <span class="rp__meta">
-            <span class="rp__chip" [ngClass]="'rp__status--' + tone(c.status)">{{ statusLabel(c.status) }}</span>
-            <span class="rp__chip">{{ c.currentShiftName || ('riders.noShiftNow' | t) }}</span>
-            <span class="rp__chip">{{ openTripsLabel(c.activeLegsCount) }}</span>
-            <span class="rp__chip" *ngIf="c.zoneName">{{ c.zoneName }}</span>
-            <span
-              class="rp__chip rp__debt"
-              *ngIf="hasDebtInfo(c)"
-              [class.rp__debt--over]="c.isOverCashDebtLimit"
-            >{{ debtLabel(c) }}</span>
-            <span class="rp__chip rp__debt-block" *ngIf="isBlocked(c)">{{ 'riders.overDebtLimit' | t }}</span>
-          </span>
-        </span>
-      </button>
-
-      <div *ngIf="filtered.length === 0" class="ms__empty">
-        {{ (candidates.length ? 'common.noResults' : 'riders.noRiders') | t }}
+          </button>
+        }
+        @if (filtered.length === 0) {
+          <div class="ms__empty">
+            {{ (candidates.length ? 'common.noResults' : 'riders.noRiders') | t }}
+          </div>
+        }
       </div>
     </div>
-  </div>
+  }
 </div>

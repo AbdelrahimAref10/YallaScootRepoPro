@@ -6,9 +6,7 @@ import {
   SubCategoryClient,
   SubCategoryDto,
   PagedResultOfSubCategoryDto,
-  CategoryClient,
   CategoryLookupDto,
-  CityClient,
   CityDto
 } from '../../core/services/clientAPI';
 import { LocaleService } from '../../core/services/locale.service';
@@ -20,6 +18,8 @@ import {
 } from '../../shared/components/multi-select/multi-select.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { memo } from '../../shared/utils/memo';
+import { LookupService } from '../../core/services/lookup.service';
 
 @Component({
   selector: 'app-subcategories',
@@ -38,6 +38,12 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
   styleUrls: ['./subcategories.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-tiles.css']
 })
 export class SubCategoriesComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly categoryOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly statusOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly offerOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
 
   subCategories: SubCategoryDto[] = [];
@@ -69,8 +75,6 @@ export class SubCategoriesComponent implements OnInit {
 
   constructor(
     private subCategoryClient: SubCategoryClient,
-    private categoryClient: CategoryClient,
-    private cityClient: CityClient,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -88,31 +92,35 @@ export class SubCategoriesComponent implements OnInit {
   }
 
   get categoryOptions(): MultiSelectOption[] {
-    return this.categories.map(category => ({
-      value: category.categoryId,
-      label: category.name
-    }));
+    return this.categoryOptionsMemo([this.categories], () =>
+      this.categories.map(category => ({
+        value: category.categoryId,
+        label: category.name
+      })));
   }
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(city => ({
-      value: city.cityId,
-      label: city.name
-    }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(city => ({
+        value: city.cityId,
+        label: city.name
+      })));
   }
 
   get statusOptions(): MultiSelectOption[] {
-    return [
-      { value: 'true', label: this.localeService.translate('common.active') },
-      { value: 'false', label: this.localeService.translate('common.inactive') }
-    ];
+    return this.statusOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 'true', label: this.localeService.translate('common.active') },
+        { value: 'false', label: this.localeService.translate('common.inactive') }
+      ]);
   }
 
   get offerOptions(): MultiSelectOption[] {
-    return [
-      { value: 'true', label: this.localeService.translate('subcategories.offer') },
-      { value: 'false', label: this.localeService.translate('subcategories.regular') }
-    ];
+    return this.offerOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 'true', label: this.localeService.translate('subcategories.offer') },
+        { value: 'false', label: this.localeService.translate('subcategories.regular') }
+      ]);
   }
 
   get activeFilterCount(): number {
@@ -193,14 +201,14 @@ export class SubCategoriesComponent implements OnInit {
   }
 
   loadLookups(): void {
-    this.categoryClient.getLookup().subscribe({
+    this.lookups.categories().subscribe({
       next: (result: CategoryLookupDto[]) => {
         this.categories = result || [];
       },
       error: (error: unknown) => console.error('Error loading categories:', error)
     });
 
-    this.cityClient.getAll(1, 1000, undefined, true).subscribe({
+    this.lookups.activeCities().subscribe({
       next: (result) => {
         this.cities = result.items || [];
       },

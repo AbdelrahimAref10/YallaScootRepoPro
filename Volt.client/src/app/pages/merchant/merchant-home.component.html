@@ -12,29 +12,35 @@
       </a>
     </ng-container>
 
-    <div class="mh-balance" *ngIf="summary">
-      <div>
-        <span>{{ 'settlements.owedByCompany' | t }}</span>
-        <strong>{{ formatAmount(summary.amountOwedByCompany) }}<small>{{ 'common.currency' | t }}</small></strong>
+    @if (summary) {
+      <div class="mh-balance">
+        <div>
+          <span>{{ 'settlements.owedByCompany' | t }}</span>
+          <strong>{{ formatAmount(summary.amountOwedByCompany) }}<small>{{ 'common.currency' | t }}</small></strong>
+        </div>
+        <div>
+          <span>{{ 'settlements.owedToCompany' | t }}</span>
+          <strong>{{ formatAmount(summary.amountOwedToCompany) }}<small>{{ 'common.currency' | t }}</small></strong>
+        </div>
+        <div class="mh-balance__net" [class.mh-balance__net--neg]="(summary.balance || 0) < 0">
+          <span>{{ 'settlements.balance' | t }}</span>
+          <strong>{{ formatAmount(summary.balance) }}<small>{{ 'common.currency' | t }}</small></strong>
+        </div>
       </div>
-      <div>
-        <span>{{ 'settlements.owedToCompany' | t }}</span>
-        <strong>{{ formatAmount(summary.amountOwedToCompany) }}<small>{{ 'common.currency' | t }}</small></strong>
-      </div>
-      <div class="mh-balance__net" [class.mh-balance__net--neg]="(summary.balance || 0) < 0">
-        <span>{{ 'settlements.balance' | t }}</span>
-        <strong>{{ formatAmount(summary.balance) }}<small>{{ 'common.currency' | t }}</small></strong>
-      </div>
-    </div>
+    }
   </header>
 
-  <div *ngIf="errorMessage" class="mh-error" role="alert">
-    {{ errorMessage }}
-    <button type="button" (click)="load()">{{ 'common.refresh' | t }}</button>
-  </div>
-  <div *ngIf="isLoading && !summary" class="home-empty">{{ 'common.loading' | t }}</div>
+  @if (errorMessage) {
+    <div class="mh-error" role="alert">
+      {{ errorMessage }}
+      <button type="button" (click)="load()">{{ 'common.refresh' | t }}</button>
+    </div>
+  }
+  @if (isLoading && !summary) {
+    <div class="home-empty">{{ 'common.loading' | t }}</div>
+  }
 
-  <ng-container *ngIf="summary">
+  @if (summary) {
     <section class="home-kpis">
       <ng-container *appHasPermission="'Merchant.Orders.View'">
         <a class="home-kpi mh-link" routerLink="/merchant/orders" [queryParams]="{ pendingOnly: true }">
@@ -46,13 +52,12 @@
           <div class="home-kpi__foot">{{ 'merchant.pendingInvitesHint' | t }} <span class="mh-arrow" aria-hidden="true">→</span></div>
         </a>
       </ng-container>
-
       <a
         class="home-kpi mh-link"
         [class.mh-attention]="summary.awaitingHandoverCount > 0"
         routerLink="/merchant/orders"
         [queryParams]="{ awaitingHandover: true }"
-      >
+        >
         <div class="home-kpi__label">
           <span class="home-kpi__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5 5 5M12 6v12"/></svg></span>
           {{ 'merchant.awaitingHandover' | t }}
@@ -60,7 +65,6 @@
         <div class="home-kpi__value">{{ summary.awaitingHandoverCount }}</div>
         <div class="home-kpi__foot">{{ 'merchant.awaitingHandoverHint' | t }} <span class="mh-arrow" aria-hidden="true">→</span></div>
       </a>
-
       <ng-container *appHasPermission="'Merchant.Orders.View'">
         <a class="home-kpi mh-link" routerLink="/merchant/orders">
           <div class="home-kpi__label">
@@ -71,7 +75,6 @@
           <div class="home-kpi__foot">{{ 'merchant.activeOrdersHint' | t }} <span class="mh-arrow" aria-hidden="true">→</span></div>
         </a>
       </ng-container>
-
       <ng-container *appHasPermission="'Merchant.Vehicles.View'">
         <a class="home-kpi mh-link" routerLink="/merchant/vehicles">
           <div class="home-kpi__label">
@@ -83,7 +86,6 @@
         </a>
       </ng-container>
     </section>
-
     <section class="home-grid home-grid--2">
       <article class="home-panel">
         <header class="home-panel__head">
@@ -102,7 +104,7 @@
                 r="15.9155"
                 class="mh-ring__value"
                 [attr.stroke-dasharray]="(summary.companyCommissionPercent || 0) + ' 100'"
-              />
+                />
             </svg>
             <b>{{ formatPercent(summary.companyCommissionPercent) }}<small>%</small></b>
           </div>
@@ -122,7 +124,6 @@
           </dl>
         </div>
       </article>
-
       <article class="home-panel">
         <header class="home-panel__head">
           <div>
@@ -133,14 +134,18 @@
         <div class="mh-actions">
           <ng-container *appHasPermission="'Merchant.Orders.View'">
             <a routerLink="/merchant/orders" [queryParams]="{ pendingOnly: true }" class="mh-action">
-              <span class="mh-action__badge" *ngIf="summary.pendingInvitationsCount">{{ summary.pendingInvitationsCount }}</span>
+              @if (summary.pendingInvitationsCount) {
+                <span class="mh-action__badge">{{ summary.pendingInvitationsCount }}</span>
+              }
               <strong>{{ 'merchant.actionReplyInvites' | t }}</strong>
               <small>{{ 'merchant.actionReplyInvitesHint' | t }}</small>
             </a>
           </ng-container>
           <ng-container *appHasPermission="'Merchant.Orders.View'">
             <a routerLink="/merchant/orders" [queryParams]="{ awaitingHandover: true }" class="mh-action">
-              <span class="mh-action__badge" *ngIf="summary.awaitingHandoverCount">{{ summary.awaitingHandoverCount }}</span>
+              @if (summary.awaitingHandoverCount) {
+                <span class="mh-action__badge">{{ summary.awaitingHandoverCount }}</span>
+              }
               <strong>{{ 'merchant.actionHandover' | t }}</strong>
               <small>{{ 'merchant.actionHandoverHint' | t }}</small>
             </a>
@@ -160,5 +165,5 @@
         </div>
       </article>
     </section>
-  </ng-container>
+  }
 </section>

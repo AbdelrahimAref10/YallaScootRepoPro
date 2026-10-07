@@ -34,7 +34,6 @@ import {
   AdminUpdateOrderCommand,
   CategoryClient,
   CategoryDto,
-  CityClient,
   CityDto,
   CustomerLookupDto,
   CustomerState,
@@ -53,6 +52,8 @@ import {
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
 import { VehicleSpecsComponent } from '../../../shared/components/vehicle-specs/vehicle-specs.component';
+import { memo } from '../../../shared/utils/memo';
+import { LookupService } from '../../../core/services/lookup.service';
 
 type BrowseStep = 'categories' | 'subcategories' | 'vehicles';
 
@@ -94,13 +95,16 @@ interface BookedCalendarDay {
   ]
 })
 export class OrderFormComponent implements OnInit, OnDestroy {
+  private readonly lookups = inject(LookupService);
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly zoneOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly orderClient = inject(AdminOrderClient);
   private readonly customerClient = inject(AdminCustomerClient);
-  private readonly cityClient = inject(CityClient);
   private readonly categoryClient = inject(CategoryClient);
   private readonly subCategoryClient = inject(SubCategoryClient);
   private readonly destroy$ = new Subject<void>();
@@ -215,17 +219,19 @@ export class OrderFormComponent implements OnInit, OnDestroy {
   }
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(c => ({
-      value: c.cityId,
-      label: c.name
-    }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(c => ({
+        value: c.cityId,
+        label: c.name
+      })));
   }
 
   get zoneOptions(): MultiSelectOption[] {
-    return this.zones.map(z => ({
-      value: z.zoneId,
-      label: z.name
-    }));
+    return this.zoneOptionsMemo([this.zones], () =>
+      this.zones.map(z => ({
+        value: z.zoneId,
+        label: z.name
+      })));
   }
 
   get selectedCustomerCashBlocked(): boolean {
@@ -315,25 +321,10 @@ export class OrderFormComponent implements OnInit, OnDestroy {
     return this.fleetVehicles.filter(v => !v.isAvailable);
   }
 
-  trackByCalendarDay(_: number, day: CalendarDay): number {
-    return day.date.getTime();
-  }
 
-  trackByCategoryId(_: number, item: CategoryDto): number {
-    return item.categoryId;
-  }
 
-  trackBySubCategoryId(_: number, item: SubCategoryDto): number {
-    return item.subCategoryId;
-  }
 
-  trackByVehicleId(_: number, item: AdminAvailableVehicleItemDto): number {
-    return item.vehicleId;
-  }
 
-  trackByCustomerId(_: number, item: CustomerLookupDto): number {
-    return item.customerId;
-  }
 
   searchCustomerByPhone(): void {
     const mobile = this.customerPhoneQuery.trim().replace(/\s+/g, '');
@@ -1097,7 +1088,7 @@ export class OrderFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.cityClient.getZonesByCity(cityId).pipe(takeUntil(this.destroy$)).subscribe({
+    this.lookups.zonesByCity(cityId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (zones) => {
         this.zones = zones || [];
         const keep = preferredZoneId ?? target.get('destinationZoneId')?.value;
@@ -1168,7 +1159,7 @@ export class OrderFormComponent implements OnInit, OnDestroy {
       : of(null);
 
     forkJoin({
-      cities: this.cityClient.getAll(1, 500, undefined, true),
+      cities: this.lookups.activeCities(),
       subCategories: subCategories$
     }).pipe(takeUntil(this.destroy$)).subscribe({
       next: ({ cities, subCategories }) => {

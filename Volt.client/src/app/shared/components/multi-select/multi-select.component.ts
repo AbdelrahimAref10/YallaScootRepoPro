@@ -1,16 +1,7 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
-  Output,
-  forwardRef,
-  inject
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output, forwardRef, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { memo } from '../../utils/memo';
 
 export interface MultiSelectOption {
   value: string | number | boolean;
@@ -19,9 +10,10 @@ export interface MultiSelectOption {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-multi-select',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './multi-select.component.html',
   styleUrl: './multi-select.component.css',
   host: {
@@ -36,6 +28,8 @@ export interface MultiSelectOption {
   ]
 })
 export class MultiSelectComponent implements ControlValueAccessor {
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly filteredMemo = memo<MultiSelectOption[]>();
   private readonly host = inject(ElementRef<HTMLElement>);
 
   @Input() label = '';
@@ -99,16 +93,19 @@ export class MultiSelectComponent implements ControlValueAccessor {
   }
 
   get filteredOptions(): MultiSelectOption[] {
-    const q = this.query.trim().toLowerCase();
-    if (!q) {
-      return this.options;
-    }
-    return this.options.filter(o =>
-      o.label.toLowerCase().includes(q) || (o.description || '').toLowerCase().includes(q)
-    );
+    return this.filteredMemo([this.options, this.query], () => {
+      const q = this.query.trim().toLowerCase();
+      if (!q) {
+        return this.options;
+      }
+      return this.options.filter(o =>
+        o.label.toLowerCase().includes(q) || (o.description || '').toLowerCase().includes(q)
+      );
+    });
   }
 
   writeValue(value: unknown): void {
+    this.cdr.markForCheck();
     if (this.multiple) {
       this.internalValues = Array.isArray(value) ? [...value] : value != null && value !== '' ? [value as string | number | boolean] : [];
       return;
@@ -125,6 +122,7 @@ export class MultiSelectComponent implements ControlValueAccessor {
   }
 
   setDisabledState(isDisabled: boolean): void {
+    this.cdr.markForCheck();
     this.disabled = isDisabled;
   }
 

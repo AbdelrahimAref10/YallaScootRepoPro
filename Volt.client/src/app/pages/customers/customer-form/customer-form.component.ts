@@ -1,12 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   AdminCustomerClient,
   CustomerDto,
   AdminCreateCustomerCommand,
-  CityClient,
   CityDto,
   PagedResultOfCityDto,
   ZoneLookupDto
@@ -18,15 +16,24 @@ import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
+import { memo } from '../../../shared/utils/memo';
+import { LookupService } from '../../../core/services/lookup.service';
 
 @Component({
   selector: 'app-customer-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent, PhoneInputComponent],
+  imports: [FormsModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent, PhoneInputComponent],
   templateUrl: './customer-form.component.html',
   styleUrls: ['./customer-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
 export class CustomerFormComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly genderOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly registerAsOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly verificationByOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly zoneOptionsMemo = memo<MultiSelectOption[]>();
+
   @ViewChild('personalImageInput', { static: false }) personalImageInputRef?: ElementRef<HTMLInputElement>;
   @ViewChild('commercialImageInput', { static: false }) commercialImageInputRef?: ElementRef<HTMLInputElement>;
 
@@ -50,7 +57,6 @@ export class CustomerFormComponent implements OnInit {
 
   constructor(
     private customerClient: AdminCustomerClient,
-    private cityClient: CityClient,
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder
@@ -71,38 +77,43 @@ export class CustomerFormComponent implements OnInit {
   }
 
   get genderOptions(): MultiSelectOption[] {
-    return [
-      { value: 'Male', label: this.localeService.translate('common.male') },
-      { value: 'Female', label: this.localeService.translate('common.female') }
-    ];
+    return this.genderOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 'Male', label: this.localeService.translate('common.male') },
+        { value: 'Female', label: this.localeService.translate('common.female') }
+      ]);
   }
 
   get registerAsOptions(): MultiSelectOption[] {
-    return [
-      { value: 0, label: this.localeService.translate('common.individual') },
-      { value: 1, label: this.localeService.translate('common.institution') }
-    ];
+    return this.registerAsOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 0, label: this.localeService.translate('common.individual') },
+        { value: 1, label: this.localeService.translate('common.institution') }
+      ]);
   }
 
   get verificationByOptions(): MultiSelectOption[] {
-    return [
-      { value: 0, label: this.localeService.translate('common.phone') },
-      { value: 1, label: this.localeService.translate('common.email') }
-    ];
+    return this.verificationByOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 0, label: this.localeService.translate('common.phone') },
+        { value: 1, label: this.localeService.translate('common.email') }
+      ]);
   }
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(city => ({
-      value: city.cityId,
-      label: city.name
-    }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(city => ({
+        value: city.cityId,
+        label: city.name
+      })));
   }
 
   get zoneOptions(): MultiSelectOption[] {
-    return this.zones.map(zone => ({
-      value: zone.zoneId,
-      label: zone.name
-    }));
+    return this.zoneOptionsMemo([this.zones], () =>
+      this.zones.map(zone => ({
+        value: zone.zoneId,
+        label: zone.name
+      })));
   }
 
   get isInstitution(): boolean {
@@ -161,7 +172,7 @@ export class CustomerFormComponent implements OnInit {
 
   loadCities(): void {
     this.isLoadingCities = true;
-    this.cityClient.getAll(1, 1000, undefined, true).subscribe({
+    this.lookups.activeCities().subscribe({
       next: (result: PagedResultOfCityDto) => {
         this.cities = result.items || [];
         this.isLoadingCities = false;
@@ -180,7 +191,7 @@ export class CustomerFormComponent implements OnInit {
       return;
     }
 
-    this.cityClient.getZonesByCity(cityId).subscribe({
+    this.lookups.zonesByCity(cityId).subscribe({
       next: (zones) => {
         this.zones = zones || [];
         const keep = preferredZoneId ?? this.customerForm.get('zoneId')?.value;

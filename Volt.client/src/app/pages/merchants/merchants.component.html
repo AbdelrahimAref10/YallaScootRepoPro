@@ -26,7 +26,7 @@
         (keyup.enter)="applyFilters()"
         [placeholder]="'merchants.searchPlaceholder' | t"
         [attr.aria-label]="'common.search' | t"
-      />
+        />
     </div>
 
     <div class="list-filters__field list-filters__field--sm">
@@ -50,82 +50,100 @@
     </button>
   </section>
 
-  <div *ngIf="successMessage" class="merchants__alert merchants__alert--success" role="status">
-    <svg class="merchants__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    <span>{{ successMessage }}</span>
-  </div>
-
-  <div *ngIf="errorMessage" class="merchants__alert merchants__alert--error" role="alert">
-    <svg class="merchants__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    <span>{{ errorMessage }}</span>
-  </div>
-
-  <div *ngIf="isLoading" class="merchants__loading">
-    <div class="merchants__spinner" aria-hidden="true"></div>
-    <p>{{ 'common.loading' | t }}</p>
-  </div>
-
-  <div *ngIf="!isLoading && merchants.length === 0" class="merchants__empty">
-    <div class="merchants__empty-icon" aria-hidden="true">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+  @if (successMessage) {
+    <div class="merchants__alert merchants__alert--success" role="status">
+      <svg class="merchants__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <span>{{ successMessage }}</span>
     </div>
-    <h2 class="merchants__empty-title">{{ 'merchants.empty' | t }}</h2>
-    <p class="merchants__empty-text">{{ 'merchants.emptyHint' | t }}</p>
-    <ng-container *appHasPermission="'Admin.Merchants.Create'">
-      <button type="button" class="merchants__add-btn" (click)="onAddNew()">
-        <svg class="merchants__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-        <span>{{ 'merchants.add' | t }}</span>
-      </button>
-    </ng-container>
-  </div>
+  }
 
-  <section *ngIf="!isLoading && merchants.length > 0" class="pc-grid">
-    <article *ngFor="let m of merchants" class="pc-card" [class.pc-card--muted]="!m.isActive || m.isDeleted">
-      <header class="pc-card__head">
-        <span class="pc-avatar">
-          <img *ngIf="m.personalImage" [src]="m.personalImage" alt="" />
-          <ng-container *ngIf="!m.personalImage">{{ (m.fullName || '?').charAt(0) }}</ng-container>
-        </span>
-        <div class="pc-card__id">
-          <span class="pc-card__name">{{ m.fullName }}</span>
-          <span class="pc-card__handle">&#64;{{ m.userName || '—' }}</span>
-        </div>
-        <span class="pc-status" [class.pc-status--ok]="m.isActive && !m.isDeleted" [class.pc-status--off]="!m.isActive || m.isDeleted">
-          {{ m.isDeleted ? ('merchants.deleted' | t) : statusLabel(m.isActive) }}
-        </span>
-      </header>
-      <div class="pc-card__facts">
-        <div class="pc-fact"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>{{ m.cityName || '—' }}</span></div>
-        <div class="pc-fact pc-fact--ltr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg><span>{{ m.mobileNumber }}</span></div>
-        <div class="pc-fact"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><span>{{ m.email || '—' }}</span></div>
+  @if (errorMessage) {
+    <div class="merchants__alert merchants__alert--error" role="alert">
+      <svg class="merchants__alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  @if (isLoading) {
+    <div class="merchants__loading">
+      <div class="merchants__spinner" aria-hidden="true"></div>
+      <p>{{ 'common.loading' | t }}</p>
+    </div>
+  }
+
+  @if (!isLoading && merchants.length === 0) {
+    <div class="merchants__empty">
+      <div class="merchants__empty-icon" aria-hidden="true">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
       </div>
-      <dl class="pc-card__stats">
-        <div class="pc-stat">
-          <dt>{{ 'merchants.companyCommissionShort' | t }}</dt>
-          <dd>{{ (m.companyCommissionPercent || 0) | number: '1.0-2' }}%</dd>
-        </div>
-        <div class="pc-stat">
-          <dt>{{ 'merchants.cashOnReceive' | t }}</dt>
-          <dd>{{ m.cashOnReceive ? ('common.yes' | t) : ('common.no' | t) }}</dd>
-        </div>
-        <div class="pc-stat">
-          <dt>{{ 'common.createdDate' | t }}</dt>
-          <dd>{{ m.createdDate | date:'d MMM y' }}</dd>
-        </div>
-      </dl>
-      <footer class="pc-card__foot">
-        <span class="pc-card__since">#{{ m.merchantId }}</span>
-        <div class="pc-card__actions" *ngIf="!m.isDeleted">
-          <ng-container *appHasPermission="'Admin.Merchants.Edit'">
-            <button type="button" class="va-act va-act--edit" (click)="onEdit(m)" [attr.title]="'common.edit' | t" [attr.aria-label]="'common.edit' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-          </ng-container>
-          <ng-container *appHasPermission="'Admin.Merchants.Delete'">
-            <button type="button" class="va-act va-act--delete" (click)="onDelete(m)" [disabled]="isDeleting" [attr.title]="'common.delete' | t" [attr.aria-label]="'common.delete' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-          </ng-container>
-        </div>
-      </footer>
-    </article>
-  </section>
+      <h2 class="merchants__empty-title">{{ 'merchants.empty' | t }}</h2>
+      <p class="merchants__empty-text">{{ 'merchants.emptyHint' | t }}</p>
+      <ng-container *appHasPermission="'Admin.Merchants.Create'">
+        <button type="button" class="merchants__add-btn" (click)="onAddNew()">
+          <svg class="merchants__add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          <span>{{ 'merchants.add' | t }}</span>
+        </button>
+      </ng-container>
+    </div>
+  }
+
+  @if (!isLoading && merchants.length > 0) {
+    <section class="pc-grid">
+      @for (m of merchants; track m.merchantId) {
+        <article class="pc-card" [class.pc-card--muted]="!m.isActive || m.isDeleted">
+          <header class="pc-card__head">
+            <span class="pc-avatar">
+              @if (m.personalImage) {
+                <img [src]="m.personalImage" alt="" />
+              }
+              @if (!m.personalImage) {
+                {{ (m.fullName || '?').charAt(0) }}
+              }
+            </span>
+            <div class="pc-card__id">
+              <span class="pc-card__name">{{ m.fullName }}</span>
+              <span class="pc-card__handle">&#64;{{ m.userName || '—' }}</span>
+            </div>
+            <span class="pc-status" [class.pc-status--ok]="m.isActive && !m.isDeleted" [class.pc-status--off]="!m.isActive || m.isDeleted">
+              {{ m.isDeleted ? ('merchants.deleted' | t) : statusLabel(m.isActive) }}
+            </span>
+          </header>
+          <div class="pc-card__facts">
+            <div class="pc-fact"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>{{ m.cityName || '—' }}</span></div>
+            <div class="pc-fact pc-fact--ltr"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg><span>{{ m.mobileNumber }}</span></div>
+            <div class="pc-fact"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><span>{{ m.email || '—' }}</span></div>
+          </div>
+          <dl class="pc-card__stats">
+            <div class="pc-stat">
+              <dt>{{ 'merchants.companyCommissionShort' | t }}</dt>
+              <dd>{{ (m.companyCommissionPercent || 0) | number: '1.0-2' }}%</dd>
+            </div>
+            <div class="pc-stat">
+              <dt>{{ 'merchants.cashOnReceive' | t }}</dt>
+              <dd>{{ m.cashOnReceive ? ('common.yes' | t) : ('common.no' | t) }}</dd>
+            </div>
+            <div class="pc-stat">
+              <dt>{{ 'common.createdDate' | t }}</dt>
+              <dd>{{ m.createdDate | date:'d MMM y' }}</dd>
+            </div>
+          </dl>
+          <footer class="pc-card__foot">
+            <span class="pc-card__since">#{{ m.merchantId }}</span>
+            @if (!m.isDeleted) {
+              <div class="pc-card__actions">
+                <ng-container *appHasPermission="'Admin.Merchants.Edit'">
+                  <button type="button" class="va-act va-act--edit" (click)="onEdit(m)" [attr.title]="'common.edit' | t" [attr.aria-label]="'common.edit' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+                </ng-container>
+                <ng-container *appHasPermission="'Admin.Merchants.Delete'">
+                  <button type="button" class="va-act va-act--delete" (click)="onDelete(m)" [disabled]="isDeleting" [attr.title]="'common.delete' | t" [attr.aria-label]="'common.delete' | t"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                </ng-container>
+              </div>
+            }
+          </footer>
+        </article>
+      }
+    </section>
+  }
 </div>
 
 <app-confirm-dialog

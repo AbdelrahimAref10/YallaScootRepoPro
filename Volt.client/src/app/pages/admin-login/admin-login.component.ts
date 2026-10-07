@@ -1,5 +1,4 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -14,12 +13,11 @@ import { SplashService } from '../../core/services/splash.service';
   selector: 'app-admin-login',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     ThemeToggleComponent,
     LangSwitcherComponent,
     TranslatePipe
-  ],
+],
   templateUrl: './admin-login.component.html',
   styleUrl: './admin-login.component.css'
 })

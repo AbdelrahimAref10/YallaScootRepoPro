@@ -1,15 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  Input,
-  OnChanges,
-  OnDestroy,
-  SimpleChanges,
-  ViewChild,
-  inject
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   Chart,
   ChartConfiguration,
@@ -29,15 +18,18 @@ export interface VoltChartDataset {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'volt-chart',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="volt-chart" [class.volt-chart--empty]="!hasData">
       <canvas #canvas></canvas>
-      <div class="volt-chart__empty" *ngIf="!hasData">{{ emptyLabel }}</div>
+      @if (!hasData) {
+        <div class="volt-chart__empty">{{ emptyLabel }}</div>
+      }
     </div>
-  `,
+    `,
   styles: [`
     :host { display: block; width: 100%; height: 100%; }
     .volt-chart {

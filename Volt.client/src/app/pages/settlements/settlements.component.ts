@@ -4,11 +4,9 @@ import { FormsModule } from '@angular/forms';
 import {
   AdminSettlementClient,
   CreateSettlementVoucherCommand,
-  DeliveryClient,
   DeliveryLookupDto,
   JournalDirection,
   LedgerPartyType,
-  MerchantClient,
   MerchantLookupDto,
   OrderJournalEntryKind,
   PartyLedgerDto,
@@ -26,6 +24,8 @@ import {
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { memo } from '../../shared/utils/memo';
+import { LookupService } from '../../core/services/lookup.service';
 
 type SettlementTab = 'delivery' | 'merchant';
 
@@ -48,10 +48,11 @@ interface PreviewLine {
   styleUrls: ['./settlements.component.css']
 })
 export class SettlementsComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly partyOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
   private readonly settlementClient = inject(AdminSettlementClient);
-  private readonly deliveryClient = inject(DeliveryClient);
-  private readonly merchantClient = inject(MerchantClient);
 
   readonly JournalDirection = JournalDirection;
   readonly SettlementDirection = SettlementDirection;
@@ -81,17 +82,18 @@ export class SettlementsComponent implements OnInit {
   }
 
   get partyOptions(): MultiSelectOption[] {
-    return this.activeTab === 'merchant'
-      ? this.merchants.filter(m => m.merchantId != null).map(m => ({
-          value: m.merchantId as number,
-          label: m.fullName || String(m.merchantId),
-          description: m.mobileNumber || '—'
-        }))
-      : this.deliveries.filter(d => d.deliveryId != null).map(d => ({
-          value: d.deliveryId as number,
-          label: d.fullName || String(d.deliveryId),
-          description: d.mobileNumber || '—'
-        }));
+    return this.partyOptionsMemo([this.activeTab, this.merchants, this.deliveries], () =>
+      this.activeTab === 'merchant'
+        ? this.merchants.filter(m => m.merchantId != null).map(m => ({
+            value: m.merchantId as number,
+            label: m.fullName || String(m.merchantId),
+            description: m.mobileNumber || '—'
+          }))
+        : this.deliveries.filter(d => d.deliveryId != null).map(d => ({
+            value: d.deliveryId as number,
+            label: d.fullName || String(d.deliveryId),
+            description: d.mobileNumber || '—'
+          })));
   }
 
   get isCollecting(): boolean {
@@ -113,12 +115,8 @@ export class SettlementsComponent implements OnInit {
     return null;
   }
 
-  /** Same allocation the server does: the smaller delivery side is offset, the rest goes oldest first. */
-  /** preview builds new lines on every check; keep the rows by their open item. */
-  trackPreviewLine(_: number, line: PreviewLine): SettlementOpenItemDto {
-    return line.item;
-  }
-
+  /** Same allocation the server does: the smaller delivery side is offset, the rest goes oldest first.
+   *  Builds new lines on every check, so the template tracks rows by their open item. */
   get preview(): PreviewLine[] {
     if (!this.summary?.direction || this.amountError) return [];
     const collecting = this.isCollecting;
@@ -171,8 +169,8 @@ export class SettlementsComponent implements OnInit {
       pending -= 1;
       if (pending <= 0) this.isLoadingLookups = false;
     };
-    this.deliveryClient.getActive().subscribe({ next: list => { this.deliveries = list || []; done(); }, error: () => done() });
-    this.merchantClient.getActive().subscribe({ next: list => { this.merchants = list || []; done(); }, error: () => done() });
+    this.lookups.activeDeliveries().subscribe({ next: list => { this.deliveries = list || []; done(); }, error: () => done() });
+    this.lookups.activeMerchants().subscribe({ next: list => { this.merchants = list || []; done(); }, error: () => done() });
   }
 
   loadParty(): void {

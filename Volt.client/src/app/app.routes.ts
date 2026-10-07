@@ -1,4 +1,5 @@
-import { Routes, provideRouter } from '@angular/router';
+import { Routes, provideRouter, withPreloading } from '@angular/router';
+import { PermissionPreloadingStrategy } from './core/routing/permission-preloading.strategy';
 import { DashboardLayoutComponent } from './layout/dashboard-layout/dashboard-layout.component';
 import { MerchantLayoutComponent } from './layout/merchant-layout/merchant-layout.component';
 import { AdminLoginComponent } from './pages/admin-login/admin-login.component';
@@ -308,4 +309,4 @@ export const routes: Routes = [
   { path: '**', redirectTo: '' }
 ];
 
-export const appRouterProviders = [provideRouter(routes)];
+export const appRouterProviders = [provideRouter(routes, withPreloading(PermissionPreloadingStrategy))];

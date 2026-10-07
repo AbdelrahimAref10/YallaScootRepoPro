@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -15,12 +14,12 @@ import {
 } from '../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { userNameValidator } from '../../shared/validators/user-name.validator';
+import { memo } from '../../shared/utils/memo';
 
 @Component({
   selector: 'app-users',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
@@ -29,11 +28,15 @@ import { userNameValidator } from '../../shared/validators/user-name.validator';
     PaginationComponent,
     ConfirmDialogComponent,
     HasPermissionDirective
-  ],
+],
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-form.css']
 })
 export class UsersComponent implements OnInit, OnDestroy {
+  private readonly roleFilterOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly activeFilterOptionsMemo = memo<MultiSelectOption[]>();
+  private readonly roleFormOptionsMemo = memo<MultiSelectOption[]>();
+
   private adminUserClient = inject(AdminUserClient);
   private roleClient = inject(RoleClient);
   private subRoleClient = inject(SubRoleClient);
@@ -109,26 +112,29 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   get roleFilterOptions(): MultiSelectOption[] {
-    return this.availableRoles.map(role => ({
-      value: role,
-      label: role
-    }));
+    return this.roleFilterOptionsMemo([this.availableRoles], () =>
+      this.availableRoles.map(role => ({
+        value: role,
+        label: role
+      })));
   }
 
   get activeFilterOptions(): MultiSelectOption[] {
-    return [
-      { value: 'true', label: this.localeService.translate('common.active') },
-      { value: 'false', label: this.localeService.translate('common.inactive') }
-    ];
+    return this.activeFilterOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 'true', label: this.localeService.translate('common.active') },
+        { value: 'false', label: this.localeService.translate('common.inactive') }
+      ]);
   }
 
   get roleFormOptions(): MultiSelectOption[] {
-    return this.creatableRoleNames
-      .filter(name => this.availableRoles.includes(name))
-      .map(role => ({
-        value: role,
-        label: role
-      }));
+    return this.roleFormOptionsMemo([this.creatableRoleNames, this.availableRoles], () =>
+      this.creatableRoleNames
+        .filter(name => this.availableRoles.includes(name))
+        .map(role => ({
+          value: role,
+          label: role
+        })));
   }
 
   get subRoleFormOptions(): MultiSelectOption[] {

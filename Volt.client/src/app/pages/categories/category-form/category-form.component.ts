@@ -1,24 +1,28 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CategoryClient, CategoryDto, CreateCategoryCommand, UpdateCategoryCommand } from '../../../core/services/clientAPI';
-import { CityClient, CityDto, PagedResultOfCityDto } from '../../../core/services/clientAPI';
+import { CityDto, PagedResultOfCityDto } from '../../../core/services/clientAPI';
 import { LocaleService } from '../../../core/services/locale.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import {
   MultiSelectComponent,
   MultiSelectOption
 } from '../../../shared/components/multi-select/multi-select.component';
+import { memo } from '../../../shared/utils/memo';
+import { LookupService } from '../../../core/services/lookup.service';
 
 @Component({
   selector: 'app-category-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent],
+  imports: [FormsModule, ReactiveFormsModule, RouterModule, TranslatePipe, MultiSelectComponent],
   templateUrl: './category-form.component.html',
   styleUrls: ['./category-form.component.css', '../../../shared/styles/entity-form.css', '../../../shared/styles/record-form.css']
 })
 export class CategoryFormComponent implements OnInit {
+  private readonly lookups = inject(LookupService);
+  private readonly cityOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
 
   categoryForm: FormGroup;
@@ -33,7 +37,6 @@ export class CategoryFormComponent implements OnInit {
 
   constructor(
     private categoryClient: CategoryClient,
-    private cityClient: CityClient,
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder
@@ -62,10 +65,11 @@ export class CategoryFormComponent implements OnInit {
   }
 
   get cityOptions(): MultiSelectOption[] {
-    return this.cities.map(city => ({
-      value: city.cityId,
-      label: city.name
-    }));
+    return this.cityOptionsMemo([this.cities], () =>
+      this.cities.map(city => ({
+        value: city.cityId,
+        label: city.name
+      })));
   }
 
   ngOnInit(): void {
@@ -84,7 +88,7 @@ export class CategoryFormComponent implements OnInit {
   }
 
   loadCities(): void {
-    this.cityClient.getAll(1, 1000, undefined, true).subscribe({
+    this.lookups.activeCities().subscribe({
       next: (result: PagedResultOfCityDto) => {
         this.cities = result.items || [];
       },

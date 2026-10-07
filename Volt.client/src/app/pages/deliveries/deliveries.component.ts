@@ -23,6 +23,7 @@ import {
   MultiSelectOption
 } from '../../shared/components/multi-select/multi-select.component';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { memo } from '../../shared/utils/memo';
 
 @Component({
   selector: 'app-deliveries',
@@ -32,6 +33,8 @@ import { HasPermissionDirective } from '../../shared/directives/has-permission.d
   styleUrls: ['./deliveries.component.css', '../../shared/styles/list-filters.css', '../../shared/styles/entity-form.css']
 })
 export class DeliveriesComponent implements OnInit {
+  private readonly deletedFilterOptionsMemo = memo<MultiSelectOption[]>();
+
   private readonly localeService = inject(LocaleService);
   private readonly deliveryClient = inject(AdminDeliveryClient);
   private readonly router = inject(Router);
@@ -59,10 +62,11 @@ export class DeliveriesComponent implements OnInit {
   isSavingLimit = false;
 
   get deletedFilterOptions(): MultiSelectOption[] {
-    return [
-      { value: 'active', label: this.localeService.translate('deliveries.filterNotDeleted') },
-      { value: 'deleted', label: this.localeService.translate('deliveries.filterDeleted') }
-    ];
+    return this.deletedFilterOptionsMemo([this.localeService.locale()], () =>
+      [
+        { value: 'active', label: this.localeService.translate('deliveries.filterNotDeleted') },
+        { value: 'deleted', label: this.localeService.translate('deliveries.filterDeleted') }
+      ]);
   }
 
   get isDeletedFilter(): boolean | null {
