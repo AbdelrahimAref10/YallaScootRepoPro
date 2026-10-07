@@ -52,7 +52,7 @@
   </header>
 
   <!-- Status Pipeline Strip -->
-  <nav class="orders__pipeline" [attr.aria-label]="'orders.pipelineAria' | t">
+  <nav class="orders__pipeline orders__pipeline--board" [attr.aria-label]="'orders.pipelineAria' | t">
     @for (step of pipelineStates; track step) {
       <button
         type="button"
@@ -62,8 +62,7 @@
         (click)="onStateFilter(step.state)"
         [attr.aria-pressed]="selectedState === step.state"
         >
-        <span class="orders__pipe-dot" aria-hidden="true"></span>
-        <span class="orders__pipe-label">{{ step.key | t }}</span>
+        <span class="orders__pipe-label"><span class="orders__pipe-dot" aria-hidden="true"></span>{{ step.key | t }}</span>
         <span class="orders__pipe-count">{{ getPipelineCount(step.state) }}</span>
       </button>
     }

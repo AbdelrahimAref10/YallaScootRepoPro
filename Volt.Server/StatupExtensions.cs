@@ -9,6 +9,10 @@ namespace Volt.Server
     {
         private const string NoCache = "no-cache, no-store, must-revalidate";
 
+        // Angular build output: name-HASH.js / name-HASH.css (e.g. main-ABCD1234.js, chunk-2W3EUD6L.js).
+        private static readonly System.Text.RegularExpressions.Regex HashedBundle =
+            new(@"-[A-Z0-9]{8}\.(js|css)$", System.Text.RegularExpressions.RegexOptions.Compiled);
+
         public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
         {
             builder.Services.AddApplicationServices();
@@ -62,11 +66,16 @@ namespace Volt.Server
             {
                 OnPrepareResponse = ctx =>
                 {
-                    // index.html must never be cached: it points at the current build's hashed bundles.
-                    // A cached copy keeps running the previous release against the new API after a deploy.
-                    // Hashed bundles (main-XXXX.js) change name every build, so they can be cached for a year.
-                    var isHtml = ctx.File.Name.EndsWith(".html", StringComparison.OrdinalIgnoreCase);
-                    ctx.Context.Response.Headers.Append("Cache-Control", isHtml ? NoCache : "public,max-age=31536000");
+                    // Only hashed bundles (main-XXXX.js, styles-XXXX.css) change name every build, so only
+                    // they may be cached for a year. Everything else keeps its name across releases
+                    // (index.html, assets/i18n/*.json, appSettings.json, images) and must be revalidated,
+                    // or browsers keep last release's copy: old translations, old bundle references.
+                    var name = ctx.File.Name;
+                    var cache = HashedBundle.IsMatch(name) ? "public,max-age=31536000,immutable"
+                        : name.EndsWith(".html", StringComparison.OrdinalIgnoreCase) ? NoCache
+                        : "no-cache"; // revalidate: unchanged files come back as a cheap 304
+
+                    ctx.Context.Response.Headers.Append("Cache-Control", cache);
                 }
             });
 

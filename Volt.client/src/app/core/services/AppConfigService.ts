@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { BehaviorSubject, catchError, EMPTY } from 'rxjs';
 import { SystemConfiguration } from '../models/SystemConfiguration';
+import { versioned } from '../utils/build-version';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AppConfigService {
-  private envUrl = 'assets/appSettings.json';
+  private envUrl = versioned('assets/appSettings.json');
   private config: SystemConfiguration;
   loaded$ = new BehaviorSubject<boolean>(false);
   loaded: boolean = false;

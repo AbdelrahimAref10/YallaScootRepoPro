@@ -764,3 +764,49 @@ html.dark .pc-avatar {
     transform: none;
   }
 }
+
+/* ═══════════ Tones: flat, light tints from the theme (no gradients) ═══════════
+   Put a .tone-* class on a card, then use --tone / --tone-bg / --tone-line / --tone-chip
+   inside it. One rule per colour, shared by the dashboard, orders and order details. */
+.tone-red    { --tone: var(--volt-accent); }
+.tone-gold   { --tone: var(--volt-gold-strong); }
+.tone-blue   { --tone: var(--volt-info); }
+.tone-green  { --tone: var(--volt-ok); }
+.tone-amber  { --tone: var(--volt-warn); }
+.tone-violet { --tone: #6d4fd8; }
+.tone-cyan   { --tone: #0e8aa3; }
+.tone-slate  { --tone: #5b6675; }
+
+html.dark .tone-violet { --tone: #9d86ff; }
+html.dark .tone-cyan { --tone: #3cc4dd; }
+html.dark .tone-slate { --tone: #9aa4b2; }
+
+.tone-red, .tone-gold, .tone-blue, .tone-green,
+.tone-amber, .tone-violet, .tone-cyan, .tone-slate {
+  --tone-bg: color-mix(in srgb, var(--tone) 6%, var(--volt-surface));
+  --tone-line: color-mix(in srgb, var(--tone) 22%, var(--volt-border));
+  --tone-chip: color-mix(in srgb, var(--tone) 14%, var(--volt-surface));
+}
+
+/* Card tinted with its tone: soft fill, toned hairline, icon tile. */
+.tint-card {
+  border: 1px solid var(--tone-line);
+  border-radius: 0.9rem;
+  background: var(--tone-bg);
+}
+
+.tint-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 0.65rem;
+  background: var(--tone-chip);
+  color: var(--tone);
+}
+
+.tint-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}

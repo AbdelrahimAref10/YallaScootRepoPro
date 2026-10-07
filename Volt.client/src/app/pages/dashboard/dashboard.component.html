@@ -92,28 +92,30 @@
       </div>
 
       <div class="dsh-hero__position">
-        <a routerLink="/main/settlements" class="dsh-pos dsh-pos--in">
-          <span class="dsh-pos__icon" aria-hidden="true">
+        <a routerLink="/main/settlements" class="dsh-pos dsh-pos--in tint-card tone-green">
+          <span class="dsh-pos__icon tint-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m0 0l-6-6m6 6l6-6"/></svg>
           </span>
           <span class="dsh-pos__label">{{ 'dash.owedToYou' | t }}</span>
           <span class="dsh-pos__value">{{ money(position()?.owedToCompany) }} <small>{{ 'common.currency' | t }}</small></span>
           <span class="dsh-pos__hint">{{ 'dash.owedToYouHint' | t }}</span>
         </a>
-        <a routerLink="/main/settlements" class="dsh-pos dsh-pos--out">
-          <span class="dsh-pos__icon" aria-hidden="true">
+        <a routerLink="/main/settlements" class="dsh-pos dsh-pos--out tint-card tone-red">
+          <span class="dsh-pos__icon tint-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0l-6 6m6-6l6 6"/></svg>
           </span>
           <span class="dsh-pos__label">{{ 'dash.youOwe' | t }}</span>
           <span class="dsh-pos__value">{{ money(position()?.companyOwes) }} <small>{{ 'common.currency' | t }}</small></span>
           <span class="dsh-pos__hint">{{ 'dash.youOweHint' | t }}</span>
         </a>
-        <div class="dsh-pos dsh-pos--net">
+        <div class="dsh-pos dsh-pos--net tint-card tone-blue">
+          <span class="dsh-pos__icon tint-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v18m-7-4h14M5 7l-3 6a3 3 0 006 0L5 7zm14 0l-3 6a3 3 0 006 0l-3-6zM5 7h14"/></svg></span>
           <span class="dsh-pos__label">{{ 'dash.netPosition' | t }}</span>
           <span class="dsh-pos__value" [class.dsh-neg]="(position()?.netPosition ?? 0) < 0">{{ money(position()?.netPosition) }} <small>{{ 'common.currency' | t }}</small></span>
           <span class="dsh-pos__hint">{{ ((position()?.netPosition ?? 0) >= 0 ? 'dash.netPositionPlus' : 'dash.netPositionMinus') | t }}</span>
         </div>
-        <a routerLink="/main/reports/treasury" class="dsh-pos dsh-pos--cash">
+        <a routerLink="/main/reports/treasury" class="dsh-pos dsh-pos--cash tint-card tone-gold">
+          <span class="dsh-pos__icon tint-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10l9-6 9 6M5 10v8m4-8v8m6-8v8m4-8v8M3 21h18"/></svg></span>
           <span class="dsh-pos__label">{{ 'dash.treasury' | t }}</span>
           <span class="dsh-pos__value">{{ money(position()?.treasuryBalance) }} <small>{{ 'common.currency' | t }}</small></span>
           <span class="dsh-pos__hint">{{ 'dash.treasuryHint' | t }}</span>
@@ -247,33 +249,33 @@
 
     <!-- ───────────── KPI strip ───────────── -->
     <section class="dsh-kpis">
-      <div class="dsh-kpi">
-        <span class="dsh-kpi__label">{{ 'dash.metric.orders' | t }}</span>
+      <div class="dsh-kpi tint-card tone-blue">
+        <span class="dsh-kpi__head"><span class="tint-icon dsh-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg></span><span class="dsh-kpi__label">{{ 'dash.metric.orders' | t }}</span></span>
         <span class="dsh-kpi__value">{{ count(orders()?.total) }}</span>
         <span class="dsh-delta dsh-delta--sm" [ngClass]="deltaClass(orders()?.totalChangePercent)">{{ delta(orders()?.totalChangePercent) }}</span>
       </div>
-      <div class="dsh-kpi">
-        <span class="dsh-kpi__label">{{ 'dash.completionRate' | t }}</span>
+      <div class="dsh-kpi tint-card tone-green">
+        <span class="dsh-kpi__head"><span class="tint-icon dsh-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span><span class="dsh-kpi__label">{{ 'dash.completionRate' | t }}</span></span>
         <span class="dsh-kpi__value">{{ percent(orders()?.completionRatePercent) }}</span>
         <span class="dsh-kpi__hint">{{ count(orders()?.completed) }} {{ 'dash.completed' | t }}</span>
       </div>
-      <div class="dsh-kpi">
-        <span class="dsh-kpi__label">{{ 'dash.cancellationRate' | t }}</span>
+      <div class="dsh-kpi tint-card tone-red">
+        <span class="dsh-kpi__head"><span class="tint-icon dsh-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 14l4-4m0 4l-4-4m11 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span><span class="dsh-kpi__label">{{ 'dash.cancellationRate' | t }}</span></span>
         <span class="dsh-kpi__value" [class.dsh-neg]="(orders()?.cancellationRatePercent ?? 0) > 15">{{ percent(orders()?.cancellationRatePercent) }}</span>
         <span class="dsh-kpi__hint">{{ count(orders()?.cancelled) }} {{ 'dash.cancelled' | t }}</span>
       </div>
-      <div class="dsh-kpi">
-        <span class="dsh-kpi__label">{{ 'dash.avgOrderValue' | t }}</span>
+      <div class="dsh-kpi tint-card tone-gold">
+        <span class="dsh-kpi__head"><span class="tint-icon dsh-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span><span class="dsh-kpi__label">{{ 'dash.avgOrderValue' | t }}</span></span>
         <span class="dsh-kpi__value">{{ money(orders()?.averageOrderValue) }}</span>
         <span class="dsh-kpi__hint">{{ 'common.currency' | t }}</span>
       </div>
-      <div class="dsh-kpi">
-        <span class="dsh-kpi__label">{{ 'dash.urgentOrders' | t }}</span>
+      <div class="dsh-kpi tint-card tone-amber">
+        <span class="dsh-kpi__head"><span class="tint-icon dsh-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg></span><span class="dsh-kpi__label">{{ 'dash.urgentOrders' | t }}</span></span>
         <span class="dsh-kpi__value">{{ count(orders()?.urgent) }}</span>
         <span class="dsh-kpi__hint">{{ 'dash.inPeriod' | t }}</span>
       </div>
-      <div class="dsh-kpi">
-        <span class="dsh-kpi__label">{{ 'dash.newCustomers' | t }}</span>
+      <div class="dsh-kpi tint-card tone-violet">
+        <span class="dsh-kpi__head"><span class="tint-icon dsh-kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg></span><span class="dsh-kpi__label">{{ 'dash.newCustomers' | t }}</span></span>
         <span class="dsh-kpi__value">{{ count(data()?.people?.newCustomers) }}</span>
         <span class="dsh-delta dsh-delta--sm" [ngClass]="deltaClass(data()?.people?.newCustomersChangePercent)">{{ delta(data()?.people?.newCustomersChangePercent) }}</span>
       </div>
@@ -355,18 +357,18 @@
           </div>
         </header>
         <ul class="dsh-net">
-          <li>
-            <span class="dsh-net__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.4-1.8M17 20H7m10 0v-2c0-.7-.1-1.3-.4-1.8M7 20H2v-2a3 3 0 015.4-1.8M7 20v-2c0-.7.1-1.3.4-1.8m0 0a5 5 0 019.2 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>
+          <li class="tint-card tone-violet">
+            <span class="dsh-net__icon tint-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.4-1.8M17 20H7m10 0v-2c0-.7-.1-1.3-.4-1.8M7 20H2v-2a3 3 0 015.4-1.8M7 20v-2c0-.7.1-1.3.4-1.8m0 0a5 5 0 019.2 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>
             <span class="dsh-net__label">{{ 'dash.customers' | t }}<small>+{{ count(data()?.people?.newCustomers) }} {{ 'dash.newInPeriod' | t }}</small></span>
             <strong>{{ count(data()?.people?.customers) }}</strong>
           </li>
-          <li>
-            <span class="dsh-net__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9l1.5-5h15L21 9M3 9h18M3 9v11h18V9M9 20v-6h6v6"/></svg></span>
+          <li class="tint-card tone-blue">
+            <span class="dsh-net__icon tint-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9l1.5-5h15L21 9M3 9h18M3 9v11h18V9M9 20v-6h6v6"/></svg></span>
             <span class="dsh-net__label">{{ 'dash.activeMerchants' | t }}</span>
             <strong>{{ count(data()?.people?.activeMerchants) }}</strong>
           </li>
-          <li>
-            <span class="dsh-net__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="6" cy="17" r="3" stroke-width="1.8"/><circle cx="18" cy="17" r="3" stroke-width="1.8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 17l4-8h5l3 8M10 9H8"/></svg></span>
+          <li class="tint-card tone-green">
+            <span class="dsh-net__icon tint-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="6" cy="17" r="3" stroke-width="1.8"/><circle cx="18" cy="17" r="3" stroke-width="1.8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 17l4-8h5l3 8M10 9H8"/></svg></span>
             <span class="dsh-net__label">{{ 'dash.activeRiders' | t }}<small><span class="dsh-online" aria-hidden="true"></span>{{ count(data()?.people?.onlineDeliveries) }} {{ 'dash.onlineNow' | t }}</small></span>
             <strong>{{ count(data()?.people?.activeDeliveries) }}</strong>
           </li>

@@ -281,32 +281,34 @@ html[dir='rtl'] .oz-back svg {
   font-size: 0.82rem;
 }
 
-/* KPI strip: equal columns split by hairlines. */
+/* KPI cards: each tinted with its own theme tone (see .tone-* in styles.css). */
 .oz-hero__stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
   margin: 0;
-  border-top: 1px solid var(--volt-border);
-  background: var(--volt-surface-muted);
+  padding: 0 1.4rem 1.3rem;
 }
 
 .oz-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.75rem;
+  row-gap: 0.15rem;
+  align-content: start;
   min-width: 0;
-  padding: 0.95rem 1.4rem;
-  border-inline-start: 1px solid var(--volt-border);
+  padding: 0.9rem 1rem;
 }
 
-.oz-stat:first-child {
-  border-inline-start: none;
+.oz-stat__icon {
+  grid-row: span 3;
 }
 
 .oz-stat dt {
-  color: var(--volt-text-muted);
+  align-self: end;
+  color: var(--tone);
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -315,7 +317,7 @@ html[dir='rtl'] .oz-back svg {
   margin: 0;
   color: var(--volt-text-primary);
   font-family: var(--volt-font-heading);
-  font-size: 1.1rem;
+  font-size: 1.12rem;
   font-weight: 800;
   line-height: 1.25;
   font-variant-numeric: tabular-nums;
@@ -336,6 +338,7 @@ html[dir='rtl'] .oz-back svg {
 }
 
 .oz-stat__hint {
+  grid-column: 2;
   color: var(--volt-text-muted);
   font-size: 0.72rem;
 }
@@ -584,8 +587,8 @@ html[dir='rtl'] .oz-next__icon svg {
   align-items: center;
   gap: 0.8rem;
   padding: 1rem 1.2rem;
-  border-bottom: 1px solid var(--volt-border);
-  background: var(--volt-surface-muted);
+  border-bottom: 1px solid color-mix(in srgb, var(--volt-info) 16%, var(--volt-border));
+  background: color-mix(in srgb, var(--volt-info) 5%, var(--volt-surface));
 }
 
 .oz-fulfil__who {
@@ -619,7 +622,7 @@ html[dir='rtl'] .oz-next__icon svg {
   gap: 0.5rem;
   padding: 0.75rem 1.2rem;
   border-top: 1px solid var(--volt-border);
-  background: var(--volt-surface-muted);
+  background: color-mix(in srgb, var(--volt-info) 3%, var(--volt-surface));
   color: var(--volt-text-secondary);
   font-size: 0.82rem;
 }
@@ -649,8 +652,8 @@ html[dir='rtl'] .oz-next__icon svg {
   width: 4.5rem;
   height: 4.5rem;
   border-radius: 0.9rem;
-  background: var(--volt-surface-muted);
-  color: var(--volt-text-muted);
+  background: color-mix(in srgb, var(--volt-accent) 7%, var(--volt-surface));
+  color: var(--volt-accent);
   overflow: hidden;
 }
 
@@ -838,8 +841,9 @@ html[dir='rtl'] .oz-next__icon svg {
   gap: 1.25rem;
   align-items: center;
   padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--volt-gold-strong) 22%, var(--volt-border));
   border-radius: 0.9rem;
-  background: var(--volt-surface-muted);
+  background: color-mix(in srgb, var(--volt-gold-strong) 6%, var(--volt-surface));
 }
 
 .oz-pay__big span {
@@ -1305,6 +1309,12 @@ html[dir='rtl'] .oz-next__icon svg {
 }
 
 /* ── Responsive ── */
+@media (max-width: 1180px) {
+  .oz-hero__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1024px) {
   .oz-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -1323,18 +1333,17 @@ html[dir='rtl'] .oz-next__icon svg {
 
   .oz-hero__stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    padding: 0 1rem 1rem;
   }
 
   .oz-stat {
-    padding: 0.8rem 1rem;
+    padding: 0.75rem 0.8rem;
   }
 
-  .oz-stat:nth-child(odd) {
-    border-inline-start: none;
-  }
-
-  .oz-stat:nth-child(n + 3) {
-    border-top: 1px solid var(--volt-border);
+  .oz-stat__icon {
+    width: 2rem;
+    height: 2rem;
   }
 
   .oz-steps {
