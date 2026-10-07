@@ -30,8 +30,8 @@
   content: '';
   position: absolute;
   inset: 0 0 auto;
-  height: 7rem;
-  background: radial-gradient(70% 100% at 50% 0%, color-mix(in srgb, var(--volt-ok) 22%, transparent), transparent);
+  height: 4px;
+  background: var(--volt-ok);
   pointer-events: none;
 }
 
