@@ -7,6 +7,8 @@ namespace Volt.Server
 {
     public static class StatupExtensions
     {
+        private const string NoCache = "no-cache, no-store, must-revalidate";
+
         public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
         {
             builder.Services.AddApplicationServices();
@@ -60,8 +62,11 @@ namespace Volt.Server
             {
                 OnPrepareResponse = ctx =>
                 {
-                    // Cache static files for 1 year
-                    ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=31536000");
+                    // index.html must never be cached: it points at the current build's hashed bundles.
+                    // A cached copy keeps running the previous release against the new API after a deploy.
+                    // Hashed bundles (main-XXXX.js) change name every build, so they can be cached for a year.
+                    var isHtml = ctx.File.Name.EndsWith(".html", StringComparison.OrdinalIgnoreCase);
+                    ctx.Context.Response.Headers.Append("Cache-Control", isHtml ? NoCache : "public,max-age=31536000");
                 }
             });
 
@@ -80,7 +85,14 @@ namespace Volt.Server
             app.MapHub<Presentation.Hubs.AdminNotificationHub>("/AdminNotificationHub");
             app.MapHub<Presentation.Hubs.MerchantNotificationHub>("/MerchantNotificationHub");
 
-            app.MapFallbackToFile("/index.html");
+            // An unknown API route is a 404, not the Angular page (which the client would fail to parse as JSON).
+            app.Map("/api/{**path}", (HttpContext context) => Results.NotFound());
+
+            // Client-side routes (/main/dashboard, ...) get index.html, never from cache.
+            app.MapFallbackToFile("/index.html", new StaticFileOptions
+            {
+                OnPrepareResponse = ctx => ctx.Context.Response.Headers.Append("Cache-Control", NoCache)
+            });
             return app;
         }
 
