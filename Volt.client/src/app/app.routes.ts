@@ -196,33 +196,13 @@ export const routes: Routes = [
       },
       {
         path: 'reports',
-        data: { permission: Permissions.Admin.Reports.View },
+        data: { permission: Permissions.Admin.Reports.View, scope: 'admin' },
         loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent)
       },
       {
-        path: 'reports/orders-details',
-        data: { permission: Permissions.Admin.Reports.View },
-        loadComponent: () => import('./pages/reports/orders-details-report/orders-details-report.component').then(m => m.OrdersDetailsReportComponent)
-      },
-      {
-        path: 'reports/cancelled-orders',
-        data: { permission: Permissions.Admin.Reports.View },
-        loadComponent: () => import('./pages/reports/cancelled-orders-report/cancelled-orders-report.component').then(m => m.CancelledOrdersReportComponent)
-      },
-      {
-        path: 'reports/cancellation-debts',
-        data: { permission: Permissions.Admin.Reports.View },
-        loadComponent: () => import('./pages/reports/cancellation-debts-report/cancellation-debts-report.component').then(m => m.CancellationDebtsReportComponent)
-      },
-      {
-        path: 'reports/payments',
-        data: { permission: Permissions.Admin.Reports.View },
-        loadComponent: () => import('./pages/reports/payments-report/payments-report.component').then(m => m.PaymentsReportComponent)
-      },
-      {
-        path: 'reports/paypal-refunds',
-        data: { permission: Permissions.Admin.Reports.View },
-        loadComponent: () => import('./pages/reports/paypal-refunds-report/paypal-refunds-report.component').then(m => m.PayPalRefundsReportComponent)
+        path: 'reports/:key',
+        data: { permission: Permissions.Admin.Reports.View, scope: 'admin' },
+        loadComponent: () => import('./pages/reports/report-viewer/report-viewer.component').then(m => m.ReportViewerComponent)
       },
       {
         path: 'support',
@@ -297,6 +277,17 @@ export const routes: Routes = [
           import('./pages/merchant/merchant-vehicles/merchant-vehicle-form/merchant-vehicle-form.component').then(
             m => m.MerchantVehicleFormComponent
           )
+      },
+      {
+        path: 'reports',
+        data: { permission: Permissions.Merchant.Reports.View, scope: 'merchant' },
+        loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent)
+      },
+      {
+        path: 'reports/:key',
+        data: { permission: Permissions.Merchant.Reports.View, scope: 'merchant' },
+        loadComponent: () =>
+          import('./pages/reports/report-viewer/report-viewer.component').then(m => m.ReportViewerComponent)
       },
       {
         path: 'staff',

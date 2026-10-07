@@ -34,5 +34,6 @@ export const MERCHANT_MENU_ITEMS: DashboardMenuItem[] = [
   { labelKey: 'merchant.nav.orders', route: '/merchant/orders', icon: 'orders', permission: Permissions.Merchant.Orders.View },
   { labelKey: 'merchant.nav.vehicles', route: '/merchant/vehicles', icon: 'vehicles', permission: Permissions.Merchant.Vehicles.View },
   { labelKey: 'merchant.nav.payments', route: '/merchant/payments', icon: 'money', permission: Permissions.Merchant.Payments.View },
+  { labelKey: 'merchant.nav.reports', route: '/merchant/reports', icon: 'reports', permission: Permissions.Merchant.Reports.View },
   { labelKey: 'merchant.nav.staff', route: '/merchant/staff', icon: 'system-users', permission: Permissions.Merchant.Staff.View }
 ];

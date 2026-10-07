@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { ReportDefinition, ReportScopeName, reportsBaseRoute, reportsFor } from './reports.config';
 
-interface ReportItem {
-  route: string;
-  titleKey: string;
-  descriptionKey: string;
+interface ReportGroup {
+  groupKey: string;
+  reports: ReportDefinition[];
 }
 
 @Component({
@@ -17,31 +17,14 @@ interface ReportItem {
   styleUrls: ['./reports.component.css', './report-page-shared.css']
 })
 export class ReportsComponent {
-  reportItems: ReportItem[] = [
-    {
-      route: 'orders-details',
-      titleKey: 'reports.ordersDetails',
-      descriptionKey: 'reports.ordersDetailsDesc'
-    },
-    {
-      route: 'cancelled-orders',
-      titleKey: 'reports.cancelledOrders',
-      descriptionKey: 'reports.cancelledOrdersDesc'
-    },
-    {
-      route: 'cancellation-debts',
-      titleKey: 'reports.cancellationDebts',
-      descriptionKey: 'reports.cancellationDebtsDesc'
-    },
-    {
-      route: 'payments',
-      titleKey: 'reports.payments',
-      descriptionKey: 'reports.paymentsDesc'
-    },
-    {
-      route: 'paypal-refunds',
-      titleKey: 'reports.paypalRefunds',
-      descriptionKey: 'reports.paypalRefundsDesc'
-    }
-  ];
+  private readonly route = inject(ActivatedRoute);
+
+  readonly scope: ReportScopeName = this.route.snapshot.data['scope'] === 'merchant' ? 'merchant' : 'admin';
+  readonly baseRoute = reportsBaseRoute(this.scope);
+  readonly groups: ReportGroup[] = reportsFor(this.scope).reduce<ReportGroup[]>((groups, report) => {
+    const group = groups.find(g => g.groupKey === report.groupKey);
+    if (group) group.reports.push(report);
+    else groups.push({ groupKey: report.groupKey, reports: [report] });
+    return groups;
+  }, []);
 }

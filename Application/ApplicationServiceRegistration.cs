@@ -9,7 +9,10 @@ namespace Application
         {
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
 
-            services.AddScoped<Features.AdminReport.Export.IReportExportService, Features.AdminReport.Export.ReportExportService>();
+            // Every IReport in this assembly is available to RunReportQuery.
+            foreach (var reportType in typeof(Features.Reports.IReport).Assembly.GetTypes()
+                         .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(Features.Reports.IReport).IsAssignableFrom(t)))
+                services.AddScoped(typeof(Features.Reports.IReport), reportType);
             services.AddScoped<Features.Order.Services.IVehicleReservationQueryService, Features.Order.Services.VehicleReservationQueryService>();
             services.AddScoped<Features.Order.Services.IOrderJournalService, Features.Order.Services.OrderJournalService>();
             services.AddScoped<Features.Order.Services.IOrderRealtimeNotifier, Features.Order.Services.OrderRealtimeNotifier>();

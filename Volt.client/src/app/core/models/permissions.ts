@@ -23,6 +23,7 @@ export const Permissions = {
     Orders: { View: 'Merchant.Orders.View', Edit: 'Merchant.Orders.Edit' },
     Vehicles: { View: 'Merchant.Vehicles.View', Create: 'Merchant.Vehicles.Create', Edit: 'Merchant.Vehicles.Edit', Delete: 'Merchant.Vehicles.Delete' },
     Payments: { View: 'Merchant.Payments.View' },
+    Reports: { View: 'Merchant.Reports.View' },
     Staff: { View: 'Merchant.Staff.View', Create: 'Merchant.Staff.Create', Edit: 'Merchant.Staff.Edit', Delete: 'Merchant.Staff.Delete' }
   }
 } as const;
