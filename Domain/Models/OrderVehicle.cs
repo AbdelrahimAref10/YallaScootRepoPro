@@ -10,6 +10,12 @@ namespace Domain.Models
 
         public decimal DeliveryFee { get; private set; }
 
+        /// <summary>
+        /// Vehicle's daily price when it was put on the order. Pricing and merchant payouts use this,
+        /// so a later change to <c>Vehicle.Price</c> does not affect existing orders.
+        /// </summary>
+        public decimal DailyPrice { get; private set; }
+
         public bool ReceivedFromOwner { get; private set; }
         public string? ReceivedFromOwnerImageUrl { get; private set; }
         public DateTime? ReceivedFromOwnerAt { get; private set; }
@@ -47,9 +53,13 @@ namespace Domain.Models
         public static OrderVehicle Create(
             int orderId,
             int vehicleId,
+            decimal dailyPrice,
             decimal deliveryFee = 0,
             string? createdBy = null)
         {
+            if (dailyPrice < 0)
+                throw new ArgumentException("Daily price cannot be negative", nameof(dailyPrice));
+
             if (orderId <= 0)
                 throw new ArgumentException("Order ID must be greater than zero", nameof(orderId));
 
@@ -63,6 +73,7 @@ namespace Domain.Models
             {
                 OrderId = orderId,
                 VehicleId = vehicleId,
+                DailyPrice = dailyPrice,
                 DeliveryFee = deliveryFee,
                 MerchantResponseStatus = MerchantVehicleResponseStatus.Pending,
                 CreatedBy = createdBy,

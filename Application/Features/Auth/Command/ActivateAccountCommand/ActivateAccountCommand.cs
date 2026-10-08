@@ -43,6 +43,8 @@ namespace Application.Features.Auth.Command.ActivateAccountCommand
             if (string.IsNullOrWhiteSpace(request.MobileNumber))
                 return Result.Failure<bool>("Mobile number is required");
 
+            request.MobileNumber = Application.Common.MobileNumberPolicy.Normalize(request.MobileNumber);
+
             if (string.IsNullOrWhiteSpace(request.InvitationCode))
                 return Result.Failure<bool>("Invitation code is required");
 

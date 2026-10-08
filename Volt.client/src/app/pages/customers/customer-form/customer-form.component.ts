@@ -62,7 +62,8 @@ export class CustomerFormComponent implements OnInit {
     private fb: FormBuilder
   ) {
     this.customerForm = this.fb.group({
-      mobileNumber: ['', [Validators.required, Validators.pattern(/^\+[1-9]\d{6,14}$/)]],
+      // Country code + number, digits only (no "+"), e.g. 2001001234567.
+      mobileNumber: ['', [Validators.required, Validators.pattern(/^[0-9]+$/)]],
       fullName: ['', [Validators.required, Validators.minLength(2)]],
       gender: ['', [Validators.required]],
       cityId: [null, [Validators.required]],

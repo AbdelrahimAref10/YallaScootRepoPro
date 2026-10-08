@@ -22,6 +22,9 @@ namespace Application.Features.Delivery.Command.AdminCreateDeliveryCommand
         public int ZoneId { get; set; }
         public string? PersonalImage { get; set; }
         public bool IsActive { get; set; } = true;
+
+        /// <summary>Max cash the rider may hold before cash orders are blocked. Null means no limit.</summary>
+        public decimal? CashDebtLimit { get; set; }
     }
 
     public class AdminCreateDeliveryCommandHandler : IRequestHandler<AdminCreateDeliveryCommand, Result<int>>
@@ -65,6 +68,9 @@ namespace Application.Features.Delivery.Command.AdminCreateDeliveryCommand
 
             if (request.CityId <= 0)
                 return Result.Failure<int>("City is required");
+
+            if (request.CashDebtLimit is < 0)
+                return Result.Failure<int>("Cash debt limit cannot be negative");
 
             var cityExists = await _context.Cities
                 .AnyAsync(c => c.CityId == request.CityId && c.IsActive, cancellationToken);
@@ -155,6 +161,7 @@ namespace Application.Features.Delivery.Command.AdminCreateDeliveryCommand
                 personalImageUrl,
                 createdBy,
                 isActive: request.IsActive);
+            delivery.SetCashDebtLimit(request.CashDebtLimit, createdBy);
 
             _context.Deliveries.Add(delivery);
 

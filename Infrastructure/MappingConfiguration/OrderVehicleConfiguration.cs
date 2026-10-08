@@ -28,6 +28,11 @@ namespace Infrastructure.MappingConfiguration
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
 
+            builder.Property(ov => ov.DailyPrice)
+                .HasColumnName("DailyPrice")
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
             builder.Property(ov => ov.ReceivedFromOwner).HasColumnName("ReceivedFromOwner").IsRequired();
             builder.Property(ov => ov.ReceivedFromOwnerImageUrl).HasColumnName("ReceivedFromOwnerImageUrl").HasMaxLength(1000);
             builder.Property(ov => ov.ReceivedFromOwnerAt).HasColumnName("ReceivedFromOwnerAt");

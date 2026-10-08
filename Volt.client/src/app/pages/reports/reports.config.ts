@@ -37,6 +37,7 @@ export const ADMIN_REPORTS: ReportDefinition[] = [
 export const MERCHANT_REPORTS: ReportDefinition[] = [
   { key: 'statement', titleKey: 'reports.def.myStatement', descriptionKey: 'reports.def.myStatementDesc', groupKey: 'reports.group.balances', filters: [] },
   { key: 'orders', titleKey: 'reports.def.myOrders', descriptionKey: 'reports.def.myOrdersDesc', groupKey: 'reports.group.operations', filters: ['orderStates', 'vehicles'] },
+  { key: 'order-vehicles', titleKey: 'reports.def.myOrderVehicles', descriptionKey: 'reports.def.myOrderVehiclesDesc', groupKey: 'reports.group.operations', filters: ['orderStates', 'vehicles'] },
   { key: 'payments', titleKey: 'reports.def.myPayments', descriptionKey: 'reports.def.myPaymentsDesc', groupKey: 'reports.group.cash', filters: [] },
   { key: 'vehicles', titleKey: 'reports.def.myVehicles', descriptionKey: 'reports.def.myVehiclesDesc', groupKey: 'reports.group.operations', filters: ['vehicles'] }
 ];

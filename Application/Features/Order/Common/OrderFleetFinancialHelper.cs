@@ -88,7 +88,7 @@ namespace Application.Features.Order.Common
                         order.OrderId,
                         ov.Vehicle.MerchantId,
                         ov.VehicleId,
-                        order.CalculateVehicleRental(ov.Vehicle.Price),
+                        order.CalculateVehicleRental(ov.DailyPrice),
                         actor,
                         snapshotPercent.GetValueOrDefault(ov.Vehicle.MerchantId)),
                     cancellationToken);

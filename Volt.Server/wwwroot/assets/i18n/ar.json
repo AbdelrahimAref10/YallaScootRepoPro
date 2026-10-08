@@ -336,7 +336,10 @@
       "deactivateConfirm": "لن يتمكن {{name}} من تسجيل الدخول. متابعة؟",
       "deleteTitle": "حذف الموظف",
       "deleteConfirm": "حذف {{name}}؟ سيفقد الوصول فوراً."
-    }
+    },
+    "yourTurn": "دورك",
+    "nextConfirmVehicles": "أكّد المركبات اللي تقدر توفرها للطلب ده.",
+    "nextHandover": "المندوب في الطريق: سلّمه المركبات أول ما يوصل."
   },
   "dashboard": {
     "welcome": "أهلاً بعودتك، {{name}}"
@@ -1386,7 +1389,18 @@
     "assignAnyway": "عيّن برضه",
     "backToRiders": "رجوع للاختيار",
     "assignCashDebtLimitError": "مينفعش مشوار توصيل طلب كاش يروح لمندوب وصل لحد المديونية، لازم يورّد الكاش الأول: {{riders}}",
-    "assignCashDebtLimitErrorShort": "مينفعش مشوار توصيل طلب كاش يروح لمندوب وصل لحد المديونية، لازم يورّد الكاش الأول."
+    "assignCashDebtLimitErrorShort": "مينفعش مشوار توصيل طلب كاش يروح لمندوب وصل لحد المديونية، لازم يورّد الكاش الأول.",
+    "reviewDates": "التواريخ",
+    "reviewDuration": "المدة",
+    "reviewSummary": "ملخص السعر",
+    "backToEdit": "رجوع للتعديل",
+    "createdTitle": "تم إنشاء الطلب بنجاح!",
+    "createdMessage": "تم تأكيد حجز {{customer}}. جاري فتح تفاصيل الطلب…",
+    "openOrderNow": "افتح الطلب الآن",
+    "vehiclesLabel": "المركبات",
+    "merchantsUnit": "تاجر",
+    "call": "اتصال",
+    "eyebrow": "مركز العمليات"
   },
   "settlements": {
     "typePayDeliveryHint": "عهدة نقدية أو مستحقات طلب للرايدر",

@@ -81,7 +81,7 @@ namespace Application.Features.Order.Query.GetMyMerchantOrderDetailQuery
                     Color = ov.Vehicle.Color,
                     Type = ov.Vehicle.Type,
                     Model = ov.Vehicle.Model,
-                    Price = ov.Vehicle.Price,
+                    Price = ov.DailyPrice,
                     SpeedKmh = ov.Vehicle.SpeedKmh,
                     EngineCapacityCc = ov.Vehicle.EngineCapacityCc,
                     ReceivedFromOwner = ov.ReceivedFromOwner,
@@ -113,7 +113,7 @@ namespace Application.Features.Order.Query.GetMyMerchantOrderDetailQuery
                     .Where(ov =>
                         ov.Vehicle.MerchantId == merchant.MerchantId
                         && ov.MerchantResponseStatus != MerchantVehicleResponseStatus.Declined)
-                    .Sum(ov => ov.Vehicle.Price * days);
+                    .Sum(ov => ov.DailyPrice * days);
             var commissionTotal = paymentDetails.Count > 0
                 ? paymentDetails.Sum(p => p.CompanyCommissionAmount)
                 : Domain.Models.MerchantOrderPaymentDetail.ComputeCompanyCommission(rentalTotal, merchant.CompanyCommissionPercent);

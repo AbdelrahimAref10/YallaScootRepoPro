@@ -37,7 +37,7 @@ namespace Application.Features.Auth.Command.RegisterCommand
 
             if (appRole == AppRole.Customer)
             {
-                // Same rules as a customer created by the admin: number with country code, email required.
+                // Same rules as a customer created by the admin: code + number as digits (no "+"), email required.
                 request.MobileNumber = Application.Common.MobileNumberPolicy.Normalize(request.MobileNumber);
                 var mobileResult = Application.Common.MobileNumberPolicy.Validate(request.MobileNumber);
                 if (mobileResult.IsFailure)

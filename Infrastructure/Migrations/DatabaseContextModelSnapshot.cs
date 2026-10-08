@@ -1951,6 +1951,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("CreatedDate");
 
+                    b.Property<decimal>("DailyPrice")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("DailyPrice");
+
                     b.Property<bool>("DeliveredToCustomer")
                         .HasColumnType("bit")
                         .HasColumnName("DeliveredToCustomer");

@@ -175,7 +175,7 @@ namespace Application.Features.Order.Command.UpdateOrderStateCommand
                         order.OrderId,
                         vehicle.MerchantId,
                         vehicle.VehicleId,
-                        order.CalculateVehicleRental(vehicle.Price),
+                        order.CalculateVehicleRental(ov.DailyPrice),
                         actor,
                         commissionByMerchant.GetValueOrDefault(vehicle.MerchantId)),
                     cancellationToken);

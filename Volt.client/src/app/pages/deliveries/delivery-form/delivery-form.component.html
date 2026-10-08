@@ -124,6 +124,14 @@
           </label>
           <p class="entity-form__hint">{{ 'deliveries.isActiveHint' | t }}</p>
         </div>
+        <div class="entity-form__field">
+          <label class="entity-form__label" for="rf-debt-limit">{{ 'deliveries.debtLimitLabel' | t }}</label>
+          <input id="rf-debt-limit" type="number" min="0" step="0.01" formControlName="cashDebtLimit" class="entity-form__input rf-ltr" [placeholder]="'deliveries.noDebtLimit' | t" />
+          @if (deliveryForm.get('cashDebtLimit')?.invalid && deliveryForm.get('cashDebtLimit')?.touched) {
+            <p class="entity-form__error">{{ 'deliveries.debtLimitInvalid' | t }}</p>
+          }
+          <p class="entity-form__hint">{{ 'deliveries.debtLimitHint' | t }}</p>
+        </div>
       </section>
       <!-- 04 Photo -->
       <section class="rf-card">

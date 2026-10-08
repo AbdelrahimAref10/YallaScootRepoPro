@@ -336,7 +336,10 @@
       "deactivateConfirm": "{{name}} will not be able to sign in. Continue?",
       "deleteTitle": "Delete staff member",
       "deleteConfirm": "Delete {{name}}? They will lose access immediately."
-    }
+    },
+    "yourTurn": "Your turn",
+    "nextConfirmVehicles": "Confirm the vehicles you can provide for this order.",
+    "nextHandover": "A rider is on the way: hand over the vehicles when they arrive."
   },
   "dashboard": {
     "welcome": "Welcome back, {{name}}"
@@ -1386,7 +1389,18 @@
     "assignAnyway": "Assign anyway",
     "backToRiders": "Back",
     "assignCashDebtLimitError": "A cash order's delivery trip can't go to a rider at his cash debt limit; he must remit collected cash first: {{riders}}",
-    "assignCashDebtLimitErrorShort": "A cash order's delivery trip can't go to a rider at his cash debt limit; he must remit collected cash first."
+    "assignCashDebtLimitErrorShort": "A cash order's delivery trip can't go to a rider at his cash debt limit; he must remit collected cash first.",
+    "reviewDates": "Dates",
+    "reviewDuration": "Duration",
+    "reviewSummary": "Price summary",
+    "backToEdit": "Back to edit",
+    "createdTitle": "Order created!",
+    "createdMessage": "The booking for {{customer}} is confirmed. Opening the order details…",
+    "openOrderNow": "Open the order now",
+    "vehiclesLabel": "Vehicles",
+    "merchantsUnit": "merchants",
+    "call": "Call",
+    "eyebrow": "Operations center"
   },
   "settlements": {
     "typePayDeliveryHint": "Cash float or order payout to a rider",

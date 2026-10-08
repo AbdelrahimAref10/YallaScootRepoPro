@@ -97,7 +97,8 @@ export class DeliveryFormComponent implements OnInit {
       cityId: [null, [Validators.required]],
       zoneId: [null, [Validators.required]],
       personalImage: [''],
-      isActive: [true]
+      isActive: [true],
+      cashDebtLimit: [null as number | null, [Validators.min(0)]]
     });
 
     this.loadCities();
@@ -165,6 +166,7 @@ export class DeliveryFormComponent implements OnInit {
           cityId: delivery.cityId || null,
           zoneId: delivery.zoneId || null,
           isActive: delivery.isActive,
+          cashDebtLimit: delivery.cashDebtLimit ?? null,
           personalImage: ''
         }, { emitEvent: false });
         this.loadZones(delivery.cityId || null, delivery.zoneId || null);
@@ -217,6 +219,8 @@ export class DeliveryFormComponent implements OnInit {
     this.errorMessage = '';
     const value = this.deliveryForm.getRawValue();
     const cityId = Number(value.cityId);
+    // Empty input means no limit.
+    const cashDebtLimit = value.cashDebtLimit === null || value.cashDebtLimit === '' ? null : Number(value.cashDebtLimit);
 
     if (this.isEditMode && this.deliveryId) {
       const command = new AdminUpdateDeliveryCommand();
@@ -229,6 +233,7 @@ export class DeliveryFormComponent implements OnInit {
       command.personalImage = value.personalImage || this.existingPersonalImage || null;
       command.isActive = !!value.isActive;
       command.password = value.password || null;
+      command.cashDebtLimit = cashDebtLimit;
 
       this.deliveryClient.update(this.deliveryId, command).subscribe({
         next: () => this.router.navigate(['/main/deliveries']),
@@ -253,6 +258,7 @@ export class DeliveryFormComponent implements OnInit {
     create.zoneId = Number(value.zoneId);
     create.personalImage = value.personalImage || null;
     create.isActive = !!value.isActive;
+    create.cashDebtLimit = cashDebtLimit;
 
     this.deliveryClient.create(create).subscribe({
       next: () => this.router.navigate(['/main/deliveries']),

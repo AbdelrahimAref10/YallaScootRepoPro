@@ -38,6 +38,9 @@ namespace Application.Features.Auth.Command.ForgetPasswordCommand
 
         public async Task<Result<MessageResponse>> Handle(ForgetPasswordCommand request, CancellationToken cancellationToken)
         {
+            if (!string.IsNullOrWhiteSpace(request.MobileNumber))
+                request.MobileNumber = Application.Common.MobileNumberPolicy.Normalize(request.MobileNumber);
+
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             if (validationResult.IsFailure)
                 return Result.Failure<MessageResponse>(validationResult.Error);

@@ -18732,6 +18732,7 @@ export class AdminCreateDeliveryCommand {
     zoneId!: number;
     personalImage!: string | null;
     isActive!: boolean;
+    cashDebtLimit!: number | null;
 
     init(_data?: any) {
         if (_data) {
@@ -18744,6 +18745,7 @@ export class AdminCreateDeliveryCommand {
             this.zoneId = _data["zoneId"] !== undefined ? _data["zoneId"] : <any>null;
             this.personalImage = _data["personalImage"] !== undefined ? _data["personalImage"] : <any>null;
             this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
+            this.cashDebtLimit = _data["cashDebtLimit"] !== undefined ? _data["cashDebtLimit"] : <any>null;
         }
     }
 
@@ -18765,6 +18767,7 @@ export class AdminCreateDeliveryCommand {
         data["zoneId"] = this.zoneId !== undefined ? this.zoneId : <any>null;
         data["personalImage"] = this.personalImage !== undefined ? this.personalImage : <any>null;
         data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
+        data["cashDebtLimit"] = this.cashDebtLimit !== undefined ? this.cashDebtLimit : <any>null;
         return data;
     }
 }
@@ -18779,6 +18782,7 @@ export class AdminUpdateDeliveryCommand {
     personalImage!: string | null;
     isActive!: boolean;
     password!: string | null;
+    cashDebtLimit!: number | null;
 
     init(_data?: any) {
         if (_data) {
@@ -18791,6 +18795,7 @@ export class AdminUpdateDeliveryCommand {
             this.personalImage = _data["personalImage"] !== undefined ? _data["personalImage"] : <any>null;
             this.isActive = _data["isActive"] !== undefined ? _data["isActive"] : <any>null;
             this.password = _data["password"] !== undefined ? _data["password"] : <any>null;
+            this.cashDebtLimit = _data["cashDebtLimit"] !== undefined ? _data["cashDebtLimit"] : <any>null;
         }
     }
 
@@ -18812,6 +18817,7 @@ export class AdminUpdateDeliveryCommand {
         data["personalImage"] = this.personalImage !== undefined ? this.personalImage : <any>null;
         data["isActive"] = this.isActive !== undefined ? this.isActive : <any>null;
         data["password"] = this.password !== undefined ? this.password : <any>null;
+        data["cashDebtLimit"] = this.cashDebtLimit !== undefined ? this.cashDebtLimit : <any>null;
         return data;
     }
 }

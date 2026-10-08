@@ -40,6 +40,8 @@ namespace Application.Features.Auth.Command.ResendActivationCodeCommand
             if (string.IsNullOrWhiteSpace(request.MobileNumber))
                 return Result.Failure<MessageResponse>("Mobile number is required");
 
+            request.MobileNumber = Application.Common.MobileNumberPolicy.Normalize(request.MobileNumber);
+
             var code = _invitationCodeService.GenerateInvitationCode();
             int verificationBy = string.IsNullOrWhiteSpace(request.Email)
                 ? (int)VerificationBy.Phone

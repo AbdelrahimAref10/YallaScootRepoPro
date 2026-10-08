@@ -14717,6 +14717,11 @@
           },
           "isActive": {
             "type": "boolean"
+          },
+          "cashDebtLimit": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
           }
         }
       },
@@ -14754,6 +14759,11 @@
           },
           "password": {
             "type": "string",
+            "nullable": true
+          },
+          "cashDebtLimit": {
+            "type": "number",
+            "format": "decimal",
             "nullable": true
           }
         }

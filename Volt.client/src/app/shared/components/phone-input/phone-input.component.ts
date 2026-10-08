@@ -11,8 +11,9 @@ interface Country {
 }
 
 /**
- * Country code dropdown + local number. The form value is the full international
- * number ("+201001234567"); empty while no local number is typed.
+ * Country code dropdown + local number. The form value is the country code followed by
+ * the local number as typed, digits only without a "+" (Egypt + 010500 → "20010500");
+ * empty while no local number is typed.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -65,13 +66,14 @@ export class PhoneInputComponent implements ControlValueAccessor {
 
   writeValue(value: string | null): void {
     this.cdr.markForCheck();
-    const raw = (value ?? '').replace(/[\s-]/g, '');
-    if (!raw.startsWith('+')) {
-      this.localNumber = raw;
+    // Accepts "201001234567" as well as older "+201001234567" values.
+    const digits = (value ?? '').replace(/[\s-]/g, '').replace(/^\+/, '');
+    // A leading 0 (or nothing) is a local number, not a country code.
+    if (!digits || digits.startsWith('0')) {
+      this.localNumber = digits;
       return;
     }
-    // Longest matching dial code wins (+1876 Jamaica before +1).
-    const digits = raw.slice(1);
+    // Longest matching dial code wins (1876 Jamaica before 1).
     const match = [...COUNTRY_DIAL_CODES]
       .filter(([, dial]) => digits.startsWith(dial))
       .sort((a, b) => b[1].length - a[1].length || this.rank(a[0]) - this.rank(b[0]))[0];
@@ -114,7 +116,7 @@ export class PhoneInputComponent implements ControlValueAccessor {
   }
 
   onNumberInput(value: string): void {
-    // Digits only; a leading 0 is the local trunk prefix and is not part of the international number.
+    // Digits only.
     this.localNumber = value.replace(/\D/g, '');
     this.emit();
   }
@@ -137,8 +139,9 @@ export class PhoneInputComponent implements ControlValueAccessor {
   }
 
   private emit(): void {
-    const local = this.localNumber.replace(/^0+/, '');
-    this.onChange(local ? `+${this.selected().dial}${local}` : '');
+    // The local number is kept as typed, leading 0 included: Egypt + 010500 → 20010500.
+    const local = this.localNumber;
+    this.onChange(local ? `${this.selected().dial}${local}` : '');
   }
 
   /** Shared codes (+1, +7): prefer the more common country. */

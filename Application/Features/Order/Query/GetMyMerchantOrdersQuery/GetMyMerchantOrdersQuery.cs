@@ -138,7 +138,7 @@ namespace Application.Features.Order.Query.GetMyMerchantOrdersQuery
                     && ov.Vehicle.MerchantId == merchant.MerchantId
                     && ov.MerchantResponseStatus != MerchantVehicleResponseStatus.Declined)
                 .GroupBy(ov => ov.OrderId)
-                .Select(g => new { OrderId = g.Key, Daily = g.Sum(x => x.Vehicle.Price) })
+                .Select(g => new { OrderId = g.Key, Daily = g.Sum(x => x.DailyPrice) })
                 .ToDictionaryAsync(x => x.OrderId, x => x.Daily, cancellationToken);
 
             var payments = await _context.MerchantOrderPaymentDetails

@@ -216,7 +216,8 @@ namespace Application.Features.Order.Command.AdminCreateOrderCommand
                 foreach (var vehicleId in vehicleIds)
                 {
                     var fee = feesByVehicle.First(f => f.VehicleId == vehicleId).Fee;
-                    _context.OrderVehicles.Add(Domain.Models.OrderVehicle.Create(order.OrderId, vehicleId, fee, actor));
+                    var dailyPrice = vehicles.First(v => v.VehicleId == vehicleId).Price;
+                    _context.OrderVehicles.Add(Domain.Models.OrderVehicle.Create(order.OrderId, vehicleId, dailyPrice, fee, actor));
                 }
 
                 foreach (var vehicle in vehicles)

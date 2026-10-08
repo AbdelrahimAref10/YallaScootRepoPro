@@ -345,7 +345,7 @@ namespace Domain.Models
             var days = InclusiveReservationDays(ReservationDateFrom, ReservationDateTo);
             var deliveryFees = links.Sum(ov => ov.DeliveryFee);
             var pricing = CalculatePricing(
-                links.Select(ov => ov.Vehicle.Price).ToList(),
+                links.Select(ov => ov.DailyPrice).ToList(),
                 city,
                 IsUrgent,
                 days,

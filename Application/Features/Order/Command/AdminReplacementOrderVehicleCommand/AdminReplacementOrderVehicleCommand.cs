@@ -128,7 +128,7 @@ namespace Application.Features.Order.Command.AdminReplacementOrderVehicleCommand
 
             _context.OrderVehicles.Remove(oldLink);
             order.OrderVehicles.Remove(oldLink);
-            var newLink = OrderVehicle.Create(order.OrderId, request.NewVehicleId, 0, modifiedBy);
+            var newLink = OrderVehicle.Create(order.OrderId, request.NewVehicleId, newVehicle.Price, 0, modifiedBy);
             newLink.AttachVehicle(newVehicle);
             await _context.OrderVehicles.AddAsync(newLink, cancellationToken);
             order.OrderVehicles.Add(newLink);

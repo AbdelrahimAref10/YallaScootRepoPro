@@ -85,6 +85,102 @@ namespace Application.Features.Reports.Merchant
         }
     }
 
+    /// <summary>
+    /// One row per vehicle on each of the merchant's orders: its daily price, the company's percent and cut,
+    /// and the merchant's net. Prices come from <c>OrderVehicle.DailyPrice</c> and, once the order is Confirmed,
+    /// amounts and percent from the payout snapshot, so later price or percent changes don't alter old orders.
+    /// </summary>
+    public class MerchantOrderVehiclesReport : IReport
+    {
+        private readonly DatabaseContext _context;
+        public MerchantOrderVehiclesReport(DatabaseContext context) => _context = context;
+
+        public string Key => "order-vehicles";
+        public ReportScope Scope => ReportScope.Merchant;
+
+        public async Task<ReportResultDto> RunAsync(ReportFilter f, ReportContext context, CancellationToken ct)
+        {
+            var merchantId = context.MerchantId!.Value;
+            var query = _context.OrderVehicles.AsNoTracking().Where(ov =>
+                ov.Vehicle.MerchantId == merchantId && ov.MerchantResponseStatus != MerchantVehicleResponseStatus.Declined);
+            if (f.From.HasValue) query = query.Where(ov => ov.Order.CreatedDate >= f.From.Value);
+            if (f.ToExclusive.HasValue) query = query.Where(ov => ov.Order.CreatedDate < f.ToExclusive.Value);
+            if (ReportFilter.Has(f.OrderStates)) query = query.Where(ov => f.OrderStates!.Contains(ov.Order.OrderState));
+            if (ReportFilter.Has(f.VehicleIds)) query = query.Where(ov => f.VehicleIds!.Contains(ov.VehicleId));
+
+            var lines = await query.OrderByDescending(ov => ov.Order.CreatedDate).ThenBy(ov => ov.Vehicle.Name)
+                .Select(ov => new
+                {
+                    ov.OrderId,
+                    ov.Order.OrderCode,
+                    ov.Order.CreatedDate,
+                    ov.Order.ReservationDateFrom,
+                    ov.Order.ReservationDateTo,
+                    ov.Order.OrderState,
+                    ov.VehicleId,
+                    ov.Vehicle.VehicleCode,
+                    Vehicle = ov.Vehicle.Name,
+                    ov.DailyPrice
+                })
+                .ToListAsync(ct);
+
+            var orderIds = lines.Select(l => l.OrderId).Distinct().ToList();
+            var snapshots = await _context.MerchantOrderPaymentDetails.AsNoTracking()
+                .Where(p => p.MerchantId == merchantId && orderIds.Contains(p.OrderId))
+                .ToDictionaryAsync(p => (p.OrderId, p.VehicleId), ct);
+            // Until the order is Confirmed the percent is not fixed yet: use the merchant's current one.
+            var currentPercent = await _context.Merchants.AsNoTracking()
+                .Where(m => m.MerchantId == merchantId)
+                .Select(m => m.CompanyCommissionPercent)
+                .FirstAsync(ct);
+
+            var b = new ReportBuilder(Key, "My orders by vehicle")
+                .Text("orderCode", "Order").DateTime("date", "Date").Badge("orderState", "Status")
+                .Text("vehicleCode", "Code").Text("vehicle", "Vehicle")
+                .Money("dailyPrice", "Daily price", total: false).Number("days", "Days", total: false).Money("rental", "Rental")
+                .Text("companyPercent", "Yalla Scoot %").Money("companyProfit", "Yalla Scoot profit").Money("net", "My net");
+
+            foreach (var l in lines)
+            {
+                var days = Domain.Models.Order.InclusiveReservationDays(l.ReservationDateFrom, l.ReservationDateTo);
+                decimal rental, percent, commission;
+                if (snapshots.TryGetValue((l.OrderId, l.VehicleId), out var s))
+                {
+                    rental = s.VehicleRental;
+                    percent = s.CompanyCommissionPercent;
+                    commission = s.CompanyCommissionAmount;
+                }
+                else
+                {
+                    rental = l.DailyPrice * days;
+                    percent = currentPercent;
+                    commission = Domain.Models.MerchantOrderPaymentDetail.ComputeCompanyCommission(rental, percent);
+                }
+
+                b.Row(new()
+                {
+                    ["orderCode"] = l.OrderCode,
+                    ["date"] = l.CreatedDate,
+                    ["orderState"] = l.OrderState.ToString(),
+                    ["vehicleCode"] = l.VehicleCode,
+                    ["vehicle"] = l.Vehicle,
+                    ["dailyPrice"] = l.DailyPrice,
+                    ["days"] = days,
+                    ["rental"] = rental,
+                    ["companyPercent"] = $"{percent:0.##}%",
+                    ["companyProfit"] = commission,
+                    ["net"] = rental - commission
+                });
+            }
+
+            return b.Kpi("orders", "Orders", orderIds.Count, ReportColumnType.Number)
+                .Kpi("vehicles", "Vehicles", lines.Count, ReportColumnType.Number)
+                .Kpi("companyProfit", "Yalla Scoot profit", b.Sum("companyProfit"))
+                .Kpi("net", "My net", b.Sum("net"))
+                .Build();
+        }
+    }
+
     /// <summary>The merchant's account statement with a running balance.</summary>
     public class MerchantStatementReport : IReport
     {

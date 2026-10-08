@@ -90,7 +90,7 @@ namespace Application.Features.Customer.Query.SearchCustomersByMobileQuery
                 return string.Empty;
             }
 
-            return value.Trim().Replace(" ", string.Empty);
+            return Application.Common.MobileNumberPolicy.Normalize(value);
         }
 
         private static int CountDigits(string value)
