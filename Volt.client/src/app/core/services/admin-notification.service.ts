@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { SignalRService, AdminNotificationDto } from './signalr.service';
+import { NotificationSoundService } from './notification-sound.service';
 
 export interface AdminNotification {
   adminNotificationId: number;
@@ -34,13 +35,14 @@ export class AdminNotificationService {
 
   constructor(
     private http: HttpClient,
-    private signalRService: SignalRService
+    private signalRService: SignalRService,
+    private sound: NotificationSoundService
   ) {
     // Subscribe to SignalR notifications
     this.signalRService.ListenForNotifications().subscribe(notification => {
       if (notification) {
         console.log('📥 Adding notification from SignalR:', notification);
-        this.playNotificationSound();
+        this.sound.play();
         const mapped = this.mapToNotification(notification);
         this.addNotification(mapped);
         this.incomingSubject.next(mapped);
@@ -164,19 +166,6 @@ export class AdminNotificationService {
       8: 'order'
     };
     return types[type] || 'info';
-  }
-
-  // Play notification sound
-  private playNotificationSound(): void {
-    try {
-      const audio = new Audio('assets/sounds/notification.wav');
-      audio.volume = 0.9;
-      audio.play().catch(error => {
-        console.warn('Could not play notification sound:', error);
-      });
-    } catch (error) {
-      console.warn('Error creating audio element:', error);
-    }
   }
 }
 

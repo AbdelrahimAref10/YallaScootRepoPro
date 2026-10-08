@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { AuthService } from './auth.service';
 import { SignalRService, MerchantNotificationDto } from './signalr.service';
+import { NotificationSoundService } from './notification-sound.service';
 
 export interface MerchantNotification {
   merchantNotificationId: number;
@@ -36,7 +37,8 @@ export class MerchantNotificationService {
   constructor(
     private http: HttpClient,
     private signalRService: SignalRService,
-    private authService: AuthService
+    private authService: AuthService,
+    private sound: NotificationSoundService
   ) {
     this.signalRService.ListenForMerchantNotifications().subscribe(notification => {
       if (!notification) {
@@ -49,7 +51,7 @@ export class MerchantNotificationService {
       }
 
       const mapped = this.mapToNotification(notification);
-      this.playNotificationSound();
+      this.sound.play();
       this.addNotification(mapped);
       this.incomingSubject.next(mapped);
     });
@@ -136,17 +138,5 @@ export class MerchantNotificationService {
       readAt: dto.readAt ? new Date(dto.readAt) : undefined,
       createdDate: new Date(dto.createdDate)
     };
-  }
-
-  private playNotificationSound(): void {
-    try {
-      const audio = new Audio('assets/sounds/notification.wav');
-      audio.volume = 0.9;
-      audio.play().catch(error => {
-        console.warn('Could not play notification sound:', error);
-      });
-    } catch (error) {
-      console.warn('Error creating audio element:', error);
-    }
   }
 }
