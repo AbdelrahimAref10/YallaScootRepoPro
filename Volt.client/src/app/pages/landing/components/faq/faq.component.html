@@ -1,0 +1,58 @@
+<section id="faq" class="bg-white py-20 lg:py-24">
+  <div class="container-fluid grid items-start gap-8 lg:grid-cols-2">
+    <div class="relative" appReveal>
+      <div class="relative h-[460px] overflow-hidden rounded-3xl bg-mist">
+        <app-photo file="faq.jpg" [alt]="'FAQ.ALT' | translate">
+          <div
+            class="h-full w-full bg-gradient-to-b from-[#c9d2c4] to-[#8ea0b0]"
+          ></div>
+        </app-photo>
+      </div>
+    </div>
+
+    <div appReveal>
+      <p class="eyebrow">{{ "FAQ.KICKER" | translate }}</p>
+      <h2
+        class="mt-3 font-landing-display text-4xl font-extrabold tracking-tight sm:text-5xl"
+      >
+        {{ "FAQ.TITLE" | translate }}
+      </h2>
+      <div class="mt-8 space-y-3">
+        <div *ngFor="let item of items; let i = index">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-4 rounded-xl px-5 py-4 text-left font-extrabold"
+            [class.bg-yalla-red]="open === i"
+            [class.text-white]="open === i"
+            [class.bg-mist]="open !== i"
+            (click)="toggle(i)"
+            [attr.aria-expanded]="open === i"
+          >
+            <span>{{ "FAQ.Q" + item | translate }}</span>
+            <svg
+              class="h-4 w-4 shrink-0"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              [class.rotate-180]="open !== i"
+            >
+              <path
+                d="M5 12.5L10 7.5L15 12.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <div class="faq-panel" [class.open]="open === i">
+            <div>
+              <p class="px-2 py-4 text-sm leading-relaxed text-inksoft">
+                {{ "FAQ.A" + item | translate }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,43 @@
+<section id="top" class="relative flex min-h-screen items-center overflow-hidden bg-[#3a1216]">
+  <div class="hero-zoom absolute inset-0">
+    <app-photo file="hero.jpg" [alt]="'HERO.ALT' | translate">
+      <div class="h-full w-full bg-[radial-gradient(circle_at_30%_40%,#7a1c22,#2a0c10_70%)]"></div>
+    </app-photo>
+  </div>
+  <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-black/15"></div>
+
+  <div class="container-fluid relative z-10 pb-28 pt-32">
+    <h1 class="hero-title text-white">
+      {{ 'HERO.LINE1' | translate }}<br />
+      {{ 'HERO.LINE2' | translate }}
+    </h1>
+    <p class="mt-6 max-w-md text-base font-normal leading-relaxed text-white/85">
+      {{ 'HERO.SUB' | translate }}
+    </p>
+    <a class="lp-btn lp-btn-red mt-8" href="#about">{{ 'HERO.CTA' | translate }}</a>
+  </div>
+
+  <aside class="absolute bottom-8 right-[var(--fluid-pad)] z-10 hidden w-[280px] rounded-2xl bg-white p-5 shadow-card lg:block">
+    <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-yalla-red">{{ 'HERO.FACT_KICKER' | translate }}</p>
+    <ul class="mt-4 space-y-3">
+      <li class="flex items-center gap-3 text-sm font-semibold text-ink">
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-yalla-red/10 text-yalla-red" aria-hidden="true">
+          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.8a5.7 5.7 0 0 0-5.7 5.7c0 4.3 5.7 10.7 5.7 10.7s5.7-6.4 5.7-10.7A5.7 5.7 0 0 0 10 1.8Zm0 7.6a1.9 1.9 0 1 1 0-3.8 1.9 1.9 0 0 1 0 3.8Z"/></svg>
+        </span>
+        {{ 'HERO.FACT1' | translate }}
+      </li>
+      <li class="flex items-center gap-3 text-sm font-semibold text-ink">
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-yalla-red/10 text-yalla-red" aria-hidden="true">
+          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6.5 2.8c.3-.7 1.2-.9 1.8-.5l1.5 1.1c.5.4.7 1.1.4 1.7L9.3 6.6a1 1 0 0 0 .1.9l2.1 2.1a1 1 0 0 0 .9.1l1.5-.9c.6-.3 1.3-.1 1.7.4l1.1 1.5c.4.6.2 1.5-.5 1.8l-1.6.7c-.8.3-1.6.4-2.4.1A12.4 12.4 0 0 1 5.7 7.3c-.3-.8-.2-1.6.1-2.4l.7-1.6Z"/></svg>
+        </span>
+        <a class="hover:text-yalla-red" href="tel:01113313311">{{ 'HERO.FACT2' | translate }}</a>
+      </li>
+      <li class="flex items-center gap-3 text-sm font-semibold text-ink">
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-yalla-red/10 text-yalla-red" aria-hidden="true">
+          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm1 8.2 3.1 1.8-.8 1.3L9 11V5h2v5.2Z"/></svg>
+        </span>
+        {{ 'HERO.FACT3' | translate }}
+      </li>
+    </ul>
+  </aside>
+</section>

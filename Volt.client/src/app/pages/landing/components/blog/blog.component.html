@@ -1,0 +1,23 @@
+<section id="ride" class="bg-white py-20 lg:py-24">
+  <div class="container-fluid">
+    <div class="max-w-2xl" appReveal>
+      <p class="eyebrow">{{ 'RIDE.KICKER' | translate }}</p>
+      <h2 class="mt-3 font-landing-display text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">{{ 'RIDE.TITLE' | translate }}</h2>
+      <p class="mt-4 leading-relaxed text-inksoft">{{ 'RIDE.LEAD' | translate }}</p>
+    </div>
+
+    <div class="mt-12 grid gap-5 lg:grid-cols-3">
+      <article *ngFor="let step of steps" class="relative min-h-[26rem] overflow-hidden rounded-3xl bg-night" appReveal>
+        <app-photo [file]="step.file" [alt]="step.title | translate">
+          <div class="h-full w-full bg-gradient-to-br from-[#7a1820] to-[#1a0c10]"></div>
+        </app-photo>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/10"></div>
+        <div class="absolute inset-x-0 bottom-0 p-6 text-white sm:p-7">
+          <p class="font-landing-display text-6xl font-extrabold leading-none tracking-tight">{{ step.n | translate }}</p>
+          <h3 class="mt-3 font-landing-display text-2xl font-extrabold">{{ step.title | translate }}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-white/80">{{ step.body | translate }}</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>

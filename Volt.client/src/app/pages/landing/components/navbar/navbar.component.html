@@ -1,0 +1,94 @@
+<header class="fixed inset-x-0 top-0 z-50 transition-all duration-300" [class.bg-night]="scrolled" [class.shadow-card]="scrolled">
+  <div class="container-fluid flex items-center justify-between gap-4 transition-all duration-300" [ngClass]="scrolled ? 'py-1.5' : 'py-4'">
+    <a href="#top" class="flex shrink-0 items-center">
+      <img class="w-auto transition-all duration-300" [ngClass]="scrolled ? 'h-9 sm:h-10' : 'h-16 sm:h-20'" src="assets/images/logo1.png" alt="Yalla Scoot" />
+    </a>
+
+    <nav class="hidden items-center gap-1 rounded-2xl bg-night/90 px-2 py-2 text-sm font-semibold text-white/80 lg:flex">
+      <a class="rounded-lg bg-white/10 px-3 py-2 text-white" href="#top">{{ 'NAV.HOME' | translate }}</a>
+      <a class="rounded-lg px-3 py-2 hover:text-white" href="#about">{{ 'NAV.ABOUT' | translate }}</a>
+      <a class="rounded-lg px-3 py-2 hover:text-white" href="#services">{{ 'NAV.SERVICES' | translate }}</a>
+      <a class="rounded-lg px-3 py-2 hover:text-white" href="#fleet">{{ 'NAV.VEHICLES' | translate }}</a>
+      <a class="rounded-lg px-3 py-2 hover:text-white" href="#ride">{{ 'NAV.STORIES' | translate }}</a>
+      <a class="rounded-lg px-3 py-2 hover:text-white" href="#contact">{{ 'NAV.CONTACT' | translate }}</a>
+      <span class="mx-1 h-5 w-px bg-white/20"></span>
+      <div class="relative" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-extrabold text-white"
+          [attr.aria-expanded]="langOpen"
+          aria-haspopup="listbox"
+          (click)="toggleLang($event)">
+          <ng-container *ngTemplateOutlet="flag; context: { $implicit: currentLang }"></ng-container>
+          <span>{{ currentLang.code }}</span>
+          <svg class="h-3.5 w-3.5 transition-transform" [class.rotate-180]="langOpen" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.5a1 1 0 0 1 1.4 0L10 10.9l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.9a1 1 0 0 1 0-1.4Z"/></svg>
+        </button>
+        <ul *ngIf="langOpen" class="absolute right-0 top-[calc(100%+12px)] z-50 min-w-[196px] overflow-hidden rounded-xl bg-white py-1.5 text-ink shadow-card" role="listbox">
+          <li *ngFor="let lang of langs">
+            <button
+              type="button"
+              class="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-semibold text-ink hover:bg-mist"
+              [class.bg-mist]="langService.currentLang === lang.id"
+              [attr.aria-selected]="langService.currentLang === lang.id"
+              role="option"
+              (click)="switchLang(lang.id)">
+              <ng-container *ngTemplateOutlet="flag; context: { $implicit: lang }"></ng-container>
+              <span class="flex-1">{{ lang.label }}</span>
+              <svg *ngIf="langService.currentLang === lang.id" class="h-4 w-4 text-yalla-red" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.2 7.2a1 1 0 0 1-1.4 0L3.3 9.1a1 1 0 1 1 1.4-1.4l4.1 4.1 6.5-6.5a1 1 0 0 1 1.4 0Z"/></svg>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <a class="lp-btn lp-btn-red ml-1 !px-4 !py-2.5 text-sm" href="#contact">{{ 'NAV.START' | translate }}</a>
+    </nav>
+
+    <button type="button" class="grid h-11 w-11 place-items-center rounded-xl bg-night text-white lg:hidden" (click)="open = !open" [attr.aria-label]="(open ? 'NAV.CLOSE' : 'NAV.MENU') | translate">
+      <svg *ngIf="!open" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg>
+      <svg *ngIf="open" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <div *ngIf="open" class="mx-4 mb-4 rounded-2xl bg-night p-4 text-white lg:hidden">
+    <nav class="flex flex-col gap-1 text-base font-semibold">
+      <a class="rounded-lg px-3 py-3 hover:bg-white/10" href="#top" (click)="closeMenu()">{{ 'NAV.HOME' | translate }}</a>
+      <a class="rounded-lg px-3 py-3 hover:bg-white/10" href="#about" (click)="closeMenu()">{{ 'NAV.ABOUT' | translate }}</a>
+      <a class="rounded-lg px-3 py-3 hover:bg-white/10" href="#services" (click)="closeMenu()">{{ 'NAV.SERVICES' | translate }}</a>
+      <a class="rounded-lg px-3 py-3 hover:bg-white/10" href="#fleet" (click)="closeMenu()">{{ 'NAV.VEHICLES' | translate }}</a>
+      <a class="rounded-lg px-3 py-3 hover:bg-white/10" href="#ride" (click)="closeMenu()">{{ 'NAV.STORIES' | translate }}</a>
+      <a class="rounded-lg px-3 py-3 hover:bg-white/10" href="#contact" (click)="closeMenu()">{{ 'NAV.CONTACT' | translate }}</a>
+      <div class="relative px-3 py-2" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="flex w-full items-center gap-3 rounded-lg bg-white px-3 py-2.5 text-sm font-semibold text-ink"
+          [attr.aria-expanded]="langOpen"
+          aria-haspopup="listbox"
+          (click)="toggleLang($event)">
+          <ng-container *ngTemplateOutlet="flag; context: { $implicit: currentLang }"></ng-container>
+          <span class="flex-1 text-left">{{ currentLang.label }}</span>
+          <svg class="h-4 w-4 transition-transform" [class.rotate-180]="langOpen" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.2 7.5a1 1 0 0 1 1.4 0L10 10.9l3.4-3.4a1 1 0 1 1 1.4 1.4l-4.1 4.1a1 1 0 0 1-1.4 0L5.2 8.9a1 1 0 0 1 0-1.4Z"/></svg>
+        </button>
+        <ul *ngIf="langOpen" class="absolute left-3 right-3 top-[calc(100%+8px)] z-50 overflow-hidden rounded-xl bg-white py-1.5 text-ink shadow-card" role="listbox">
+          <li *ngFor="let lang of langs">
+            <button
+              type="button"
+              class="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm font-semibold hover:bg-mist"
+              [class.bg-mist]="langService.currentLang === lang.id"
+              role="option"
+              (click)="switchLang(lang.id)">
+              <ng-container *ngTemplateOutlet="flag; context: { $implicit: lang }"></ng-container>
+              <span class="flex-1">{{ lang.label }}</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <a class="lp-btn lp-btn-red mt-2" href="#contact" (click)="closeMenu()">{{ 'NAV.START' | translate }}</a>
+    </nav>
+  </div>
+</header>
+
+<ng-template #flag let-lang>
+  <span class="grid h-4 w-6 shrink-0 place-items-center overflow-hidden rounded-[3px] bg-white/20 text-[9px] font-extrabold leading-none">
+    <img *ngIf="!missingFlags[lang.flag]" class="h-full w-full object-cover" [src]="'assets/images/' + lang.flag" alt="" (error)="onFlagError(lang.flag)" />
+    <span *ngIf="missingFlags[lang.flag]">{{ lang.code }}</span>
+  </span>
+</ng-template>

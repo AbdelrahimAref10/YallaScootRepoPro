@@ -1,0 +1,29 @@
+<section id="services" class="bg-mist py-20 lg:py-28">
+  <div class="container-fluid">
+    <div class="grid items-end gap-6 lg:grid-cols-[1.4fr_1fr]" appReveal>
+      <div>
+        <p class="eyebrow">{{ 'SERVICES.KICKER' | translate }}</p>
+        <h2 class="mt-3 max-w-xl font-landing-display text-4xl font-extrabold leading-[0.95] tracking-tight sm:text-6xl">{{ 'SERVICES.TITLE' | translate }}</h2>
+      </div>
+      <p class="max-w-md text-base leading-relaxed text-inksoft lg:justify-self-end lg:pb-2">{{ 'SERVICES.LEAD' | translate }}</p>
+    </div>
+
+    <article class="mt-12 grid gap-8 rounded-3xl bg-night p-8 text-white sm:p-10 lg:grid-cols-[auto_1fr_auto] lg:items-end lg:p-12" appReveal>
+      <p class="font-landing-display text-7xl font-extrabold leading-none text-yalla-red sm:text-8xl">01</p>
+      <div>
+        <h3 class="font-landing-display text-3xl font-extrabold leading-tight sm:text-4xl">{{ 'SERVICES.S1T' | translate }}</h3>
+        <p class="mt-3 max-w-xl text-base leading-relaxed text-white/75">{{ 'SERVICES.S1D' | translate }}</p>
+      </div>
+      <a class="lp-btn bg-white text-ink hover:bg-yalla-yellow" href="#ride">{{ 'NAV.STORIES' | translate }}</a>
+    </article>
+
+    <div class="mt-5 grid gap-5 lg:grid-cols-3">
+      <article *ngFor="let item of items.slice(1)" class="flex flex-col rounded-3xl bg-white p-7 shadow-card" appReveal>
+        <p class="font-landing-display text-4xl font-extrabold leading-none text-yalla-red">{{ item.n }}</p>
+        <h3 class="mt-5 font-landing-display text-2xl font-extrabold leading-tight">{{ item.title | translate }}</h3>
+        <p class="mt-3 flex-1 text-sm leading-relaxed text-inksoft">{{ item.body | translate }}</p>
+        <a class="mt-6 inline-flex items-center gap-1 text-sm font-extrabold text-yalla-red" [href]="item.href">{{ 'SERVICES.MORE' | translate }} <span aria-hidden="true">&gt;&gt;</span></a>
+      </article>
+    </div>
+  </div>
+</section>

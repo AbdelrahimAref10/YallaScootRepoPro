@@ -1,0 +1,74 @@
+<section id="about" class="bg-white py-20 lg:py-24">
+  <div class="container-fluid">
+    <div class="grid items-start gap-10 lg:grid-cols-[0.9fr_1.1fr]" appReveal>
+      <div class="lg:pt-10">
+        <p class="eyebrow">{{ "ABOUT.KICKER" | translate }}</p>
+      </div>
+      <div>
+        <h2
+          class="font-landing-display text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl"
+        >
+          {{ "ABOUT.TITLE" | translate }}
+        </h2>
+        <p class="mt-5 leading-relaxed text-inksoft">
+          {{ "ABOUT.P1" | translate }}
+        </p>
+        <p class="mt-4 leading-relaxed text-inksoft">
+          {{ "ABOUT.P2" | translate }}
+        </p>
+      </div>
+    </div>
+
+    <div class="relative sm:mt-28 mt-10" appReveal>
+      <div
+        class="relative overflow-hidden rounded-2xl bg-mist sm:h-80 md:h-[390px]"
+      >
+        <app-photo file="about-wide.jpg" [alt]="'ABOUT.ALT_WIDE' | translate">
+          <div
+            class="h-full w-full bg-gradient-to-r from-[#d9dde3] to-[#eef1f4]"
+          ></div>
+        </app-photo>
+      </div>
+      <div
+        class="absolute -top-14 left-4 w-44 overflow-hidden rounded-2xl bg-white shadow-card sm:-top-16 sm:left-8 sm:w-64"
+      >
+        <div class="relative aspect-[3/4]">
+          <app-photo
+            file="about-rider.jpg"
+            [alt]="'ABOUT.ALT_RIDER' | translate"
+          >
+            <div class="h-full w-full bg-[#d5dbe3]"></div>
+          </app-photo>
+          <span
+            class="absolute left-1/2 top-1/2 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white shadow"
+            aria-hidden="true"
+          >
+            <svg
+              class="ml-1 h-5 w-5 text-yalla-red"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path d="M6 4.5v11l10-5.5-10-5.5z" />
+            </svg>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <dl
+      class="mx-auto mt-10 grid max-w-3xl grid-cols-2 justify-items-center gap-x-8 gap-y-8 text-center lg:max-w-4xl lg:grid-cols-4"
+      appReveal
+    >
+      <div *ngFor="let stat of stats">
+        <dt
+          class="font-landing-display text-4xl font-extrabold tracking-tight text-ink sm:text-5xl"
+        >
+          {{ stat.n | translate }}
+        </dt>
+        <dd class="mt-1 text-sm font-bold text-yalla-red">
+          {{ stat.l | translate }}
+        </dd>
+      </div>
+    </dl>
+  </div>
+</section>

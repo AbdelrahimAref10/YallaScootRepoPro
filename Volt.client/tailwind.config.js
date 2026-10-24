@@ -11,8 +11,25 @@ module.exports = {
         heading: ['Montserrat', 'Manrope', 'Cairo', 'sans-serif'],
         display: ['Teko', 'Montserrat', 'Cairo', 'sans-serif'],
         arabic: ['Cairo', 'Manrope', 'system-ui', 'sans-serif'],
+        // Landing page headings (Montserrat, as on the standalone landing site).
+        'landing-display': ['Montserrat', 'Manrope', 'sans-serif'],
+      },
+      boxShadow: {
+        card: '0 18px 40px rgba(22, 19, 22, 0.08)',
       },
       colors: {
+        // Landing page palette.
+        ink: '#1B1F24',
+        inksoft: '#5E6772',
+        mist: '#F3F5F8',
+        night: '#161316',
+        yalla: {
+          red: {
+            DEFAULT: '#E10600',
+            dark: '#B10500',
+          },
+          yellow: '#F5B301',
+        },
         primary: {
           50: '#fff1f1',
           100: '#ffe0e1',

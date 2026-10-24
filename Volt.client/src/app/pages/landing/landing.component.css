@@ -1,0 +1,160 @@
+/* Base styles from the standalone landing site, scoped under .yl-landing so
+   they never leak into the dashboard (which has its own .btn etc.). */
+
+.yl-landing {
+  --fluid-pad: 20px;
+  color-scheme: light;
+  background: #fff;
+  color: #1b1f24;
+  font-family: Manrope, 'Segoe UI', sans-serif;
+}
+
+.yl-landing ::selection {
+  background: #f5b301;
+  color: #1b1f24;
+}
+
+.yl-landing .container-fluid {
+  width: 100%;
+  max-width: none;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: var(--fluid-pad);
+  padding-left: var(--fluid-pad);
+}
+
+@media (min-width: 768px) {
+  .yl-landing {
+    --fluid-pad: 40px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .yl-landing {
+    --fluid-pad: 64px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .yl-landing {
+    --fluid-pad: 80px;
+  }
+}
+
+.yl-landing .hero-title {
+  max-width: none;
+  font-family: "Teko", "Montserrat", sans-serif;
+  font-size: 72px;
+  font-weight: 500;
+  font-style: normal;
+  text-decoration: none;
+  line-height: 1em;
+  letter-spacing: -2px;
+}
+
+@media (min-width: 768px) {
+  .yl-landing .hero-title {
+    font-size: 104px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .yl-landing .hero-title {
+    font-size: 132px;
+  }
+}
+
+.yl-landing app-navbar,
+.yl-landing app-hero,
+.yl-landing app-about,
+.yl-landing app-features,
+.yl-landing app-why,
+.yl-landing app-fleet,
+.yl-landing app-cta,
+.yl-landing app-testimonials,
+.yl-landing app-faq,
+.yl-landing app-blog,
+.yl-landing app-footer {
+  display: block;
+}
+
+.yl-landing section[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+.yl-landing .eyebrow {
+  color: #e10600;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.yl-landing .lp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 0.7rem;
+  padding: 0.85rem 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.yl-landing .lp-btn:hover {
+  transform: translateY(-1px);
+}
+
+.yl-landing .lp-btn:focus-visible {
+  outline: 3px solid #f5b301;
+  outline-offset: 3px;
+}
+
+.yl-landing .lp-btn-red {
+  background: #e10600;
+  color: #fff;
+}
+
+.yl-landing .lp-btn-red:hover {
+  background: #b10500;
+}
+
+.yl-landing .hero-zoom {
+  animation: ylHeroZoom 9s ease-out both;
+}
+
+.yl-landing .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.yl-landing .reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.yl-landing .faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s ease;
+}
+
+.yl-landing .faq-panel.open {
+  grid-template-rows: 1fr;
+}
+
+.yl-landing .faq-panel > div {
+  overflow: hidden;
+}
+
+@keyframes ylHeroZoom {
+  from { transform: scale(1.08); }
+  to { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yl-landing .reveal { opacity: 1; transform: none; transition: none; }
+  .yl-landing .hero-zoom { animation: none; }
+}

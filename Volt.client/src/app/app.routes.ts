@@ -9,7 +9,11 @@ import { permissionGuard } from './core/guards/permission.guard';
 import { Permissions } from './core/models/permissions';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: '/login' },
+  {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./pages/landing/landing.component').then(m => m.LandingComponent)
+  },
   { path: 'admin', canActivate: [adminEntryGuard], children: [] },
   { path: 'admin/login', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: AdminLoginComponent, canActivate: [loginGuestGuard] },
