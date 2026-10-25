@@ -12,7 +12,7 @@
     <div class="mt-10 grid gap-5 md:grid-cols-3">
       <article *ngFor="let type of types" class="flex h-full flex-col overflow-hidden rounded-2xl bg-white text-ink shadow-card" appReveal>
         <div class="flex h-64 items-center justify-center bg-white sm:h-72">
-          <img class="max-h-full max-w-full object-contain" [src]="'assets/images/' + type.file" [alt]="type.name | translate" />
+          <img class="max-h-full max-w-full object-contain" [src]="'assets/images/' + type.file" [alt]="type.name | translate" loading="lazy" decoding="async" />
         </div>
         <h3 class="px-5 py-4 font-landing-display text-xl font-extrabold">{{ type.name | translate }}</h3>
       </article>

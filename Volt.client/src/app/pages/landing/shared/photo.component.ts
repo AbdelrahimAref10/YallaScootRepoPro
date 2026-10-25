@@ -14,6 +14,9 @@ import { CommonModule } from '@angular/common';
       [class.p-6]="fit === 'contain'"
       [src]="src"
       [alt]="alt"
+      [attr.loading]="eager ? 'eager' : 'lazy'"
+      [attr.fetchpriority]="eager ? 'high' : null"
+      decoding="async"
       (error)="failed = true"
     />
     <div class="absolute inset-0" [class.invisible]="!failed">
@@ -26,6 +29,8 @@ export class PhotoComponent {
   @Input() file = '';
   @Input() alt = '';
   @Input() fit: 'cover' | 'contain' = 'cover';
+  /** Above-the-fold photo (the hero): load at once instead of lazily. */
+  @Input() eager = false;
   failed = false;
 
   get src(): string {

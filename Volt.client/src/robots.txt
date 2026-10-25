@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /main
+Disallow: /merchant
+Disallow: /login
+Disallow: /admin
+Disallow: /api/
+Disallow: /swagger
+
+Sitemap: https://yallascoot.com/sitemap.xml
