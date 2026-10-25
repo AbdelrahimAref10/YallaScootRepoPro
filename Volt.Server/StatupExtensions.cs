@@ -32,6 +32,13 @@ namespace Volt.Server
             builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, Presentation.Authorization.PermissionAuthorizationHandler>();
 
             builder.Services.AddControllers();
+
+            // Behind IIS the https port can't always be detected, which silently disables the redirect.
+            if (!builder.Environment.IsDevelopment())
+            {
+                builder.Services.AddHttpsRedirection(options => options.HttpsPort = 443);
+            }
+
             // Configure CORS
             builder.Services.AddCors(options =>
             {
@@ -58,6 +65,9 @@ namespace Volt.Server
             // Global exception handling must be first
             app.UseMiddleware<Presentation.Middleware.GlobalExceptionHandlingMiddleware>();
 
+            // Before static files, so http://.../ (index.html, bundles) is redirected too, not only API calls.
+            app.UseHttpsRedirection();
+
             app.UseCors("AllowAll");
 
             // Static files must be before routing
@@ -82,7 +92,6 @@ namespace Volt.Server
             app.UseSwaggerUi();
             app.UseOpenApi();
             app.UseRouting();
-            app.UseHttpsRedirection();
 
             // JWT Authentication
             app.UseAuthentication();
