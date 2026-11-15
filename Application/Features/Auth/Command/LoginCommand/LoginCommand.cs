@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Features.Auth.DTOs;
 using CSharpFunctionalExtensions;
 using Domain.Common;
@@ -191,13 +192,23 @@ namespace Application.Features.Auth.Command.LoginCommand
             {
                 case AppRole.Customer:
                 {
-                    var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+                    var customer = await _context.Customers.AsTracking().FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
                     if (customer == null)
                         return Result.Failure("Customer profile not found");
                     if (customer.IsDeleted)
                         return Result.Failure("Customer profile not found");
                     if (customer.State == CustomerState.Blocked)
                         return Result.Failure("Customer account is blocked. Please contact support.");
+                    // Registered before activation codes were switched off and never
+                    // entered one: activate now. A customer the admin deactivated had
+                    // already used the code, so stays out.
+                    if (!AccountActivation.CustomerRequiresCode
+                        && customer.State == CustomerState.InActive
+                        && !customer.IsInvitationCodeUsed)
+                    {
+                        customer.Activate("System");
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
                     if (customer.State != CustomerState.Active)
                         return Result.Failure("Not Verified");
                     break;
