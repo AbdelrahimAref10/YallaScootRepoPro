@@ -167,6 +167,13 @@ namespace Application.Features.Auth.Command.RegisterCommand
                         commercialRegisterImageUrl,
                         "System");
 
+                    if (!AccountActivation.CustomerRequiresCode)
+                    {
+                        customer.Activate("System");
+                        user.PhoneNumberConfirmed = true;
+                        await _userManager.UpdateAsync(user);
+                    }
+
                     _context.Customers.Add(customer);
                     var saveResult = await _context.SaveChangesAsyncWithResult(cancellationToken);
                     if (!saveResult.IsSuccess)
@@ -175,13 +182,20 @@ namespace Application.Features.Auth.Command.RegisterCommand
                         return Result.Failure<RegisterResponse>($"Failed to save customer: {saveResult.ErrorMessage}");
                     }
 
+                    response.CustomerId = customer.CustomerId;
+
+                    if (!AccountActivation.CustomerRequiresCode)
+                    {
+                        response.Message = "Registration successful.";
+                        break;
+                    }
+
                     await _invitationCodeService.SendInvitationCodeAsync(
                         request.MobileNumber,
                         request.Email,
                         request.VerificationBy!.Value,
                         invitationCode);
 
-                    response.CustomerId = customer.CustomerId;
                     response.Message = request.VerificationBy == (int)VerificationBy.Email
                         ? "Registration successful. Please check your email for the activation code."
                         : "Registration successful. Please check your phone for the activation code.";
